@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cluedo — Online Multiplayer</title>
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<style>
+  :root{
+    --ink:#0f0d0b;
+    --panel:#1c1815;
+    --panel-2:#241f1a;
+    --parchment:#ece0c3;
+    --parchment-dim:#c9bb99;
+    --gold:#c9a227;
+    --gold-bright:#e6c34a;
+    --burgundy:#7a1f2b;
+    --burgundy-bright:#a52a38;
+    --room-fill:#2a231c;
+    --room-fill-hover:#3a2f22;
+    --corridor:#171310;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 40px),
+      radial-gradient(ellipse at 50% -20%, #241d18 0%, var(--ink) 55%);
+    color:var(--parchment);
+    font-family: Georgia, 'Times New Roman', serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:26px 14px 60px;
+  }
+  h1{
+    font-size:1.8rem;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    margin:0 0 2px;
+    text-align:center;
+    color:var(--gold-bright);
+    text-shadow:0 2px 0 rgba(0,0,0,0.6), 0 0 18px rgba(201,162,39,0.25);
+  }
+  .subtitle{
+    font-style:italic;
+    opacity:0.6;
+    font-size:0.82rem;
+    margin-bottom:22px;
+    letter-spacing:0.03em;
+  }
+  .screen{ width:100%; max-width:720px; display:none; }
+  .screen.active{ display:block; }
+
+  .card{
+    background:linear-gradient(160deg, var(--panel), var(--panel-2));
+    border:1px solid rgba(201,162,39,0.25);
+    border-radius:10px;
+    padding:22px 20px;
+    box-shadow:0 14px 34px rgba(0,0,0,0.5);
+    margin-bottom:18px;
+  }
+  .card h2{
+    margin:0 0 14px;
+    font-size:1rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--gold);
+    border-bottom:1px solid rgba(201,162,39,0.25);
+    padding-bottom:8px;
+  }
+  label{ display:block; font-size:0.8rem; opacity:0.75; margin:12px 0 5px; letter-spacing:0.03em; }
+  select, input[type=text]{
+    width:100%;
+    padding:9px 10px;
+    background:#14100e;
+    border:1px solid rgba(201,162,39,0.35);
+    color:var(--parchment);
+    border-radius:5px;
+    font-family:inherit;
+    font-size:0.92rem;
+  }
+  
+  .lobby-opts { display:flex; gap:10px; margin-bottom:15px; }
+  .room-code-display { font-size:1.4rem; color:var(--gold-bright); font-weight:bold; letter-spacing:2px; background:#14100e; padding:10px; border-radius:6px; border:1px solid var(--gold); text-align:center; user-select:all; }
+
+  button{
+    font-family:inherit;
+    background:linear-gradient(180deg, var(--burgundy-bright), var(--burgundy));
+    color:var(--parchment);
+    border:1px solid rgba(201,162,39,0.4);
+    padding:11px 20px;
+    border-radius:6px;
+    font-size:0.85rem;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    cursor:pointer;
+    box-shadow:0 3px 0 #4a1119, 0 4px 10px rgba(0,0,0,0.4);
+    margin:4px 6px 4px 0;
+    transition:transform 0.05s;
+  }
+  button:active{ transform:translateY(2px); box-shadow:0 1px 0 #4a1119; }
+  button.secondary{ background:linear-gradient(180deg, #3a332a, #241f1a); box-shadow:0 3px 0 #14100e, 0 4px 10px rgba(0,0,0,0.4); }
+  button.secondary:active{ box-shadow:0 1px 0 #14100e; }
+  button:disabled{ opacity:0.35; cursor:not-allowed; }
+  button.gold{ background:linear-gradient(180deg, var(--gold-bright), var(--gold)); color:#241a0a; box-shadow:0 3px 0 #8a6d15, 0 4px 10px rgba(0,0,0,0.4); }
+  button.gold:active{ box-shadow:0 1px 0 #8a6d15; }
+
+  .status-bar{
+    display:flex; justify-content:space-between; align-items:center;
+    background:rgba(0,0,0,0.3);
+    border-radius:999px;
+    padding:9px 18px;
+    margin-bottom:14px;
+    font-size:0.85rem;
+    border:1px solid rgba(201,162,39,0.2);
+  }
+  .status-bar .who{ display:flex; align-items:center; gap:8px; }
+  .status-bar .dot{ width:12px;height:12px;border-radius:50%; box-shadow:0 0 0 2px rgba(0,0,0,0.5) inset;}
+
+  .legend{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:12px; font-size:0.72rem; opacity:0.8; }
+  .legend span{ display:inline-flex; align-items:center; gap:5px; }
+  .legend .sw{ width:10px;height:10px;border-radius:50%; box-shadow:0 0 0 1.5px rgba(0,0,0,0.5) inset; }
+
+  .board-frame{
+    position:relative;
+    padding:14px;
+    background:linear-gradient(160deg, #3a2f1e, #1c150d);
+    border-radius:14px;
+    border:1px solid rgba(201,162,39,0.4);
+    box-shadow:0 20px 50px rgba(0,0,0,0.55), inset 0 0 0 6px rgba(201,162,39,0.08);
+    margin-bottom:16px;
+  }
+  #boardSvg{ width:100%; height:auto; display:block; }
+
+  .room-rect{ fill:var(--room-fill); stroke:rgba(201,162,39,0.28); stroke-width:1.5; transition:fill 0.15s; }
+  .room-g.reachable .room-rect{ fill:var(--room-fill-hover); stroke:var(--gold-bright); stroke-width:2.5; cursor:pointer; }
+  .room-g.reachable{ cursor:pointer; }
+  .room-g.current .room-rect{ stroke:var(--gold-bright); stroke-width:3; }
+  .room-label{ fill:var(--parchment-dim); font-family:Georgia, serif; font-size:13px; letter-spacing:1px; text-transform:uppercase; }
+  .room-icon{ fill:var(--parchment); opacity:0.13; font-size:64px; }
+  .corridor{ fill:var(--corridor); }
+  .passage-line{ stroke:var(--gold); stroke-width:1.5; stroke-dasharray:5 5; opacity:0.35; fill:none; }
+
+  .token-g{ transition:transform 0.5s cubic-bezier(.4,1.4,.6,1); }
+  .token-circle{ stroke:#000; stroke-width:1.5; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.6)); }
+  .token-label{ fill:#12100e; font-size:9px; font-weight:bold; font-family:Georgia,serif; text-anchor:middle; dominant-baseline:central; pointer-events:none; }
+
+  .weapon-token{ transition:transform 0.5s cubic-bezier(.4,1.4,.6,1); }
+  .weapon-bg{ fill:#12100e; opacity:0.75; stroke:var(--gold); stroke-width:1; }
+  .weapon-emoji{ font-size:14px; text-anchor:middle; dominant-baseline:central; }
+
+  .dice-area{ display:flex; align-items:center; gap:16px; margin:6px 0 14px; }
+  .die{
+    width:52px; height:52px;
+    background:linear-gradient(160deg, var(--parchment), var(--parchment-dim));
+    border-radius:8px; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr);
+    padding:7px; box-shadow:0 6px 14px rgba(0,0,0,0.5); flex:0 0 auto;
+  }
+  .pip{ border-radius:50%; background:transparent; margin:auto; width:8px; height:8px; }
+  .pip.on{ background:#241a12; }
+  .dice-caption{ font-size:0.85rem; opacity:0.75; }
+
+  .log{ max-height:140px; overflow-y:auto; font-size:0.78rem; opacity:0.75; line-height:1.5; background:rgba(0,0,0,0.25); border-radius:6px; padding:10px 12px; }
+  .log div{ border-bottom:1px dashed rgba(201,162,39,0.12); padding:3px 0; }
+
+  .hand-grid{ display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
+  .hand-card{
+    background:linear-gradient(160deg, var(--parchment), var(--parchment-dim)); color:#241a12;
+    border-radius:6px; padding:10px 12px; font-size:0.8rem; box-shadow:0 4px 8px rgba(0,0,0,0.4);
+    display:flex; flex-direction:column; align-items:center; gap:4px; min-width:64px;
+  }
+
+  .notebook-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-top:6px; }
+  .notebook-col h3{ font-size:0.72rem; text-transform:uppercase; color:var(--gold); margin:0 0 6px; }
+  .notebook-item{ display:flex; align-items:center; gap:6px; font-size:0.78rem; padding:2px 0; }
+
+  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.68); align-items:center; justify-content:center; padding:20px; z-index:50; }
+  .modal-overlay.show{ display:flex; }
+  .modal{ background:linear-gradient(160deg, var(--panel), var(--panel-2)); border:1px solid rgba(201,162,39,0.35); border-radius:10px; padding:22px; max-width:440px; width:100%; }
+
+  .solution-file{ background:linear-gradient(160deg, var(--parchment), var(--parchment-dim)); color:#241a12; border-radius:8px; padding:22px; margin-top:14px; font-family:'Courier New', monospace; }
+  .solution-file .stamp{ color:var(--burgundy); font-weight:bold; letter-spacing:0.1em; font-size:0.8rem; border:2px solid var(--burgundy); display:inline-block; padding:2px 8px; margin-bottom:10px; transform:rotate(-3deg); }
+  .row-btns{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+</style>
+</head>
+<body>
+
+<h1>Cluedo Online</h1>
+<div class="subtitle">Online Multiplayer Case File</div>
+
+<div class="screen active" id="setupScreen">
+  <div class="card">
+    <h2>Join or Host a Room</h2>
+    <div class="lobby-opts">
+      <button class="gold" id="modeHostBtn">Create Game (Host)</button>
+      <button class="secondary" id="modeJoinBtn">Join Game</button>
+    </div>
+
+    <label for="playerNameInput">Your Name</label>
+    <input type="text" id="playerNameInput" value="Detective 1">
+
+    <div id="joinSection" style="display:none; margin-top:15px;">
+      <label for="joinCodeInput">Enter Room Code</label>
+      <input type="text" id="joinCodeInput" placeholder="e.g. ABCD">
+      <div class="row-btns">
+        <button class="gold" id="joinRoomBtn">Connect to Host</button>
+      </div>
+    </div>
+
+    <div id="hostSection" style="margin-top:15px;">
+      <label>Share this Room Code with friends:</label>
+      <div class="room-code-display" id="roomCodeDisplay">Generating Code...</div>
+      
+      <label>Connected Players in Lobby:</label>
+      <div id="lobbyPlayerList" style="font-size:0.9rem; margin-bottom:10px;">Connecting to network...</div>
+
+      <div class="row-btns">
+        <button class="gold" id="startGameBtn" disabled>Start Online Game</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="turnScreen">
+  <div class="status-bar">
+    <div class="who"><span class="dot" id="turnDot"></span><span id="turnWho"></span></div>
+    <span id="turnRoom"></span>
+  </div>
+  <div class="legend" id="legend"></div>
+
+  <div class="board-frame">
+    <svg id="boardSvg" viewBox="0 0 640 640" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+
+  <div class="card">
+    <h2>Actions</h2>
+    <div class="dice-area">
+      <div class="die" id="die">
+        <div class="pip" data-p="1"></div><div class="pip" data-p="2"></div><div class="pip" data-p="3"></div>
+        <div class="pip" data-p="4"></div><div class="pip" data-p="5"></div><div class="pip" data-p="6"></div>
+        <div class="pip" data-p="7"></div><div class="pip" data-p="8"></div><div class="pip" data-p="9"></div>
+      </div>
+      <div class="dice-caption" id="diceCaption">Wait for your turn...</div>
+    </div>
+    <div class="row-btns">
+      <button id="rollBtn" disabled>Roll Dice &amp; Move</button>
+      <button id="passageBtn" class="secondary" style="display:none;">Take Secret Passage</button>
+      <button id="suggestBtn" class="secondary" disabled>Make Suggestion</button>
+      <button id="accuseBtn" class="secondary" disabled>Make Accusation</button>
+      <button id="notebookBtn" class="secondary">My Notebook</button>
+    </div>
+    <div class="row-btns">
+      <button id="endTurnBtn" disabled>End Turn</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Case Log</h2>
+    <div class="log" id="log"></div>
+  </div>
+
+  <div class="card">
+    <h2>My Hand</h2>
+    <div class="hand-grid" id="handGrid"></div>
+  </div>
+</div>
+
+<div class="screen" id="overScreen">
+  <div class="card">
+    <h2 id="overTitle">Case Closed</h2>
+    <p id="overText" style="opacity:0.85;"></p>
+    <div class="solution-file">
+      <div class="stamp">CASE FILE — SOLVED</div>
+      <div id="solutionText" style="font-size:1rem; line-height:1.8;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="suggestModal">
+  <div class="modal">
+    <h2>Make a Suggestion</h2>
+    <label>Suspect</label>
+    <select id="suggestSuspect"></select>
+    <label>Weapon</label>
+    <select id="suggestWeapon"></select>
+    <label>Room</label>
+    <select id="suggestRoom" disabled></select>
+    <div class="row-btns">
+      <button class="gold" id="confirmSuggestBtn">Submit Suggestion</button>
+      <button class="secondary" id="cancelSuggestBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="accuseModal">
+  <div class="modal">
+    <h2>Make an Accusation</h2>
+    <label>Suspect</label>
+    <select id="accuseSuspect"></select>
+    <label>Weapon</label>
+    <select id="accuseWeapon"></select>
+    <label>Room</label>
+    <select id="accuseRoom"></select>
+    <div class="row-btns">
+      <button class="gold" id="confirmAccuseBtn">Submit Accusation</button>
+      <button class="secondary" id="cancelAccuseBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="disproveModal">
+  <div class="modal">
+    <h2 id="disproveTitle">Disprove Suggestion</h2>
+    <div id="disproveBody"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="notebookModal">
+  <div class="modal">
+    <h2>Detective's Notebook</h2>
+    <div class="notebook-grid" id="notebookGrid"></div>
+    <div class="row-btns">
+      <button class="gold" id="closeNotebookBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const SUSPECTS = [
+    {name:'Miss Scarlett', color:'#e0304a', code:'SC'},
+    {name:'Colonel Mustard', color:'#d4a520', code:'MU'},
+    {name:'Mrs. White', color:'#f2ead6', code:'WH'},
+    {name:'Reverend Green', color:'#3f9e68', code:'GR'},
+    {name:'Mrs. Peacock', color:'#3f7fc1', code:'PE'},
+    {name:'Professor Plum', color:'#9b5bc9', code:'PL'},
+  ];
+  const WEAPONS = [
+    {name:'Candlestick', icon:'🕯️'}, {name:'Knife', icon:'🔪'},
+    {name:'Lead Pipe', icon:'🔩'}, {name:'Revolver', icon:'🔫'},
+    {name:'Rope', icon:'🪢'}, {name:'Wrench', icon:'🔧'},
+  ];
+  const ROOM_ICONS = {
+    'Study':'📖','Hall':'🖼️','Lounge':'🛋️','Library':'📚','Billiard Room':'🎱',
+    'Dining Room':'🍽️','Conservatory':'🌿','Ballroom':'💃','Kitchen':'🍳'
+  };
+  const ROOM_LAYOUT = [
+    ['Study','Hall','Lounge'],
+    ['Library','Billiard Room','Dining Room'],
+    ['Conservatory','Ballroom','Kitchen']
+  ];
+  const ROOMS = ROOM_LAYOUT.flat();
+  const ADJACENCY = {
+    'Study':['Hall','Library'], 'Hall':['Study','Lounge','Billiard Room'], 'Lounge':['Hall','Dining Room'],
+    'Library':['Study','Billiard Room','Conservatory'], 'Billiard Room':['Hall','Library','Dining Room','Ballroom'],
+    'Dining Room':['Lounge','Billiard Room','Kitchen'], 'Conservatory':['Library','Ballroom'],
+    'Ballroom':['Billiard Room','Conservatory','Kitchen'], 'Kitchen':['Dining Room','Ballroom']
+  };
+  const SECRET_PASSAGES = { 'Study':'Kitchen', 'Kitchen':'Study', 'Lounge':'Conservatory', 'Conservatory':'Lounge' };
+  const STARTING_ROOMS = ['Hall','Lounge','Ballroom','Conservatory','Study','Library'];
+
+  const ROOM_SIZE = 180, GAP = 50;
+  const COL_X = [0, ROOM_SIZE+GAP, (ROOM_SIZE+GAP)*2];
+  const ROW_Y = [0, ROOM_SIZE+GAP, (ROOM_SIZE+GAP)*2];
+  const PLAYER_SLOTS = [ [40,120],[90,120],[140,120],[40,150],[90,150],[140,150] ];
+  const WEAPON_SLOTS = [ [40,28],[90,28],[140,28],[40,54],[90,54],[140,54] ];
+
+  let peer = null;
+  let isHost = false;
+  let myPeerId = null;
+  let hostConn = null; // Client connection to Host
+  let clients = {}; // Host connections to clients { peerId: conn }
+  let lobbyPlayers = []; // [{ id, name }]
+
+  let game = null;
+  let myPlayerIndex = -1;
+  let dom = { playerTokens:[], weaponTokens:{}, roomGroups:{} };
+
+  // Setup networking
+  function initPeer(idOverride) {
+    peer = new Peer(idOverride || undefined);
+    peer.on('open', (id) => {
+      myPeerId = id;
+      if (isHost) {
+        document.getElementById('roomCodeDisplay').textContent = id.substring(0, 4).toUpperCase();
+        lobbyPlayers = [{ id: myPeerId, name: getMyName() }];
+        updateLobbyUI();
+      } else {
+        // Connect to host
+        const roomCode = document.getElementById('joinCodeInput').value.trim().toLowerCase();
+        hostConn = peer.connect(roomCode);
+        setupClientConnection(hostConn);
+      }
+    });
+
+    peer.on('connection', (conn) => {
+      if (!isHost) return;
+      conn.on('open', () => {
+        clients[conn.peer] = conn;
+        conn.on('data', (data) => handleHostMessage(data, conn.peer));
+        conn.on('close', () => {
+          delete clients[conn.peer];
+          lobbyPlayers = lobbyPlayers.filter(p => p.id !== conn.peer);
+          broadcastLobby();
+        });
+      });
+    });
+  }
+
+  function getMyName() {
+    return document.getElementById('playerNameInput').value.trim() || 'Player';
+  }
+
+  // Lobby mode toggle
+  document.getElementById('modeHostBtn').addEventListener('click', () => {
+    isHost = true;
+    document.getElementById('modeHostBtn').className = 'gold';
+    document.getElementById('modeJoinBtn').className = 'secondary';
+    document.getElementById('hostSection').style.display = 'block';
+    document.getElementById('joinSection').style.display = 'none';
+    if (!peer) initPeer();
+  });
+
+  document.getElementById('modeJoinBtn').addEventListener('click', () => {
+    isHost = false;
+    document.getElementById('modeJoinBtn').className = 'gold';
+    document.getElementById('modeHostBtn').className = 'secondary';
+    document.getElementById('hostSection').style.display = 'none';
+    document.getElementById('joinSection').style.display = 'block';
+  });
+
+  document.getElementById('joinRoomBtn').addEventListener('click', () => {
+    if (!peer) initPeer();
+  });
+
+  function setupClientConnection(conn) {
+    conn.on('open', () => {
+      conn.send({ type: 'JOIN_LOBBY', name: getMyName() });
+    });
+    conn.on('data', (data) => handleClientMessage(data));
+  }
+
+  function broadcastLobby() {
+    updateLobbyUI();
+    for (let id in clients) {
+      clients[id].send({ type: 'LOBBY_UPDATE', players: lobbyPlayers });
+    }
+  }
+
+  function updateLobbyUI() {
+    const list = document.getElementById('lobbyPlayerList');
+    list.innerHTML = lobbyPlayers.map((p, i) => `<div>• ${p.name} ${i === 0 ? '(Host)' : ''}</div>`).join('');
+    document.getElementById('startGameBtn').disabled = lobbyPlayers.length < 2 || !isHost;
+  }
+
+  function broadcastGameSync() {
+    for (let id in clients) {
+      const pIndex = game.players.findIndex(p => p.peerId === id);
+      clients[id].send({ type: 'SYNC_GAME', game: sanitizeGameForPlayer(pIndex) });
+    }
+    // Update local host state
+    renderTurnScreen();
+  }
+
+  function sanitizeGameForPlayer(pIndex) {
+    // Hide hands except for targeted player
+    const sanitized = JSON.parse(JSON.stringify(game));
+    sanitized.players.forEach((p, idx) => {
+      if (idx !== pIndex) p.hand = p.hand.map(() => ({ name: '???', type: 'hidden' }));
+    });
+    return sanitized;
+  }
+
+  // Host Message Handler
+  function handleHostMessage(data, fromPeerId) {
+    if (data.type === 'JOIN_LOBBY') {
+      lobbyPlayers.push({ id: fromPeerId, name: data.name });
+      broadcastLobby();
+    } else if (data.type === 'ACTION') {
+      processAction(data.action, data.payload, fromPeerId);
+    }
+  }
+
+  // Client Message Handler
+  function handleClientMessage(data) {
+    if (data.type === 'LOBBY_UPDATE') {
+      lobbyPlayers = data.players;
+      updateLobbyUI();
+    } else if (data.type === 'SYNC_GAME') {
+      game = data.game;
+      myPlayerIndex = game.players.findIndex(p => p.peerId === myPeerId);
+      if (document.getElementById('turnScreen').style.display !== 'block') {
+        show('turnScreen');
+        initBoardSvg();
+      }
+      renderTurnScreen();
+    } else if (data.type === 'SHOW_DISPROVE_POPUP') {
+      showDisproveChoice(data.matches, data.suggesterIdx);
+    } else if (data.type === 'SHOW_CARD_POPUP') {
+      showRevealedCard(data.card, data.disproverName);
+    }
+  }
+
+  function sendActionToHost(action, payload) {
+    if (isHost) {
+      processAction(action, payload, myPeerId);
+    } else {
+      hostConn.send({ type: 'ACTION', action, payload });
+    }
+  }
+
+  // Game setup
+  document.getElementById('startGameBtn').addEventListener('click', () => {
+    if (!isHost) return;
+    const n = lobbyPlayers.length;
+    const players = lobbyPlayers.map((lp, i) => ({
+      peerId: lp.id,
+      name: lp.name,
+      character: SUSPECTS[i].name,
+      color: SUSPECTS[i].color,
+      code: SUSPECTS[i].code,
+      room: STARTING_ROOMS[i],
+      hand: [],
+      eliminated: false,
+      notes: {}
+    }));
+
+    const suspectCards = SUSPECTS.map(s => ({ name: s.name, type: 'suspect' }));
+    const weaponCards = WEAPONS.map(w => ({ name: w.name, type: 'weapon' }));
+    const roomCards = ROOMS.map(r => ({ name: r, type: 'room' }));
+
+    const shuffle = arr => arr.sort(() => Math.random() - 0.5);
+
+    const solSuspect = suspectCards[Math.floor(Math.random() * suspectCards.length)];
+    const solWeapon = weaponCards[Math.floor(Math.random() * weaponCards.length)];
+    const solRoom = roomCards[Math.floor(Math.random() * roomCards.length)];
+
+    let remaining = shuffle([
+      ...suspectCards.filter(c => c.name !== solSuspect.name),
+      ...weaponCards.filter(c => c.name !== solWeapon.name),
+      ...roomCards.filter(c => c.name !== solRoom.name)
+    ]);
+
+    let pi = 0;
+    while (remaining.length) {
+      players[pi % players.length].hand.push(remaining.shift());
+      pi++;
+    }
+
+    const shuffledRooms = shuffle([...ROOMS]);
+    const weaponLocations = {};
+    WEAPONS.forEach((w, i) => { weaponLocations[w.name] = shuffledRooms[i]; });
+
+    game = {
+      players,
+      solution: { suspect: solSuspect.name, weapon: solWeapon.name, room: solRoom.name },
+      currentIndex: 0,
+      log: ['The investigation begins online!'],
+      turnState: { moved: false, suggested: false, reachable: [players[0].room] },
+      weaponLocations
+    };
+
+    myPlayerIndex = 0;
+    show('turnScreen');
+    initBoardSvg();
+    broadcastGameSync();
+  });
+
+  // Action Logic
+  function processAction(action, payload, fromPeerId) {
+    const p = game.players[game.currentIndex];
+    if (action === 'ROLL') {
+      const roll = Math.floor(Math.random() * 6) + 1;
+      game.turnState.reachable = bfsReachable(p.room, roll);
+      game.log.unshift(`${p.name} rolled a ${roll}.`);
+      broadcastGameSync();
+    } else if (action === 'MOVE') {
+      p.room = payload.room;
+      game.turnState.moved = true;
+      game.log.unshift(`${p.name} moved to ${payload.room}.`);
+      broadcastGameSync();
+    } else if (action === 'END_TURN') {
+      let next = (game.currentIndex + 1) % game.players.length;
+      while (game.players[next].eliminated) {
+        next = (next + 1) % game.players.length;
+      }
+      game.currentIndex = next;
+      game.turnState = { moved: false, suggested: false, reachable: [game.players[next].room] };
+      game.log.unshift(`It is now ${game.players[next].name}'s turn.`);
+      broadcastGameSync();
+    } else if (action === 'SUGGEST') {
+      game.turnState.suggested = true;
+      const { suspect, weapon, room } = payload;
+      game.log.unshift(`${p.name} suggests: ${suspect}, with ${weapon}, in ${room}.`);
+      
+      const accIdx = game.players.findIndex(pl => pl.character === suspect);
+      if (accIdx !== -1) game.players[accIdx].room = room;
+      game.weaponLocations[weapon] = room;
+
+      // Handle disproving
+      runSuggestionOnline(suspect, weapon, room);
+      broadcastGameSync();
+    } else if (action === 'ACCUSE') {
+      const { suspect, weapon, room } = payload;
+      const correct = suspect === game.solution.suspect && weapon === game.solution.weapon && room === game.solution.room;
+      if (correct) {
+        game.log.unshift(`${p.name} ACCUSED CORRECTLY AND WON!`);
+        game.winner = p.name;
+      } else {
+        p.eliminated = true;
+        game.log.unshift(`${p.name} accused incorrectly and was eliminated.`);
+      }
+      broadcastGameSync();
+    } else if (action === 'DISPROVE_CARD') {
+      const suggester = game.players[payload.suggesterIdx];
+      const disprover = game.players[payload.disproverIdx];
+      if (suggester.peerId === myPeerId) {
+        showRevealedCard(payload.card, disprover.name);
+      } else if (clients[suggester.peerId]) {
+        clients[suggester.peerId].send({ type: 'SHOW_CARD_POPUP', card: payload.card, disproverName: disprover.name });
+      }
+    }
+  }
+
+  function runSuggestionOnline(suspect, weapon, room) {
+    const suggesterIdx = game.currentIndex;
+    const n = game.players.length;
+    for (let step = 1; step < n; step++) {
+      const idx = (suggesterIdx + step) % n;
+      const pl = game.players[idx];
+      const matches = pl.hand.filter(c => c.name === suspect || c.name === weapon || c.name === room);
+      if (matches.length > 0) {
+        if (pl.peerId === myPeerId) {
+          showDisproveChoice(matches, suggesterIdx);
+        } else if (clients[pl.peerId]) {
+          clients[pl.peerId].send({ type: 'SHOW_DISPROVE_POPUP', matches, suggesterIdx });
+        }
+        return;
+      }
+    }
+    game.log.unshift('No one could disprove the suggestion.');
+  }
+
+  // UI Updates
+  function renderTurnScreen() {
+    if (!game) return;
+    const isMyTurn = game.currentIndex === myPlayerIndex;
+    const currentP = game.players[game.currentIndex];
+
+    document.getElementById('turnDot').style.background = currentP.color;
+    document.getElementById('turnWho').textContent = `${currentP.name} (${currentP.character})`;
+    document.getElementById('turnRoom').textContent = `In: ${currentP.room}`;
+
+    document.getElementById('rollBtn').disabled = !isMyTurn || game.turnState.moved;
+    document.getElementById('suggestBtn').disabled = !isMyTurn || game.turnState.suggested;
+    document.getElementById('accuseBtn').disabled = !isMyTurn;
+    document.getElementById('endTurnBtn').disabled = !isMyTurn;
+
+    document.getElementById('diceCaption').textContent = isMyTurn ? 'Your turn! Roll or select a room.' : `Waiting for ${currentP.name}...`;
+
+    renderLegend();
+    renderLog();
+    renderHand();
+    updateBoardState();
+
+    if (game.winner) {
+      document.getElementById('overTitle').textContent = `Winner: ${game.winner}!`;
+      document.getElementById('solutionText').innerHTML = `Solution: ${game.solution.suspect}, ${game.solution.weapon}, ${game.solution.room}`;
+      show('overScreen');
+    }
+  }
+
+  function renderLegend() {
+    document.getElementById('legend').innerHTML = game.players.map(p =>
+      `<span><span class="sw" style="background:${p.color}"></span>${p.name}${p.eliminated ? ' (out)' : ''}</span>`
+    ).join('');
+  }
+
+  function renderLog() {
+    document.getElementById('log').innerHTML = game.log.map(l => `<div>${l}</div>`).join('');
+  }
+
+  function renderHand() {
+    const p = game.players[myPlayerIndex];
+    if (!p) return;
+    document.getElementById('handGrid').innerHTML = p.hand.map(c => `<div class="hand-card">${c.name}</div>`).join('');
+  }
+
+  // Setup Board Visuals
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent) {
+    const e = document.createElementNS(SVGNS, tag);
+    for (let k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function roomPos(name) {
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) if (ROOM_LAYOUT[r][c] === name) return { x: COL_X[c], y: ROW_Y[r] };
+  }
+
+  function initBoardSvg() {
+    const svg = document.getElementById('boardSvg');
+    svg.innerHTML = '';
+    dom.roomGroups = {}; dom.playerTokens = []; dom.weaponTokens = {};
+
+    ROOMS.forEach(name => {
+      const pos = roomPos(name);
+      const g = el('g', { class: 'room-g', transform: `translate(${pos.x},${pos.y})` }, svg);
+      el('rect', { width: ROOM_SIZE, height: ROOM_SIZE, rx: 10, class: 'room-rect' }, g);
+      const label = el('text', { x: ROOM_SIZE / 2, y: 25, class: 'room-label', 'text-anchor': 'middle' }, g);
+      label.textContent = name;
+      g.addEventListener('click', () => {
+        if (game.currentIndex === myPlayerIndex && !game.turnState.moved && game.turnState.reachable.includes(name)) {
+          sendActionToHost('MOVE', { room: name });
+        }
+      });
+      dom.roomGroups[name] = g;
+    });
+
+    WEAPONS.forEach((w, i) => {
+      const g = el('g', { class: 'weapon-token' }, svg);
+      el('circle', { r: 10, class: 'weapon-bg' }, g);
+      const t = el('text', { class: 'weapon-emoji', y: 1 }, g);
+      t.textContent = w.icon;
+      dom.weaponTokens[w.name] = g;
+    });
+
+    game.players.forEach((p, i) => {
+      const g = el('g', { class: 'token-g' }, svg);
+      el('circle', { r: 13, class: 'token-circle', fill: p.color }, g);
+      const t = el('text', { class: 'token-label', y: 0.5 }, g);
+      t.textContent = p.code;
+      dom.playerTokens[i] = g;
+    });
+  }
+
+  function updateBoardState() {
+    if (!game) return;
+    const isMyTurn = game.currentIndex === myPlayerIndex;
+    ROOMS.forEach(name => {
+      const g = dom.roomGroups[name];
+      const isReachable = isMyTurn && !game.turnState.moved && game.turnState.reachable.includes(name);
+      g.classList.toggle('reachable', isReachable);
+    });
+
+    game.players.forEach((p, i) => {
+      const pos = roomPos(p.room);
+      const slot = PLAYER_SLOTS[i];
+      dom.playerTokens[i].setAttribute('transform', `translate(${pos.x + slot[0]},${pos.y + slot[1]})`);
+    });
+
+    WEAPONS.forEach((w, i) => {
+      const pos = roomPos(game.weaponLocations[w.name]);
+      const slot = WEAPON_SLOTS[i];
+      dom.weaponTokens[w.name].setAttribute('transform', `translate(${pos.x + slot[0]},${pos.y + slot[1]})`);
+    });
+  }
+
+  function bfsReachable(start, maxSteps) {
+    const dist = { [start]: 0 };
+    const queue = [start];
+    while (queue.length) {
+      const cur = queue.shift();
+      if (dist[cur] >= maxSteps) continue;
+      for (const nb of ADJACENCY[cur]) {
+        if (!(nb in dist)) { dist[nb] = dist[cur] + 1; queue.push(nb); }
+      }
+    }
+    return Object.keys(dist);
+  }
+
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // Button Action Bindings
+  document.getElementById('rollBtn').addEventListener('click', () => sendActionToHost('ROLL'));
+  document.getElementById('endTurnBtn').addEventListener('click', () => sendActionToHost('END_TURN'));
+
+  document.getElementById('suggestBtn').addEventListener('click', () => {
+    populateSelect('suggestSuspect', SUSPECTS.map(s => s.name));
+    populateSelect('suggestWeapon', WEAPONS.map(w => w.name));
+    document.getElementById('suggestRoom').innerHTML = `<option>${game.players[myPlayerIndex].room}</option>`;
+    document.getElementById('suggestModal').classList.add('show');
+  });
+  document.getElementById('cancelSuggestBtn').addEventListener('click', () => document.getElementById('suggestModal').classList.remove('show'));
+  document.getElementById('confirmSuggestBtn').addEventListener('click', () => {
+    document.getElementById('suggestModal').classList.remove('show');
+    sendActionToHost('SUGGEST', {
+      suspect: document.getElementById('suggestSuspect').value,
+      weapon: document.getElementById('suggestWeapon').value,
+      room: game.players[myPlayerIndex].room
+    });
+  });
+
+  document.getElementById('accuseBtn').addEventListener('click', () => {
+    populateSelect('accuseSuspect', SUSPECTS.map(s => s.name));
+    populateSelect('accuseWeapon', WEAPONS.map(w => w.name));
+    populateSelect('accuseRoom', ROOMS);
+    document.getElementById('accuseModal').classList.add('show');
+  });
+  document.getElementById('cancelAccuseBtn').addEventListener('click', () => document.getElementById('accuseModal').classList.remove('show'));
+  document.getElementById('confirmAccuseBtn').addEventListener('click', () => {
+    document.getElementById('accuseModal').classList.remove('show');
+    sendActionToHost('ACCUSE', {
+      suspect: document.getElementById('accuseSuspect').value,
+      weapon: document.getElementById('accuseWeapon').value,
+      room: document.getElementById('accuseRoom').value
+    });
+  });
+
+  function populateSelect(id, options) {
+    document.getElementById(id).innerHTML = options.map(o => `<option value="${o}">${o}</option>`).join('');
+  }
+
+  function showDisproveChoice(matches, suggesterIdx) {
+    const modal = document.getElementById('disproveModal');
+    const body = document.getElementById('disproveBody');
+    body.innerHTML = `<p>Choose a card to privately reveal to the suggester:</p>`;
+    matches.forEach(c => {
+      const btn = document.createElement('button');
+      btn.textContent = c.name;
+      btn.addEventListener('click', () => {
+        modal.classList.remove('show');
+        sendActionToHost('DISPROVE_CARD', { card: c, suggesterIdx, disproverIdx: myPlayerIndex });
+      });
+      body.appendChild(btn);
+    });
+    modal.classList.add('show');
+  }
+
+  function showRevealedCard(card, disproverName) {
+    alert(`${disproverName} revealed this card to you: ${card.name}`);
+  }
+
+  // Notebook logic
+  document.getElementById('notebookBtn').addEventListener('click', () => {
+    const grid = document.getElementById('notebookGrid');
+    grid.innerHTML = '';
+    const myNotes = game.players[myPlayerIndex].notes;
+    [
+      { title: 'Suspects', items: SUSPECTS.map(s => s.name) },
+      { title: 'Weapons', items: WEAPONS.map(w => w.name) },
+      { title: 'Rooms', items: ROOMS }
+    ].forEach(col => {
+      const colDiv = document.createElement('div');
+      colDiv.className = 'notebook-col';
+      colDiv.innerHTML = `<h3>${col.title}</h3>`;
+      col.items.forEach(name => {
+        const item = document.createElement('div');
+        item.className = 'notebook-item';
+        item.innerHTML = `<input type="checkbox" ${myNotes[name] ? 'checked' : ''} data-name="${name}"> <span>${name}</span>`;
+        colDiv.appendChild(item);
+      });
+      grid.appendChild(colDiv);
+    });
+    grid.querySelectorAll('input').forEach(cb => {
+      cb.addEventListener('change', () => { myNotes[cb.dataset.name] = cb.checked; });
+    });
+    document.getElementById('notebookModal').classList.add('show');
+  });
+  document.getElementById('closeNotebookBtn').addEventListener('click', () => document.getElementById('notebookModal').classList.remove('show'));
+
+})();
+</script>
+
+</body>
+</html>
