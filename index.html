@@ -379,9 +379,15 @@
   let myPlayerIndex = -1;
   let dom = { playerTokens:[], weaponTokens:{}, roomGroups:{} };
 
-  // Setup networking
-  function initPeer(idOverride) {
-    peer = new Peer(idOverride || undefined);
+function initPeer(idOverride) {
+    // إضافة إعدادات السيرفر المباشر (host & port) لتفادي التعليق
+    peer = new Peer(idOverride || undefined, {
+      host: '0.peerjs.com',
+      port: 443,
+      secure: true,
+      debug: 2
+    });
+
     peer.on('open', (id) => {
       myPeerId = id;
       if (isHost) {
@@ -395,6 +401,29 @@
         setupClientConnection(hostConn);
       }
     });
+
+    // معالجة الأخطاء في حال فشل الاتصال بالشبكة
+    peer.on('error', (err) => {
+      console.error('PeerJS Error:', err);
+      if (isHost) {
+        document.getElementById('roomCodeDisplay').textContent = 'ERROR';
+        document.getElementById('lobbyPlayerList').textContent = 'فشل الاتصال بالشبكة، حاول تحديث الصفحة.';
+      }
+    });
+
+    peer.on('connection', (conn) => {
+      if (!isHost) return;
+      conn.on('open', () => {
+        clients[conn.peer] = conn;
+        conn.on('data', (data) => handleHostMessage(data, conn.peer));
+        conn.on('close', () => {
+          delete clients[conn.peer];
+          lobbyPlayers = lobbyPlayers.filter(p => p.id !== conn.peer);
+          broadcastLobby();
+        });
+      });
+    });
+  }
 
     peer.on('connection', (conn) => {
       if (!isHost) return;
