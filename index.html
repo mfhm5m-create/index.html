@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cluedo — Online Multiplayer</title>
-<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
   :root{
     --ink:#0f0d0b;
@@ -142,7 +142,6 @@
   .room-label{ fill:var(--parchment-dim); font-family:Georgia, serif; font-size:13px; letter-spacing:1px; text-transform:uppercase; }
   .room-icon{ fill:var(--parchment); opacity:0.13; font-size:64px; }
   .corridor{ fill:var(--corridor); }
-  .passage-line{ stroke:var(--gold); stroke-width:1.5; stroke-dasharray:5 5; opacity:0.35; fill:none; }
 
   .token-g{ transition:transform 0.5s cubic-bezier(.4,1.4,.6,1); }
   .token-circle{ stroke:#000; stroke-width:1.5; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.6)); }
@@ -369,61 +368,48 @@
   const WEAPON_SLOTS = [ [40,28],[90,28],[140,28],[40,54],[90,54],[140,54] ];
 
   let peer = null;
-  let isHost = false;
+  let isHost = true;
   let myPeerId = null;
-  let hostConn = null; // Client connection to Host
-  let clients = {}; // Host connections to clients { peerId: conn }
-  let lobbyPlayers = []; // [{ id, name }]
+  let hostConn = null;
+  let clients = {};
+  let lobbyPlayers = [];
 
   let game = null;
   let myPlayerIndex = -1;
   let dom = { playerTokens:[], weaponTokens:{}, roomGroups:{} };
 
-function initPeer(idOverride) {
-    // إضافة إعدادات السيرفر المباشر (host & port) لتفادي التعليق
-    peer = new Peer(idOverride || undefined, {
-      host: '0.peerjs.com',
-      port: 443,
-      secure: true,
-      debug: 2
+  function initPeer(idOverride) {
+    const customId = idOverride || Math.random().toString(36).substring(2, 6).toLowerCase();
+    
+    peer = new Peer(customId, {
+      debug: 1,
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ]
+      }
     });
 
     peer.on('open', (id) => {
       myPeerId = id;
       if (isHost) {
-        document.getElementById('roomCodeDisplay').textContent = id.substring(0, 4).toUpperCase();
+        document.getElementById('roomCodeDisplay').textContent = id.toUpperCase();
         lobbyPlayers = [{ id: myPeerId, name: getMyName() }];
         updateLobbyUI();
       } else {
-        // Connect to host
         const roomCode = document.getElementById('joinCodeInput').value.trim().toLowerCase();
         hostConn = peer.connect(roomCode);
         setupClientConnection(hostConn);
       }
     });
 
-    // معالجة الأخطاء في حال فشل الاتصال بالشبكة
     peer.on('error', (err) => {
-      console.error('PeerJS Error:', err);
-      if (isHost) {
-        document.getElementById('roomCodeDisplay').textContent = 'ERROR';
-        document.getElementById('lobbyPlayerList').textContent = 'فشل الاتصال بالشبكة، حاول تحديث الصفحة.';
+      console.warn('Network message:', err.type);
+      if (err.type === 'unavailable-id') {
+        initPeer();
       }
     });
-
-    peer.on('connection', (conn) => {
-      if (!isHost) return;
-      conn.on('open', () => {
-        clients[conn.peer] = conn;
-        conn.on('data', (data) => handleHostMessage(data, conn.peer));
-        conn.on('close', () => {
-          delete clients[conn.peer];
-          lobbyPlayers = lobbyPlayers.filter(p => p.id !== conn.peer);
-          broadcastLobby();
-        });
-      });
-    });
-  }
 
     peer.on('connection', (conn) => {
       if (!isHost) return;
@@ -443,7 +429,6 @@ function initPeer(idOverride) {
     return document.getElementById('playerNameInput').value.trim() || 'Player';
   }
 
-  // Lobby mode toggle
   document.getElementById('modeHostBtn').addEventListener('click', () => {
     isHost = true;
     document.getElementById('modeHostBtn').className = 'gold';
@@ -490,12 +475,10 @@ function initPeer(idOverride) {
       const pIndex = game.players.findIndex(p => p.peerId === id);
       clients[id].send({ type: 'SYNC_GAME', game: sanitizeGameForPlayer(pIndex) });
     }
-    // Update local host state
     renderTurnScreen();
   }
 
   function sanitizeGameForPlayer(pIndex) {
-    // Hide hands except for targeted player
     const sanitized = JSON.parse(JSON.stringify(game));
     sanitized.players.forEach((p, idx) => {
       if (idx !== pIndex) p.hand = p.hand.map(() => ({ name: '???', type: 'hidden' }));
@@ -503,7 +486,6 @@ function initPeer(idOverride) {
     return sanitized;
   }
 
-  // Host Message Handler
   function handleHostMessage(data, fromPeerId) {
     if (data.type === 'JOIN_LOBBY') {
       lobbyPlayers.push({ id: fromPeerId, name: data.name });
@@ -513,7 +495,6 @@ function initPeer(idOverride) {
     }
   }
 
-  // Client Message Handler
   function handleClientMessage(data) {
     if (data.type === 'LOBBY_UPDATE') {
       lobbyPlayers = data.players;
@@ -526,10 +507,6 @@ function initPeer(idOverride) {
         initBoardSvg();
       }
       renderTurnScreen();
-    } else if (data.type === 'SHOW_DISPROVE_POPUP') {
-      showDisproveChoice(data.matches, data.suggesterIdx);
-    } else if (data.type === 'SHOW_CARD_POPUP') {
-      showRevealedCard(data.card, data.disproverName);
     }
   }
 
@@ -541,10 +518,8 @@ function initPeer(idOverride) {
     }
   }
 
-  // Game setup
   document.getElementById('startGameBtn').addEventListener('click', () => {
     if (!isHost) return;
-    const n = lobbyPlayers.length;
     const players = lobbyPlayers.map((lp, i) => ({
       peerId: lp.id,
       name: lp.name,
@@ -598,7 +573,6 @@ function initPeer(idOverride) {
     broadcastGameSync();
   });
 
-  // Action Logic
   function processAction(action, payload, fromPeerId) {
     const p = game.players[game.currentIndex];
     if (action === 'ROLL') {
@@ -620,60 +594,9 @@ function initPeer(idOverride) {
       game.turnState = { moved: false, suggested: false, reachable: [game.players[next].room] };
       game.log.unshift(`It is now ${game.players[next].name}'s turn.`);
       broadcastGameSync();
-    } else if (action === 'SUGGEST') {
-      game.turnState.suggested = true;
-      const { suspect, weapon, room } = payload;
-      game.log.unshift(`${p.name} suggests: ${suspect}, with ${weapon}, in ${room}.`);
-      
-      const accIdx = game.players.findIndex(pl => pl.character === suspect);
-      if (accIdx !== -1) game.players[accIdx].room = room;
-      game.weaponLocations[weapon] = room;
-
-      // Handle disproving
-      runSuggestionOnline(suspect, weapon, room);
-      broadcastGameSync();
-    } else if (action === 'ACCUSE') {
-      const { suspect, weapon, room } = payload;
-      const correct = suspect === game.solution.suspect && weapon === game.solution.weapon && room === game.solution.room;
-      if (correct) {
-        game.log.unshift(`${p.name} ACCUSED CORRECTLY AND WON!`);
-        game.winner = p.name;
-      } else {
-        p.eliminated = true;
-        game.log.unshift(`${p.name} accused incorrectly and was eliminated.`);
-      }
-      broadcastGameSync();
-    } else if (action === 'DISPROVE_CARD') {
-      const suggester = game.players[payload.suggesterIdx];
-      const disprover = game.players[payload.disproverIdx];
-      if (suggester.peerId === myPeerId) {
-        showRevealedCard(payload.card, disprover.name);
-      } else if (clients[suggester.peerId]) {
-        clients[suggester.peerId].send({ type: 'SHOW_CARD_POPUP', card: payload.card, disproverName: disprover.name });
-      }
     }
   }
 
-  function runSuggestionOnline(suspect, weapon, room) {
-    const suggesterIdx = game.currentIndex;
-    const n = game.players.length;
-    for (let step = 1; step < n; step++) {
-      const idx = (suggesterIdx + step) % n;
-      const pl = game.players[idx];
-      const matches = pl.hand.filter(c => c.name === suspect || c.name === weapon || c.name === room);
-      if (matches.length > 0) {
-        if (pl.peerId === myPeerId) {
-          showDisproveChoice(matches, suggesterIdx);
-        } else if (clients[pl.peerId]) {
-          clients[pl.peerId].send({ type: 'SHOW_DISPROVE_POPUP', matches, suggesterIdx });
-        }
-        return;
-      }
-    }
-    game.log.unshift('No one could disprove the suggestion.');
-  }
-
-  // UI Updates
   function renderTurnScreen() {
     if (!game) return;
     const isMyTurn = game.currentIndex === myPlayerIndex;
@@ -694,12 +617,6 @@ function initPeer(idOverride) {
     renderLog();
     renderHand();
     updateBoardState();
-
-    if (game.winner) {
-      document.getElementById('overTitle').textContent = `Winner: ${game.winner}!`;
-      document.getElementById('solutionText').innerHTML = `Solution: ${game.solution.suspect}, ${game.solution.weapon}, ${game.solution.room}`;
-      show('overScreen');
-    }
   }
 
   function renderLegend() {
@@ -718,7 +635,6 @@ function initPeer(idOverride) {
     document.getElementById('handGrid').innerHTML = p.hand.map(c => `<div class="hand-card">${c.name}</div>`).join('');
   }
 
-  // Setup Board Visuals
   const SVGNS = 'http://www.w3.org/2000/svg';
   function el(tag, attrs, parent) {
     const e = document.createElementNS(SVGNS, tag);
@@ -806,93 +722,11 @@ function initPeer(idOverride) {
     document.getElementById(id).classList.add('active');
   }
 
-  // Button Action Bindings
   document.getElementById('rollBtn').addEventListener('click', () => sendActionToHost('ROLL'));
   document.getElementById('endTurnBtn').addEventListener('click', () => sendActionToHost('END_TURN'));
 
-  document.getElementById('suggestBtn').addEventListener('click', () => {
-    populateSelect('suggestSuspect', SUSPECTS.map(s => s.name));
-    populateSelect('suggestWeapon', WEAPONS.map(w => w.name));
-    document.getElementById('suggestRoom').innerHTML = `<option>${game.players[myPlayerIndex].room}</option>`;
-    document.getElementById('suggestModal').classList.add('show');
-  });
-  document.getElementById('cancelSuggestBtn').addEventListener('click', () => document.getElementById('suggestModal').classList.remove('show'));
-  document.getElementById('confirmSuggestBtn').addEventListener('click', () => {
-    document.getElementById('suggestModal').classList.remove('show');
-    sendActionToHost('SUGGEST', {
-      suspect: document.getElementById('suggestSuspect').value,
-      weapon: document.getElementById('suggestWeapon').value,
-      room: game.players[myPlayerIndex].room
-    });
-  });
-
-  document.getElementById('accuseBtn').addEventListener('click', () => {
-    populateSelect('accuseSuspect', SUSPECTS.map(s => s.name));
-    populateSelect('accuseWeapon', WEAPONS.map(w => w.name));
-    populateSelect('accuseRoom', ROOMS);
-    document.getElementById('accuseModal').classList.add('show');
-  });
-  document.getElementById('cancelAccuseBtn').addEventListener('click', () => document.getElementById('accuseModal').classList.remove('show'));
-  document.getElementById('confirmAccuseBtn').addEventListener('click', () => {
-    document.getElementById('accuseModal').classList.remove('show');
-    sendActionToHost('ACCUSE', {
-      suspect: document.getElementById('accuseSuspect').value,
-      weapon: document.getElementById('accuseWeapon').value,
-      room: document.getElementById('accuseRoom').value
-    });
-  });
-
-  function populateSelect(id, options) {
-    document.getElementById(id).innerHTML = options.map(o => `<option value="${o}">${o}</option>`).join('');
-  }
-
-  function showDisproveChoice(matches, suggesterIdx) {
-    const modal = document.getElementById('disproveModal');
-    const body = document.getElementById('disproveBody');
-    body.innerHTML = `<p>Choose a card to privately reveal to the suggester:</p>`;
-    matches.forEach(c => {
-      const btn = document.createElement('button');
-      btn.textContent = c.name;
-      btn.addEventListener('click', () => {
-        modal.classList.remove('show');
-        sendActionToHost('DISPROVE_CARD', { card: c, suggesterIdx, disproverIdx: myPlayerIndex });
-      });
-      body.appendChild(btn);
-    });
-    modal.classList.add('show');
-  }
-
-  function showRevealedCard(card, disproverName) {
-    alert(`${disproverName} revealed this card to you: ${card.name}`);
-  }
-
-  // Notebook logic
-  document.getElementById('notebookBtn').addEventListener('click', () => {
-    const grid = document.getElementById('notebookGrid');
-    grid.innerHTML = '';
-    const myNotes = game.players[myPlayerIndex].notes;
-    [
-      { title: 'Suspects', items: SUSPECTS.map(s => s.name) },
-      { title: 'Weapons', items: WEAPONS.map(w => w.name) },
-      { title: 'Rooms', items: ROOMS }
-    ].forEach(col => {
-      const colDiv = document.createElement('div');
-      colDiv.className = 'notebook-col';
-      colDiv.innerHTML = `<h3>${col.title}</h3>`;
-      col.items.forEach(name => {
-        const item = document.createElement('div');
-        item.className = 'notebook-item';
-        item.innerHTML = `<input type="checkbox" ${myNotes[name] ? 'checked' : ''} data-name="${name}"> <span>${name}</span>`;
-        colDiv.appendChild(item);
-      });
-      grid.appendChild(colDiv);
-    });
-    grid.querySelectorAll('input').forEach(cb => {
-      cb.addEventListener('change', () => { myNotes[cb.dataset.name] = cb.checked; });
-    });
-    document.getElementById('notebookModal').classList.add('show');
-  });
-  document.getElementById('closeNotebookBtn').addEventListener('click', () => document.getElementById('notebookModal').classList.remove('show'));
+  // البدء التلقائي عند فتح الصفحة
+  initPeer();
 
 })();
 </script>
