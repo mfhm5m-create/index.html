@@ -203,7 +203,7 @@
 
     <div id="joinSection" style="display:none; margin-top:15px;">
       <label for="joinCodeInput">Enter Room Code</label>
-      <input type="text" id="joinCodeInput" placeholder="e.g. ABCD">
+      <input type="text" id="joinCodeInput" placeholder="e.g. fuya">
       <div class="row-btns">
         <button class="gold" id="joinRoomBtn">Connect to Host</button>
       </div>
@@ -278,55 +278,6 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="suggestModal">
-  <div class="modal">
-    <h2>Make a Suggestion</h2>
-    <label>Suspect</label>
-    <select id="suggestSuspect"></select>
-    <label>Weapon</label>
-    <select id="suggestWeapon"></select>
-    <label>Room</label>
-    <select id="suggestRoom" disabled></select>
-    <div class="row-btns">
-      <button class="gold" id="confirmSuggestBtn">Submit Suggestion</button>
-      <button class="secondary" id="cancelSuggestBtn">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="accuseModal">
-  <div class="modal">
-    <h2>Make an Accusation</h2>
-    <label>Suspect</label>
-    <select id="accuseSuspect"></select>
-    <label>Weapon</label>
-    <select id="accuseWeapon"></select>
-    <label>Room</label>
-    <select id="accuseRoom"></select>
-    <div class="row-btns">
-      <button class="gold" id="confirmAccuseBtn">Submit Accusation</button>
-      <button class="secondary" id="cancelAccuseBtn">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="disproveModal">
-  <div class="modal">
-    <h2 id="disproveTitle">Disprove Suggestion</h2>
-    <div id="disproveBody"></div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="notebookModal">
-  <div class="modal">
-    <h2>Detective's Notebook</h2>
-    <div class="notebook-grid" id="notebookGrid"></div>
-    <div class="row-btns">
-      <button class="gold" id="closeNotebookBtn">Close</button>
-    </div>
-  </div>
-</div>
-
 <script>
 (function(){
   const SUSPECTS = [
@@ -342,10 +293,6 @@
     {name:'Lead Pipe', icon:'🔩'}, {name:'Revolver', icon:'🔫'},
     {name:'Rope', icon:'🪢'}, {name:'Wrench', icon:'🔧'},
   ];
-  const ROOM_ICONS = {
-    'Study':'📖','Hall':'🖼️','Lounge':'🛋️','Library':'📚','Billiard Room':'🎱',
-    'Dining Room':'🍽️','Conservatory':'🌿','Ballroom':'💃','Kitchen':'🍳'
-  };
   const ROOM_LAYOUT = [
     ['Study','Hall','Lounge'],
     ['Library','Billiard Room','Dining Room'],
@@ -358,7 +305,6 @@
     'Dining Room':['Lounge','Billiard Room','Kitchen'], 'Conservatory':['Library','Ballroom'],
     'Ballroom':['Billiard Room','Conservatory','Kitchen'], 'Kitchen':['Dining Room','Ballroom']
   };
-  const SECRET_PASSAGES = { 'Study':'Kitchen', 'Kitchen':'Study', 'Lounge':'Conservatory', 'Conservatory':'Lounge' };
   const STARTING_ROOMS = ['Hall','Lounge','Ballroom','Conservatory','Study','Library'];
 
   const ROOM_SIZE = 180, GAP = 50;
@@ -397,17 +343,14 @@
         document.getElementById('roomCodeDisplay').textContent = id.toUpperCase();
         lobbyPlayers = [{ id: myPeerId, name: getMyName() }];
         updateLobbyUI();
-      } else {
-        const roomCode = document.getElementById('joinCodeInput').value.trim().toLowerCase();
-        hostConn = peer.connect(roomCode);
-        setupClientConnection(hostConn);
       }
     });
 
     peer.on('error', (err) => {
-      console.warn('Network message:', err.type);
       if (err.type === 'unavailable-id') {
         initPeer();
+      } else {
+        console.warn('Network issue:', err);
       }
     });
 
@@ -446,15 +389,50 @@
     document.getElementById('joinSection').style.display = 'block';
   });
 
+  // إصلاح الاتصال المباشر عند الضغط على زر Connect to Host
   document.getElementById('joinRoomBtn').addEventListener('click', () => {
-    if (!peer) initPeer();
+    const roomCode = document.getElementById('joinCodeInput').value.trim().toLowerCase();
+    if (!roomCode) {
+      alert('Please enter a room code first!');
+      return;
+    }
+
+    const btn = document.getElementById('joinRoomBtn');
+    btn.textContent = 'Connecting...';
+    btn.disabled = true;
+
+    if (!peer) {
+      peer = new Peer({
+        config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }
+      });
+      peer.on('open', (id) => {
+        myPeerId = id;
+        connectToHost(roomCode);
+      });
+    } else {
+      connectToHost(roomCode);
+    }
   });
+
+  function connectToHost(roomCode) {
+    hostConn = peer.connect(roomCode);
+    setupClientConnection(hostConn);
+  }
 
   function setupClientConnection(conn) {
     conn.on('open', () => {
+      document.getElementById('joinRoomBtn').textContent = 'Connected! Waiting for host...';
       conn.send({ type: 'JOIN_LOBBY', name: getMyName() });
     });
+
     conn.on('data', (data) => handleClientMessage(data));
+
+    conn.on('error', (err) => {
+      alert('Could not connect to room. Make sure code is correct.');
+      const btn = document.getElementById('joinRoomBtn');
+      btn.textContent = 'CONNECT TO HOST';
+      btn.disabled = false;
+    });
   }
 
   function broadcastLobby() {
@@ -725,7 +703,7 @@
   document.getElementById('rollBtn').addEventListener('click', () => sendActionToHost('ROLL'));
   document.getElementById('endTurnBtn').addEventListener('click', () => sendActionToHost('END_TURN'));
 
-  // البدء التلقائي عند فتح الصفحة
+  // البدء التلقائي وإنشاء الغرفة
   initPeer();
 
 })();
