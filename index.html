@@ -988,7 +988,7 @@ table.notebook-table tbody th{position:sticky;left:0;z-index:3;background:rgba(2
 <div class="toast-container" id="toastContainer"></div>
 <div class="confetti-layer hidden" id="confettiLayer"></div>
 
-<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <script>
 'use strict';
 /* =====================================================================
@@ -1356,16 +1356,88 @@ function nextSuggestionCheck(game){
    ===================================================================== */
 let peer=null, hostConn=null, clientConns={}, myPeerId=null, roomCode=null;
 let mode='menu', hostGame=null, clientGame=null, lobbyPlayers=[], myLobby={name:'',suspectId:'scarlett',ready:false};
-function peerOptions(){return {debug:1,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun2.l.google.com:19302'}]}};}
+function peerOptions(){return {
+  debug:1,
+  host:'0.peerjs.com',
+  port:443,
+  path:'/',
+  secure:true,
+  config:{iceServers:[
+    {urls:'stun:stun.l.google.com:19302'},
+    {urls:'stun:stun1.l.google.com:19302'},
+    {urls:'stun:stun2.l.google.com:19302'}
+  ]}
+};}
 function generateRoomCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let out='';for(let i=0;i<6;i++)out+=chars[Math.floor(Math.random()*chars.length)];return out;}
 function destroyPeer(){try{hostConn?.close();}catch(_){} try{Object.values(clientConns).forEach(c=>c.close());}catch(_){} try{peer?.destroy();}catch(_){} peer=null;hostConn=null;clientConns={};myPeerId=null;}
-function hostOnline(){
+let peerJsLoadPromise=null;
+function ensurePeerJSLibrary(){
+  if(typeof window.Peer==='function')return Promise.resolve(true);
+  if(peerJsLoadPromise)return peerJsLoadPromise;
+  peerJsLoadPromise=new Promise((resolve,reject)=>{
+    const sources=[
+      'https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js',
+      'https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js'
+    ];
+    let i=0;
+    const next=()=>{
+      if(typeof window.Peer==='function')return resolve(true);
+      if(i>=sources.length)return reject(new Error('PeerJS failed to load'));
+      const sc=document.createElement('script');
+      sc.src=sources[i++];sc.async=true;
+      sc.onload=()=>typeof window.Peer==='function'?resolve(true):next();
+      sc.onerror=next;
+      document.head.appendChild(sc);
+    };
+    next();
+  }).finally(()=>{if(typeof window.Peer!=='function')peerJsLoadPromise=null;});
+  return peerJsLoadPromise;
+}
+async function hostOnline(){
   destroyPeer();mode='online-host';roomCode=generateRoomCode();setJoinStatus('');
-  const peerId='mm-'+roomCode.toLowerCase();peer=new Peer(peerId,peerOptions());
-  setLobbyStatus('Connecting to PeerJS…');
-  peer.on('open',id=>{myPeerId=id;myLobby={name:defaultName(),suspectId:'scarlett',ready:false};lobbyPlayers=[{id,name:myLobby.name,suspectId:myLobby.suspectId,ready:false,host:true,connected:true}];showLobby();setLobbyStatus('Room ready. Share the code.','ok');});
-  peer.on('connection',conn=>{clientConns[conn.peer]=conn;wireHostConnection(conn);});
-  peer.on('error',err=>{if(err.type==='unavailable-id'){roomCode=generateRoomCode();destroyPeer();hostOnline();}else setLobbyStatus('Network error: '+err.type,'err');});
+  myLobby={name:defaultName(),suspectId:'scarlett',ready:false};
+  // Show feedback immediately so the button never feels dead while the network opens.
+  lobbyPlayers=[{id:'host-pending',name:myLobby.name,suspectId:myLobby.suspectId,ready:false,host:true,connected:false}];
+  showLobby();
+  setConnectionPills(false);
+  setLobbyStatus('Connecting to the online service…');
+  try{
+    await ensurePeerJSLibrary();
+    if(mode!=='online-host')return;
+    const peerId='mm-'+roomCode.toLowerCase();
+    peer=new window.Peer(peerId,peerOptions());
+    let opened=false;
+    const openTimeout=setTimeout(()=>{
+      if(!opened&&mode==='online-host'){
+        setConnectionPills(false);
+        setLobbyStatus('The online service is taking too long. Check your connection, then leave and try Host again.','err');
+      }
+    },12000);
+    peer.on('open',id=>{
+      opened=true;clearTimeout(openTimeout);myPeerId=id;
+      lobbyPlayers=[{id,name:myLobby.name,suspectId:myLobby.suspectId,ready:false,host:true,connected:true}];
+      renderLobby();setConnectionPills(true);setLobbyStatus('Room ready. Share the code.','ok');
+    });
+    peer.on('connection',conn=>{clientConns[conn.peer]=conn;wireHostConnection(conn);});
+    peer.on('disconnected',()=>{setConnectionPills(false);setLobbyStatus('Connection to the PeerJS service was lost. Trying to reconnect…','err');try{peer.reconnect();}catch(_){}});
+    peer.on('error',err=>{
+      clearTimeout(openTimeout);
+      if(err?.type==='unavailable-id'&&mode==='online-host'){
+        roomCode=generateRoomCode();
+        try{peer.destroy();}catch(_){}
+        peer=null;
+        setLobbyStatus('Room code collision — generating another code…');
+        setTimeout(hostOnline,150);
+      }else{
+        setConnectionPills(false);
+        setLobbyStatus('Online connection error: '+(err?.type||err?.message||'unknown')+'. Try again.','err');
+      }
+    });
+  }catch(err){
+    console.error('PeerJS load failed',err);
+    setConnectionPills(false);
+    setLobbyStatus('Could not load the online multiplayer library. Check the internet connection and reload the page.','err');
+  }
 }
 function wireHostConnection(conn){
   conn.on('data',data=>handleHostNet(data,conn));
@@ -1483,7 +1555,7 @@ function renderLobby(){
   }else renderSuspectPicks();
   const ready=$('btnLobbyReady');ready.classList.toggle('hidden',mode==='local');if(online){const me=lobbyPlayers.find(p=>p.id===myPeerId);ready.textContent=me?.ready?'Ready ✓':"I'm Ready";}
   const start=$('btnLobbyStart');const canStart=mode==='local'||(mode==='online-host'&&lobbyPlayers.length>=3&&lobbyPlayers.every(p=>p.ready));start.classList.toggle('hidden',!(mode==='local'||mode==='online-host'));start.disabled=!canStart;
-  setConnectionPills(online?true:false);
+  setConnectionPills(online ? (mode==='online-host' ? !!(peer&&peer.open) : !!(hostConn&&hostConn.open)) : false);
 }
 function setDie(el,val){if(!el)return;const patterns={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};[...el.children].forEach((x,i)=>x.style.opacity=(patterns[val]||[]).includes(i)?'1':'0');}
 function renderGame(){
@@ -1954,8 +2026,10 @@ function stableClientId(code){
 function joinOnline(code,name){
   manualPeerClose=true;destroyPeer();manualPeerClose=false;mode='online-client';roomCode=String(code||'').trim().toUpperCase();myLobby={name:name||defaultName(),suspectId:'scarlett',ready:false};clientStablePeerId=stableClientId(roomCode);reconnectAttempts=0;setJoinStatus('Connecting…');openClientPeer();
 }
-function openClientPeer(){
-  if(mode!=='online-client')return;try{peer?.destroy();}catch(_){}peer=new Peer(clientStablePeerId,peerOptions());
+async function openClientPeer(){
+  if(mode!=='online-client')return;
+  try{await ensurePeerJSLibrary();}catch(err){setJoinStatus('Could not load online multiplayer. Reload and try again.','err');return;}
+  if(mode!=='online-client')return;try{peer?.destroy();}catch(_){}peer=new window.Peer(clientStablePeerId,peerOptions());
   peer.on('open',id=>{myPeerId=id;hostConn=peer.connect('mm-'+roomCode.toLowerCase(),{reliable:true});wireClientConnection(hostConn);});
   peer.on('error',err=>{if(err.type==='unavailable-id'&&reconnectAttempts<4){scheduleReconnect();}else setJoinStatus('Network error: '+err.type,'err');});
 }
