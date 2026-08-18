@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cluedo — Online Multiplayer</title>
-<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<title>Cluedo — لعبة التحقيق (أونلاين ومحلي)</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
   :root{
     --ink:#0f0d0b;
@@ -18,693 +18,667 @@
     --burgundy-bright:#a52a38;
     --room-fill:#2a231c;
     --room-fill-hover:#3a2f22;
-    --corridor:#171310;
   }
   *{box-sizing:border-box;}
-  html,body{height:100%;}
   body{
-    margin:0;
-    min-height:100vh;
-    background:
-      repeating-linear-gradient(135deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 40px),
-      radial-gradient(ellipse at 50% -20%, #241d18 0%, var(--ink) 55%);
+    margin:0; min-height:100vh;
+    background: radial-gradient(ellipse at 50% -20%, #241d18 0%, var(--ink) 70%);
     color:var(--parchment);
-    font-family: Georgia, 'Times New Roman', serif;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    padding:26px 14px 60px;
+    font-family: system-ui, -apple-system, sans-serif;
+    display:flex; flex-direction:column; align-items:center; padding:15px;
   }
-  h1{
-    font-size:1.8rem;
-    letter-spacing:0.18em;
-    text-transform:uppercase;
-    margin:0 0 2px;
-    text-align:center;
-    color:var(--gold-bright);
-    text-shadow:0 2px 0 rgba(0,0,0,0.6), 0 0 18px rgba(201,162,39,0.25);
-  }
-  .subtitle{
-    font-style:italic;
-    opacity:0.6;
-    font-size:0.82rem;
-    margin-bottom:22px;
-    letter-spacing:0.03em;
-  }
-  .screen{ width:100%; max-width:720px; display:none; }
+  h1{ font-size:1.8rem; color:var(--gold-bright); margin:5px 0; text-align:center; text-shadow:0 2px 10px rgba(201,162,39,0.3); }
+  .subtitle{ font-style:italic; opacity:0.75; font-size:0.85rem; margin-bottom:15px; }
+  .screen{ width:100%; max-width:680px; display:none; }
   .screen.active{ display:block; }
 
   .card{
     background:linear-gradient(160deg, var(--panel), var(--panel-2));
-    border:1px solid rgba(201,162,39,0.25);
-    border-radius:10px;
-    padding:22px 20px;
-    box-shadow:0 14px 34px rgba(0,0,0,0.5);
-    margin-bottom:18px;
+    border:1px solid rgba(201,162,39,0.3);
+    border-radius:10px; padding:15px; margin-bottom:12px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.5);
   }
-  .card h2{
-    margin:0 0 14px;
-    font-size:1rem;
-    letter-spacing:0.1em;
-    text-transform:uppercase;
-    color:var(--gold);
-    border-bottom:1px solid rgba(201,162,39,0.25);
-    padding-bottom:8px;
+  .card h2{ margin:0 0 10px; font-size:1.1rem; color:var(--gold); border-bottom:1px solid rgba(201,162,39,0.2); padding-bottom:5px; }
+
+  label{ display:block; font-size:0.85rem; margin:8px 0 4px; opacity:0.9; }
+  input, select{
+    width:100%; padding:10px; background:#14100e; border:1px solid rgba(201,162,39,0.4);
+    color:var(--parchment); border-radius:6px; font-size:0.95rem; margin-bottom:8px;
   }
-  label{ display:block; font-size:0.8rem; opacity:0.75; margin:12px 0 5px; letter-spacing:0.03em; }
-  select, input[type=text]{
-    width:100%;
-    padding:9px 10px;
-    background:#14100e;
-    border:1px solid rgba(201,162,39,0.35);
-    color:var(--parchment);
-    border-radius:5px;
-    font-family:inherit;
-    font-size:0.92rem;
-  }
-  
-  .lobby-opts { display:flex; gap:10px; margin-bottom:15px; }
-  .room-code-display { font-size:1.4rem; color:var(--gold-bright); font-weight:bold; letter-spacing:2px; background:#14100e; padding:10px; border-radius:6px; border:1px solid var(--gold); text-align:center; user-select:all; }
+
+  .mode-selector{ display:flex; gap:10px; margin-bottom:15px; }
+  .mode-btn{ flex:1; padding:12px; background:#241f1a; border:1px solid var(--gold); border-radius:8px; color:var(--parchment); cursor:pointer; font-weight:bold; text-align:center; }
+  .mode-btn.active{ background:var(--burgundy); border-color:var(--gold-bright); }
 
   button{
-    font-family:inherit;
     background:linear-gradient(180deg, var(--burgundy-bright), var(--burgundy));
-    color:var(--parchment);
-    border:1px solid rgba(201,162,39,0.4);
-    padding:11px 20px;
-    border-radius:6px;
-    font-size:0.85rem;
-    letter-spacing:0.06em;
-    text-transform:uppercase;
-    cursor:pointer;
-    box-shadow:0 3px 0 #4a1119, 0 4px 10px rgba(0,0,0,0.4);
-    margin:4px 6px 4px 0;
-    transition:transform 0.05s;
+    color:var(--parchment); border:1px solid rgba(201,162,39,0.4);
+    padding:10px 16px; border-radius:6px; font-size:0.9rem; font-weight:bold;
+    cursor:pointer; margin:4px 2px; transition:0.2s;
   }
-  button:active{ transform:translateY(2px); box-shadow:0 1px 0 #4a1119; }
-  button.secondary{ background:linear-gradient(180deg, #3a332a, #241f1a); box-shadow:0 3px 0 #14100e, 0 4px 10px rgba(0,0,0,0.4); }
-  button.secondary:active{ box-shadow:0 1px 0 #14100e; }
-  button:disabled{ opacity:0.35; cursor:not-allowed; }
-  button.gold{ background:linear-gradient(180deg, var(--gold-bright), var(--gold)); color:#241a0a; box-shadow:0 3px 0 #8a6d15, 0 4px 10px rgba(0,0,0,0.4); }
-  button.gold:active{ box-shadow:0 1px 0 #8a6d15; }
+  button.gold{ background:linear-gradient(180deg, var(--gold-bright), var(--gold)); color:#1a1000; }
+  button.secondary{ background:#3a332a; }
+  button:disabled{ opacity:0.4; cursor:not-allowed; }
 
   .status-bar{
     display:flex; justify-content:space-between; align-items:center;
-    background:rgba(0,0,0,0.3);
-    border-radius:999px;
-    padding:9px 18px;
-    margin-bottom:14px;
-    font-size:0.85rem;
-    border:1px solid rgba(201,162,39,0.2);
+    background:rgba(0,0,0,0.4); padding:8px 15px; border-radius:20px;
+    border:1px solid rgba(201,162,39,0.2); margin-bottom:10px; font-size:0.9rem;
   }
-  .status-bar .who{ display:flex; align-items:center; gap:8px; }
-  .status-bar .dot{ width:12px;height:12px;border-radius:50%; box-shadow:0 0 0 2px rgba(0,0,0,0.5) inset;}
+  .dot{ width:12px; height:12px; border-radius:50%; display:inline-block; margin-left:6px; }
 
-  .legend{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:12px; font-size:0.72rem; opacity:0.8; }
-  .legend span{ display:inline-flex; align-items:center; gap:5px; }
-  .legend .sw{ width:10px;height:10px;border-radius:50%; box-shadow:0 0 0 1.5px rgba(0,0,0,0.5) inset; }
-
-  .board-frame{
-    position:relative;
-    padding:14px;
-    background:linear-gradient(160deg, #3a2f1e, #1c150d);
-    border-radius:14px;
-    border:1px solid rgba(201,162,39,0.4);
-    box-shadow:0 20px 50px rgba(0,0,0,0.55), inset 0 0 0 6px rgba(201,162,39,0.08);
-    margin-bottom:16px;
-  }
+  .board-frame{ background:#1a140e; padding:10px; border-radius:10px; border:1px solid var(--gold); margin-bottom:12px; }
   #boardSvg{ width:100%; height:auto; display:block; }
+  .room-rect{ fill:var(--room-fill); stroke:rgba(201,162,39,0.3); stroke-width:1.5; transition:0.2s; }
+  .room-g.reachable .room-rect{ fill:var(--room-fill-hover); stroke:var(--gold-bright); stroke-width:3; cursor:pointer; }
+  .room-label{ fill:var(--parchment-dim); font-size:12px; text-anchor:middle; font-weight:bold; }
 
-  .room-rect{ fill:var(--room-fill); stroke:rgba(201,162,39,0.28); stroke-width:1.5; transition:fill 0.15s; }
-  .room-g.reachable .room-rect{ fill:var(--room-fill-hover); stroke:var(--gold-bright); stroke-width:2.5; cursor:pointer; }
-  .room-g.reachable{ cursor:pointer; }
-  .room-g.current .room-rect{ stroke:var(--gold-bright); stroke-width:3; }
-  .room-label{ fill:var(--parchment-dim); font-family:Georgia, serif; font-size:13px; letter-spacing:1px; text-transform:uppercase; }
-  .room-icon{ fill:var(--parchment); opacity:0.13; font-size:64px; }
-  .corridor{ fill:var(--corridor); }
+  .hand-grid{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .hand-card{ background:var(--parchment); color:#1a1000; border-radius:5px; padding:8px 12px; font-size:0.85rem; font-weight:bold; box-shadow:0 2px 6px rgba(0,0,0,0.4); }
 
-  .token-g{ transition:transform 0.5s cubic-bezier(.4,1.4,.6,1); }
-  .token-circle{ stroke:#000; stroke-width:1.5; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.6)); }
-  .token-label{ fill:#12100e; font-size:9px; font-weight:bold; font-family:Georgia,serif; text-anchor:middle; dominant-baseline:central; pointer-events:none; }
+  .log{ max-height:100px; overflow-y:auto; font-size:0.8rem; background:rgba(0,0,0,0.3); padding:8px; border-radius:5px; opacity:0.85; line-height:1.4; }
+  .log div{ border-bottom:1px dashed rgba(255,255,255,0.1); padding:3px 0; }
 
-  .weapon-token{ transition:transform 0.5s cubic-bezier(.4,1.4,.6,1); }
-  .weapon-bg{ fill:#12100e; opacity:0.75; stroke:var(--gold); stroke-width:1; }
-  .weapon-emoji{ font-size:14px; text-anchor:middle; dominant-baseline:central; }
-
-  .dice-area{ display:flex; align-items:center; gap:16px; margin:6px 0 14px; }
-  .die{
-    width:52px; height:52px;
-    background:linear-gradient(160deg, var(--parchment), var(--parchment-dim));
-    border-radius:8px; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr);
-    padding:7px; box-shadow:0 6px 14px rgba(0,0,0,0.5); flex:0 0 auto;
-  }
-  .pip{ border-radius:50%; background:transparent; margin:auto; width:8px; height:8px; }
-  .pip.on{ background:#241a12; }
-  .dice-caption{ font-size:0.85rem; opacity:0.75; }
-
-  .log{ max-height:140px; overflow-y:auto; font-size:0.78rem; opacity:0.75; line-height:1.5; background:rgba(0,0,0,0.25); border-radius:6px; padding:10px 12px; }
-  .log div{ border-bottom:1px dashed rgba(201,162,39,0.12); padding:3px 0; }
-
-  .hand-grid{ display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
-  .hand-card{
-    background:linear-gradient(160deg, var(--parchment), var(--parchment-dim)); color:#241a12;
-    border-radius:6px; padding:10px 12px; font-size:0.8rem; box-shadow:0 4px 8px rgba(0,0,0,0.4);
-    display:flex; flex-direction:column; align-items:center; gap:4px; min-width:64px;
-  }
-
-  .notebook-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-top:6px; }
-  .notebook-col h3{ font-size:0.72rem; text-transform:uppercase; color:var(--gold); margin:0 0 6px; }
-  .notebook-item{ display:flex; align-items:center; gap:6px; font-size:0.78rem; padding:2px 0; }
-
-  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.68); align-items:center; justify-content:center; padding:20px; z-index:50; }
+  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); align-items:center; justify-content:center; padding:15px; z-index:100; }
   .modal-overlay.show{ display:flex; }
-  .modal{ background:linear-gradient(160deg, var(--panel), var(--panel-2)); border:1px solid rgba(201,162,39,0.35); border-radius:10px; padding:22px; max-width:440px; width:100%; }
+  .modal{ background:var(--panel-2); border:1px solid var(--gold); border-radius:10px; padding:20px; max-width:400px; width:100%; }
 
-  .solution-file{ background:linear-gradient(160deg, var(--parchment), var(--parchment-dim)); color:#241a12; border-radius:8px; padding:22px; margin-top:14px; font-family:'Courier New', monospace; }
-  .solution-file .stamp{ color:var(--burgundy); font-weight:bold; letter-spacing:0.1em; font-size:0.8rem; border:2px solid var(--burgundy); display:inline-block; padding:2px 8px; margin-bottom:10px; transform:rotate(-3deg); }
-  .row-btns{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+  .room-code-badge{ background:var(--gold); color:#000; font-weight:bold; padding:4px 10px; border-radius:6px; letter-spacing:2px; font-family:monospace; font-size:1.1rem; }
+  .player-list-item{ display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(201,162,39,0.1); font-size:0.88rem; }
 </style>
 </head>
 <body>
 
-<h1>Cluedo Online</h1>
-<div class="subtitle">Online Multiplayer Case File</div>
+<h1>Cluedo — كلويدو</h1>
+<div class="subtitle">لعبة التحقيق والغموض الشهيرة</div>
 
 <div class="screen active" id="setupScreen">
   <div class="card">
-    <h2>Join or Host a Room</h2>
-    <div class="lobby-opts">
-      <button class="gold" id="modeHostBtn">Create Game (Host)</button>
-      <button class="secondary" id="modeJoinBtn">Join Game</button>
+    <h2>اختيار نمط اللعب</h2>
+    <div class="mode-selector">
+      <div class="mode-btn active" id="modeOnlineBtn">أونلاين (عبر الإنترنت)</div>
+      <div class="mode-btn" id="modeLocalBtn">محلي (تمرير الجهاز)</div>
     </div>
 
-    <label for="playerNameInput">Your Name</label>
-    <input type="text" id="playerNameInput" value="Detective 1">
+    <div id="onlineSetup">
+      <label>اسمك داخل اللعبة:</label>
+      <input type="text" id="onlineMyName" value="المحقق 1">
 
-    <div id="joinSection" style="display:none; margin-top:15px;">
-      <label for="joinCodeInput">Enter Room Code</label>
-      <input type="text" id="joinCodeInput" placeholder="e.g. fuya">
-      <div class="row-btns">
-        <button class="gold" id="joinRoomBtn">Connect to Host</button>
+      <div style="margin-top:15px; border-top:1px solid rgba(201,162,39,0.2); padding-top:10px;">
+        <button class="gold" id="createRoomBtn" style="width:100%;">إنشاء غرفة جديدة (Host)</button>
+      </div>
+
+      <div style="text-align:center; margin:10px 0; opacity:0.6;">— أو —</div>
+
+      <div>
+        <label>رمز الغرفة للانضمام (Room Code):</label>
+        <input type="text" id="joinRoomCode" placeholder="أدخل الرمز هنا (مثال: AB123)" style="text-transform:uppercase;">
+        <button class="secondary" id="joinRoomBtn" style="width:100%;">انضمام للغرفة</button>
       </div>
     </div>
 
-    <div id="hostSection" style="margin-top:15px;">
-      <label>Share this Room Code with friends:</label>
-      <div class="room-code-display" id="roomCodeDisplay">Generating Code...</div>
-      
-      <label>Connected Players in Lobby:</label>
-      <div id="lobbyPlayerList" style="font-size:0.9rem; margin-bottom:10px;">Connecting to network...</div>
-
-      <div class="row-btns">
-        <button class="gold" id="startGameBtn" disabled>Start Online Game</button>
-      </div>
+    <div id="localSetup" style="display:none;">
+      <label>عدد اللاعبين (2 إلى 6):</label>
+      <select id="playerCount">
+        <option value="2">2 لاعبين</option>
+        <option value="3">3 لاعبين</option>
+        <option value="4" selected>4 لاعبين</option>
+        <option value="5">5 لاعبين</option>
+        <option value="6">6 لاعبين</option>
+      </select>
+      <div id="playerInputs"></div>
+      <button class="gold" id="startLocalGameBtn" style="width:100%; margin-top:10px;">بدء اللعبة المحلية</button>
     </div>
+  </div>
+</div>
+
+<div class="screen" id="lobbyScreen">
+  <div class="card" style="text-align:center;">
+    <h2>غرفة الانتظار (Lobby)</h2>
+    <p>شارك هذا الرمز مع أصدقائك للانضمام:</p>
+    <div style="margin:15px 0;"><span class="room-code-badge" id="displayRoomCode">------</span></div>
+    
+    <div style="text-align:right; margin-top:15px;">
+      <label>اللاعبون المتصلون حالياً:</label>
+      <div id="lobbyPlayerList"></div>
+    </div>
+
+    <button class="gold" id="hostStartGameBtn" style="width:100%; margin-top:20px; display:none;">بدء اللعبة الآن</button>
+    <p id="waitingHostText" style="font-size:0.85rem; opacity:0.8; margin-top:15px;">في انتظار منشئ الغرفة لتبدأ اللعبة...</p>
+  </div>
+</div>
+
+<div class="screen" id="passScreen">
+  <div class="card" style="text-align:center; padding:30px 10px;">
+    <h2 id="passTitle">مرر الجهاز إلى اللاعب</h2>
+    <p style="opacity:0.8;" id="passDesc">تأكد من عدم رؤية الآخرين للشاشة</p>
+    <button class="gold" id="passReadyBtn">أنا جاهز — عرض دوري</button>
   </div>
 </div>
 
 <div class="screen" id="turnScreen">
   <div class="status-bar">
-    <div class="who"><span class="dot" id="turnDot"></span><span id="turnWho"></span></div>
+    <div><span class="dot" id="turnDot"></span><strong id="turnWho"></strong></div>
     <span id="turnRoom"></span>
   </div>
-  <div class="legend" id="legend"></div>
 
   <div class="board-frame">
     <svg id="boardSvg" viewBox="0 0 640 640" xmlns="http://www.w3.org/2000/svg"></svg>
   </div>
 
   <div class="card">
-    <h2>Actions</h2>
-    <div class="dice-area">
-      <div class="die" id="die">
-        <div class="pip" data-p="1"></div><div class="pip" data-p="2"></div><div class="pip" data-p="3"></div>
-        <div class="pip" data-p="4"></div><div class="pip" data-p="5"></div><div class="pip" data-p="6"></div>
-        <div class="pip" data-p="7"></div><div class="pip" data-p="8"></div><div class="pip" data-p="9"></div>
-      </div>
-      <div class="dice-caption" id="diceCaption">Wait for your turn...</div>
-    </div>
-    <div class="row-btns">
-      <button id="rollBtn" disabled>Roll Dice &amp; Move</button>
-      <button id="passageBtn" class="secondary" style="display:none;">Take Secret Passage</button>
-      <button id="suggestBtn" class="secondary" disabled>Make Suggestion</button>
-      <button id="accuseBtn" class="secondary" disabled>Make Accusation</button>
-      <button id="notebookBtn" class="secondary">My Notebook</button>
-    </div>
-    <div class="row-btns">
-      <button id="endTurnBtn" disabled>End Turn</button>
+    <h2>الإجراءات والتحركات</h2>
+    <div id="diceStatus" style="font-size:0.9rem; margin-bottom:8px;">رمي النرد لتحديد الحركة:</div>
+    <div>
+      <button class="gold" id="rollBtn">رمي النرد والحركة</button>
+      <button id="suggestBtn" class="secondary" disabled>تقديم تخمين</button>
+      <button id="accuseBtn" class="secondary">الاتهام النهائي</button>
+      <button id="endTurnBtn" class="secondary">إنهاء الدور</button>
     </div>
   </div>
 
   <div class="card">
-    <h2>Case Log</h2>
-    <div class="log" id="log"></div>
-  </div>
-
-  <div class="card">
-    <h2>My Hand</h2>
+    <h2>كروت يدك الخاصة (سرية)</h2>
     <div class="hand-grid" id="handGrid"></div>
+  </div>
+
+  <div class="card">
+    <h2>سجل أحداث القضية</h2>
+    <div class="log" id="log"></div>
   </div>
 </div>
 
 <div class="screen" id="overScreen">
-  <div class="card">
-    <h2 id="overTitle">Case Closed</h2>
-    <p id="overText" style="opacity:0.85;"></p>
-    <div class="solution-file">
-      <div class="stamp">CASE FILE — SOLVED</div>
-      <div id="solutionText" style="font-size:1rem; line-height:1.8;"></div>
-    </div>
+  <div class="card" style="text-align:center;">
+    <h2 id="overTitle">تم إغلاق القضية</h2>
+    <p id="overText"></p>
+    <div style="background:var(--parchment); color:#000; padding:15px; border-radius:8px; margin:15px 0;" id="solutionText"></div>
+    <button class="gold" onclick="location.reload()">لعب مرة أخرى</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="suggestModal">
+  <div class="modal">
+    <h2>تقديم تخمين (في الغرفة الحالية)</h2>
+    <label>المشتبه به</label><select id="suggSuspect"></select>
+    <label>السلاح</label><select id="suggWeapon"></select>
+    <button class="gold" id="confirmSuggBtn">إرسال التخمين</button>
+    <button class="secondary" id="cancelSuggBtn">إلغاء</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="accuseModal">
+  <div class="modal">
+    <h2>الاتهام النهائي (حاسم وخروج عند الخطأ)</h2>
+    <label>المشتبه به</label><select id="accSuspect"></select>
+    <label>السلاح</label><select id="accWeapon"></select>
+    <label>الغرفة</label><select id="accRoom"></select>
+    <button class="gold" id="confirmAccBtn">تأكيد الاتهام النهائي</button>
+    <button class="secondary" id="cancelAccBtn">إلغاء</button>
   </div>
 </div>
 
 <script>
 (function(){
   const SUSPECTS = [
-    {name:'Miss Scarlett', color:'#e0304a', code:'SC'},
-    {name:'Colonel Mustard', color:'#d4a520', code:'MU'},
-    {name:'Mrs. White', color:'#f2ead6', code:'WH'},
-    {name:'Reverend Green', color:'#3f9e68', code:'GR'},
-    {name:'Mrs. Peacock', color:'#3f7fc1', code:'PE'},
-    {name:'Professor Plum', color:'#9b5bc9', code:'PL'},
+    {name:'الآنسة أرجوان', color:'#e0304a'},
+    {name:'العقيد أصفر', color:'#d4a520'},
+    {name:'السيدة بيضاء', color:'#f2ead6'},
+    {name:'الشيخ أخضر', color:'#3f9e68'},
+    {name:'السيدة زرقاء', color:'#3f7fc1'},
+    {name:'الأستاذ بنفسجي', color:'#9b5bc9'}
   ];
-  const WEAPONS = [
-    {name:'Candlestick', icon:'🕯️'}, {name:'Knife', icon:'🔪'},
-    {name:'Lead Pipe', icon:'🔩'}, {name:'Revolver', icon:'🔫'},
-    {name:'Rope', icon:'🪢'}, {name:'Wrench', icon:'🔧'},
-  ];
-  const ROOM_LAYOUT = [
-    ['Study','Hall','Lounge'],
-    ['Library','Billiard Room','Dining Room'],
-    ['Conservatory','Ballroom','Kitchen']
-  ];
-  const ROOMS = ROOM_LAYOUT.flat();
-  const ADJACENCY = {
-    'Study':['Hall','Library'], 'Hall':['Study','Lounge','Billiard Room'], 'Lounge':['Hall','Dining Room'],
-    'Library':['Study','Billiard Room','Conservatory'], 'Billiard Room':['Hall','Library','Dining Room','Ballroom'],
-    'Dining Room':['Lounge','Billiard Room','Kitchen'], 'Conservatory':['Library','Ballroom'],
-    'Ballroom':['Billiard Room','Conservatory','Kitchen'], 'Kitchen':['Dining Room','Ballroom']
-  };
-  const STARTING_ROOMS = ['Hall','Lounge','Ballroom','Conservatory','Study','Library'];
+  const WEAPONS = ['شمعدان', 'سكين', 'أنبوب رصاص', 'مسدس', 'حبل', 'مفتاح ربط'];
+  const ROOMS = ['المكتب', 'الصالون', 'غرفة المعيشة', 'المكتبة', 'غرفة البلياردو', 'غرفة الطعام', 'المشتل', 'قاعة الرقص', 'المطبخ'];
 
-  const ROOM_SIZE = 180, GAP = 50;
-  const COL_X = [0, ROOM_SIZE+GAP, (ROOM_SIZE+GAP)*2];
-  const ROW_Y = [0, ROOM_SIZE+GAP, (ROOM_SIZE+GAP)*2];
-  const PLAYER_SLOTS = [ [40,120],[90,120],[140,120],[40,150],[90,150],[140,150] ];
-  const WEAPON_SLOTS = [ [40,28],[90,28],[140,28],[40,54],[90,54],[140,54] ];
-
+  let playMode = 'online'; // 'online' or 'local'
   let peer = null;
-  let isHost = true;
-  let myPeerId = null;
-  let hostConn = null;
-  let clients = {};
-  let lobbyPlayers = [];
+  let roomConnections = []; // Host uses this to store guest conns
+  let hostConn = null; // Guest uses this to send data to host
+  let isHost = false;
+  let myPlayerId = 0;
 
-  let game = null;
-  let myPlayerIndex = -1;
-  let dom = { playerTokens:[], weaponTokens:{}, roomGroups:{} };
+  let game = {
+    players: [],
+    currentIndex: 0,
+    solution: {},
+    turnState: { moved: false, suggested: false, reachable: [] },
+    log: []
+  };
 
-  function initPeer(idOverride) {
-    const customId = idOverride || Math.random().toString(36).substring(2, 6).toLowerCase();
-    
-    peer = new Peer(customId, {
-      debug: 1,
-      config: {
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
-        ]
-      }
-    });
+  // --- التبديل بين أنماط اللعب المحلي والأونلاين ---
+  const modeOnlineBtn = document.getElementById('modeOnlineBtn');
+  const modeLocalBtn = document.getElementById('modeLocalBtn');
+  const onlineSetup = document.getElementById('onlineSetup');
+  const localSetup = document.getElementById('localSetup');
+
+  modeOnlineBtn.onclick = () => {
+    playMode = 'online';
+    modeOnlineBtn.classList.add('active');
+    modeLocalBtn.classList.remove('active');
+    onlineSetup.style.display = 'block';
+    localSetup.style.display = 'none';
+  };
+
+  modeLocalBtn.onclick = () => {
+    playMode = 'local';
+    modeLocalBtn.classList.add('active');
+    modeOnlineBtn.classList.remove('active');
+    localSetup.style.display = 'block';
+    onlineSetup.style.display = 'none';
+  };
+
+  // --- إعداد إدخالات أسماء اللاعبين المحليين ---
+  const playerCountSel = document.getElementById('playerCount');
+  function updatePlayerInputs(){
+    const n = parseInt(playerCountSel.value);
+    const wrap = document.getElementById('playerInputs');
+    wrap.innerHTML = '';
+    for(let i=0; i<n; i++){
+      wrap.innerHTML += `<label>اللاعب ${i+1} (${SUSPECTS[i].name}):</label>
+      <input type="text" id="pname_${i}" value="لاعب ${i+1}">`;
+    }
+  }
+  playerCountSel.addEventListener('change', updatePlayerInputs);
+  updatePlayerInputs();
+
+  // --- منطق شبكة PeerJS (الأونلاين) ---
+  function generateRoomCode(){
+    return Math.random().toString(36).substring(2, 7).toUpperCase();
+  }
+
+  // 1. إنشاء غرفة (Host)
+  document.getElementById('createRoomBtn').onclick = () => {
+    const myName = document.getElementById('onlineMyName').value.trim() || 'المحقق 1';
+    const roomCode = generateRoomCode();
+    isHost = true;
+    myPlayerId = 0;
+
+    peer = new Peer('cluedo-' + roomCode);
 
     peer.on('open', (id) => {
-      myPeerId = id;
-      if (isHost) {
-        document.getElementById('roomCodeDisplay').textContent = id.toUpperCase();
-        lobbyPlayers = [{ id: myPeerId, name: getMyName() }];
-        updateLobbyUI();
-      }
-    });
+      document.getElementById('displayRoomCode').textContent = roomCode;
+      document.getElementById('hostStartGameBtn').style.display = 'block';
+      document.getElementById('waitingHostText').style.display = 'none';
+      
+      game.players = [{
+        id: 0,
+        name: myName,
+        character: SUSPECTS[0].name,
+        color: SUSPECTS[0].color,
+        room: ROOMS[0],
+        hand: [],
+        eliminated: false
+      }];
 
-    peer.on('error', (err) => {
-      if (err.type === 'unavailable-id') {
-        initPeer();
-      } else {
-        console.warn('Network issue:', err);
-      }
+      updateLobbyUI();
+      showScreen('lobbyScreen');
     });
 
     peer.on('connection', (conn) => {
-      if (!isHost) return;
-      conn.on('open', () => {
-        clients[conn.peer] = conn;
-        conn.on('data', (data) => handleHostMessage(data, conn.peer));
-        conn.on('close', () => {
-          delete clients[conn.peer];
-          lobbyPlayers = lobbyPlayers.filter(p => p.id !== conn.peer);
-          broadcastLobby();
-        });
+      roomConnections.push(conn);
+      conn.on('data', (data) => handleHostReceiveData(data, conn));
+      conn.on('close', () => {
+        roomConnections = roomConnections.filter(c => c !== conn);
       });
     });
-  }
 
-  function getMyName() {
-    return document.getElementById('playerNameInput').value.trim() || 'Player';
-  }
+    peer.on('error', (err) => alert('خطأ في الاتصال بالشبكة: ' + err.type));
+  };
 
-  document.getElementById('modeHostBtn').addEventListener('click', () => {
-    isHost = true;
-    document.getElementById('modeHostBtn').className = 'gold';
-    document.getElementById('modeJoinBtn').className = 'secondary';
-    document.getElementById('hostSection').style.display = 'block';
-    document.getElementById('joinSection').style.display = 'none';
-    if (!peer) initPeer();
-  });
+  // 2. الانضمام لغرفة (Guest)
+  document.getElementById('joinRoomBtn').onclick = () => {
+    const code = document.getElementById('joinRoomCode').value.trim().toUpperCase();
+    const myName = document.getElementById('onlineMyName').value.trim() || 'لاعب جديد';
+    if(!code){ alert('يرجى إدخال رمز الغرفة'); return; }
 
-  document.getElementById('modeJoinBtn').addEventListener('click', () => {
     isHost = false;
-    document.getElementById('modeJoinBtn').className = 'gold';
-    document.getElementById('modeHostBtn').className = 'secondary';
-    document.getElementById('hostSection').style.display = 'none';
-    document.getElementById('joinSection').style.display = 'block';
-  });
+    peer = new Peer();
 
-  // إصلاح الاتصال المباشر عند الضغط على زر Connect to Host
-  document.getElementById('joinRoomBtn').addEventListener('click', () => {
-    const roomCode = document.getElementById('joinCodeInput').value.trim().toLowerCase();
-    if (!roomCode) {
-      alert('Please enter a room code first!');
+    peer.on('open', () => {
+      hostConn = peer.connect('cluedo-' + code);
+
+      hostConn.on('open', () => {
+        hostConn.send({ type: 'JOIN', name: myName });
+        document.getElementById('displayRoomCode').textContent = code;
+        showScreen('lobbyScreen');
+      });
+
+      hostConn.on('data', (data) => handleGuestReceiveData(data));
+      hostConn.on('close', () => alert('تم قطع الاتصال بالغرفة من قبل المضيف'));
+    });
+
+    peer.on('error', (err) => alert('عذراً، لم يتم العثور على الغرفة بهذا الرمز!'));
+  };
+
+  function updateLobbyUI(){
+    const list = document.getElementById('lobbyPlayerList');
+    list.innerHTML = game.players.map((p, i) => `
+      <div class="player-list-item">
+        <span><span class="dot" style="background:${p.color}"></span> <strong>${p.name}</strong> (${p.character})</span>
+        <span style="color:var(--gold);">${i === 0 ? 'منشئ الغرفة' : 'متصل'}</span>
+      </div>
+    `).join('');
+  }
+
+  function broadcast(data){
+    roomConnections.forEach(conn => conn.send(data));
+  }
+
+  // استقبال البيانات عند المضيف (Host)
+  function handleHostReceiveData(data, conn){
+    if(data.type === 'JOIN'){
+      if(game.players.length >= 6){
+        conn.send({ type: 'ERROR', message: 'الغرفة ممتلئة بالكامل' });
+        return;
+      }
+      const newId = game.players.length;
+      game.players.push({
+        id: newId,
+        name: data.name,
+        character: SUSPECTS[newId].name,
+        color: SUSPECTS[newId].color,
+        room: ROOMS[newId % ROOMS.length],
+        hand: [],
+        eliminated: false
+      });
+
+      conn.send({ type: 'WELCOME', playerId: newId });
+      broadcastLobbyState();
+    } else if(data.type === 'ACTION'){
+      processGameAction(data.action);
+    }
+  }
+
+  function broadcastLobbyState(){
+    updateLobbyUI();
+    broadcast({ type: 'LOBBY_STATE', players: game.players });
+  }
+
+  // استقبال البيانات عند المنضم (Guest)
+  function handleGuestReceiveData(data){
+    if(data.type === 'WELCOME'){
+      myPlayerId = data.playerId;
+    } else if(data.type === 'LOBBY_STATE'){
+      game.players = data.players;
+      updateLobbyUI();
+    } else if(data.type === 'GAME_START' || data.type === 'GAME_UPDATE'){
+      game = data.game;
+      initBoard();
+      showScreen('turnScreen');
+      renderTurnUI();
+    } else if(data.type === 'GAME_OVER'){
+      showGameOverScreen(data.winnerName, data.solution);
+    }
+  }
+
+  // --- بدء اللعبة الأونلاين (من قبل المضيف) ---
+  document.getElementById('hostStartGameBtn').onclick = () => {
+    if(game.players.length < 2){
+      alert('يلزم وجود لاعبين اثنين على الأقل لبدء اللعبة');
       return;
     }
+    setupCardsAndSolution();
+    initBoard();
+    showScreen('turnScreen');
+    renderTurnUI();
 
-    const btn = document.getElementById('joinRoomBtn');
-    btn.textContent = 'Connecting...';
-    btn.disabled = true;
+    broadcast({ type: 'GAME_START', game: game });
+  };
 
-    if (!peer) {
-      peer = new Peer({
-        config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }
+  // --- بدء اللعبة المحلية ---
+  document.getElementById('startLocalGameBtn').onclick = () => {
+    const n = parseInt(playerCountSel.value);
+    game.players = [];
+    for(let i=0; i<n; i++){
+      game.players.push({
+        id: i,
+        name: document.getElementById(`pname_${i}`).value || `لاعب ${i+1}`,
+        character: SUSPECTS[i].name,
+        color: SUSPECTS[i].color,
+        room: ROOMS[i % ROOMS.length],
+        hand: [],
+        eliminated: false
       });
-      peer.on('open', (id) => {
-        myPeerId = id;
-        connectToHost(roomCode);
-      });
-    } else {
-      connectToHost(roomCode);
     }
-  });
+    setupCardsAndSolution();
+    initBoard();
+    showPassScreen(0, startTurn);
+  };
 
-  function connectToHost(roomCode) {
-    hostConn = peer.connect(roomCode);
-    setupClientConnection(hostConn);
-  }
+  // تجهيز الحل وسحب الكروت
+  function setupCardsAndSolution(){
+    const sCards = [...SUSPECTS.map(s=>s.name)].sort(()=>Math.random()-0.5);
+    const wCards = [...WEAPONS].sort(()=>Math.random()-0.5);
+    const rCards = [...ROOMS].sort(()=>Math.random()-0.5);
 
-  function setupClientConnection(conn) {
-    conn.on('open', () => {
-      document.getElementById('joinRoomBtn').textContent = 'Connected! Waiting for host...';
-      conn.send({ type: 'JOIN_LOBBY', name: getMyName() });
-    });
+    game.solution = { suspect: sCards.pop(), weapon: wCards.pop(), room: rCards.pop() };
 
-    conn.on('data', (data) => handleClientMessage(data));
-
-    conn.on('error', (err) => {
-      alert('Could not connect to room. Make sure code is correct.');
-      const btn = document.getElementById('joinRoomBtn');
-      btn.textContent = 'CONNECT TO HOST';
-      btn.disabled = false;
-    });
-  }
-
-  function broadcastLobby() {
-    updateLobbyUI();
-    for (let id in clients) {
-      clients[id].send({ type: 'LOBBY_UPDATE', players: lobbyPlayers });
+    let deck = [...sCards, ...wCards, ...rCards].sort(()=>Math.random()-0.5);
+    let pIdx = 0;
+    while(deck.length){
+      game.players[pIdx % game.players.length].hand.push(deck.pop());
+      pIdx++;
     }
+
+    game.currentIndex = 0;
+    game.log = [];
+    addLog('بدأت القضية بنجاح! تم تمويه الجريمة وتوزيع الكروت والأدلة.');
   }
 
-  function updateLobbyUI() {
-    const list = document.getElementById('lobbyPlayerList');
-    list.innerHTML = lobbyPlayers.map((p, i) => `<div>• ${p.name} ${i === 0 ? '(Host)' : ''}</div>`).join('');
-    document.getElementById('startGameBtn').disabled = lobbyPlayers.length < 2 || !isHost;
-  }
-
-  function broadcastGameSync() {
-    for (let id in clients) {
-      const pIndex = game.players.findIndex(p => p.peerId === id);
-      clients[id].send({ type: 'SYNC_GAME', game: sanitizeGameForPlayer(pIndex) });
-    }
-    renderTurnScreen();
-  }
-
-  function sanitizeGameForPlayer(pIndex) {
-    const sanitized = JSON.parse(JSON.stringify(game));
-    sanitized.players.forEach((p, idx) => {
-      if (idx !== pIndex) p.hand = p.hand.map(() => ({ name: '???', type: 'hidden' }));
-    });
-    return sanitized;
-  }
-
-  function handleHostMessage(data, fromPeerId) {
-    if (data.type === 'JOIN_LOBBY') {
-      lobbyPlayers.push({ id: fromPeerId, name: data.name });
-      broadcastLobby();
-    } else if (data.type === 'ACTION') {
-      processAction(data.action, data.payload, fromPeerId);
-    }
-  }
-
-  function handleClientMessage(data) {
-    if (data.type === 'LOBBY_UPDATE') {
-      lobbyPlayers = data.players;
-      updateLobbyUI();
-    } else if (data.type === 'SYNC_GAME') {
-      game = data.game;
-      myPlayerIndex = game.players.findIndex(p => p.peerId === myPeerId);
-      if (document.getElementById('turnScreen').style.display !== 'block') {
-        show('turnScreen');
-        initBoardSvg();
+  // --- إدارة حركة الأدوار والأعمال داخل اللعبة ---
+  function sendAction(action){
+    if(playMode === 'online'){
+      if(isHost){
+        processGameAction(action);
+      } else {
+        hostConn.send({ type: 'ACTION', action: action });
       }
-      renderTurnScreen();
-    }
-  }
-
-  function sendActionToHost(action, payload) {
-    if (isHost) {
-      processAction(action, payload, myPeerId);
     } else {
-      hostConn.send({ type: 'ACTION', action, payload });
+      processGameAction(action);
     }
   }
 
-  document.getElementById('startGameBtn').addEventListener('click', () => {
-    if (!isHost) return;
-    const players = lobbyPlayers.map((lp, i) => ({
-      peerId: lp.id,
-      name: lp.name,
-      character: SUSPECTS[i].name,
-      color: SUSPECTS[i].color,
-      code: SUSPECTS[i].code,
-      room: STARTING_ROOMS[i],
-      hand: [],
-      eliminated: false,
-      notes: {}
-    }));
-
-    const suspectCards = SUSPECTS.map(s => ({ name: s.name, type: 'suspect' }));
-    const weaponCards = WEAPONS.map(w => ({ name: w.name, type: 'weapon' }));
-    const roomCards = ROOMS.map(r => ({ name: r, type: 'room' }));
-
-    const shuffle = arr => arr.sort(() => Math.random() - 0.5);
-
-    const solSuspect = suspectCards[Math.floor(Math.random() * suspectCards.length)];
-    const solWeapon = weaponCards[Math.floor(Math.random() * weaponCards.length)];
-    const solRoom = roomCards[Math.floor(Math.random() * roomCards.length)];
-
-    let remaining = shuffle([
-      ...suspectCards.filter(c => c.name !== solSuspect.name),
-      ...weaponCards.filter(c => c.name !== solWeapon.name),
-      ...roomCards.filter(c => c.name !== solRoom.name)
-    ]);
-
-    let pi = 0;
-    while (remaining.length) {
-      players[pi % players.length].hand.push(remaining.shift());
-      pi++;
-    }
-
-    const shuffledRooms = shuffle([...ROOMS]);
-    const weaponLocations = {};
-    WEAPONS.forEach((w, i) => { weaponLocations[w.name] = shuffledRooms[i]; });
-
-    game = {
-      players,
-      solution: { suspect: solSuspect.name, weapon: solWeapon.name, room: solRoom.name },
-      currentIndex: 0,
-      log: ['The investigation begins online!'],
-      turnState: { moved: false, suggested: false, reachable: [players[0].room] },
-      weaponLocations
-    };
-
-    myPlayerIndex = 0;
-    show('turnScreen');
-    initBoardSvg();
-    broadcastGameSync();
-  });
-
-  function processAction(action, payload, fromPeerId) {
-    const p = game.players[game.currentIndex];
-    if (action === 'ROLL') {
+  function processGameAction(action){
+    if(action.type === 'ROLL_DICE'){
       const roll = Math.floor(Math.random() * 6) + 1;
-      game.turnState.reachable = bfsReachable(p.room, roll);
-      game.log.unshift(`${p.name} rolled a ${roll}.`);
-      broadcastGameSync();
-    } else if (action === 'MOVE') {
-      p.room = payload.room;
+      game.turnState.reachable = ROOMS.filter(r => r !== game.players[game.currentIndex].room);
+      addLog(`${game.players[game.currentIndex].name} رمى النرد وحصل على ${roll}`);
+    } else if(action.type === 'MOVE'){
+      const p = game.players[game.currentIndex];
+      p.room = action.room;
       game.turnState.moved = true;
-      game.log.unshift(`${p.name} moved to ${payload.room}.`);
-      broadcastGameSync();
-    } else if (action === 'END_TURN') {
+      game.turnState.reachable = [];
+      addLog(`${p.name} انتقل إلى ${action.room}`);
+    } else if(action.type === 'SUGGEST'){
+      game.turnState.suggested = true;
+      addLog(`${game.players[game.currentIndex].name} يخمن: [${action.suspect}] بالسلاح [${action.weapon}] في [${game.players[game.currentIndex].room}]`);
+    } else if(action.type === 'END_TURN'){
       let next = (game.currentIndex + 1) % game.players.length;
-      while (game.players[next].eliminated) {
+      while(game.players[next].eliminated){
         next = (next + 1) % game.players.length;
       }
       game.currentIndex = next;
-      game.turnState = { moved: false, suggested: false, reachable: [game.players[next].room] };
-      game.log.unshift(`It is now ${game.players[next].name}'s turn.`);
-      broadcastGameSync();
+      game.turnState = { moved: false, suggested: false, reachable: [] };
+    } else if(action.type === 'ACCUSE'){
+      const win = (action.suspect === game.solution.suspect && action.weapon === game.solution.weapon && action.room === game.solution.room);
+      if(win){
+        if(playMode === 'online' && isHost){
+          broadcast({ type: 'GAME_OVER', winnerName: game.players[game.currentIndex].name, solution: game.solution });
+        }
+        showGameOverScreen(game.players[game.currentIndex].name, game.solution);
+        return;
+      } else {
+        addLog(`الاتهام النهائي لـ ${game.players[game.currentIndex].name} كان خاطئاً! خرج من المنافسة.`);
+        game.players[game.currentIndex].eliminated = true;
+        let next = (game.currentIndex + 1) % game.players.length;
+        while(game.players[next].eliminated){
+          next = (next + 1) % game.players.length;
+        }
+        game.currentIndex = next;
+        game.turnState = { moved: false, suggested: false, reachable: [] };
+      }
+    }
+
+    if(playMode === 'online' && isHost){
+      broadcast({ type: 'GAME_UPDATE', game: game });
+    }
+
+    if(playMode === 'local' && action.type === 'END_TURN'){
+      showPassScreen(game.currentIndex, startTurn);
+    } else {
+      renderTurnUI();
     }
   }
 
-  function renderTurnScreen() {
-    if (!game) return;
-    const isMyTurn = game.currentIndex === myPlayerIndex;
-    const currentP = game.players[game.currentIndex];
+  function showPassScreen(pIdx, onReady){
+    const p = game.players[pIdx];
+    document.getElementById('passTitle').textContent = `مرر الجهاز إلى: ${p.name}`;
+    document.getElementById('passDesc').textContent = `أنت تلعب بشخصية (${p.character})`;
+    
+    const btn = document.getElementById('passReadyBtn');
+    btn.onclick = () => {
+      showScreen('turnScreen');
+      onReady();
+    };
+    showScreen('passScreen');
+  }
 
-    document.getElementById('turnDot').style.background = currentP.color;
-    document.getElementById('turnWho').textContent = `${currentP.name} (${currentP.character})`;
-    document.getElementById('turnRoom').textContent = `In: ${currentP.room}`;
+  function startTurn(){
+    game.turnState = { moved: false, suggested: false, reachable: [] };
+    renderTurnUI();
+  }
+
+  function renderTurnUI(){
+    const p = game.players[game.currentIndex];
+    const isMyTurn = (playMode === 'local') || (p.id === myPlayerId);
+
+    document.getElementById('turnDot').style.background = p.color;
+    document.getElementById('turnWho').textContent = `${p.name} (${p.character}) ${isMyTurn ? '— (دورك الآن!)' : ''}`;
+    document.getElementById('turnRoom').textContent = `الحالي: ${p.room}`;
 
     document.getElementById('rollBtn').disabled = !isMyTurn || game.turnState.moved;
-    document.getElementById('suggestBtn').disabled = !isMyTurn || game.turnState.suggested;
+    document.getElementById('suggestBtn').disabled = !isMyTurn || game.turnState.suggested || !game.turnState.moved;
     document.getElementById('accuseBtn').disabled = !isMyTurn;
     document.getElementById('endTurnBtn').disabled = !isMyTurn;
 
-    document.getElementById('diceCaption').textContent = isMyTurn ? 'Your turn! Roll or select a room.' : `Waiting for ${currentP.name}...`;
+    // عرض الكروت الخاصة باللاعب المحلي أو الأونلاين الحالي فقط
+    const me = (playMode === 'local') ? p : game.players.find(pl => pl.id === myPlayerId);
+    if(me){
+      document.getElementById('handGrid').innerHTML = me.hand.map(c => `<div class="hand-card">${c}</div>`).join('');
+    }
 
-    renderLegend();
-    renderLog();
-    renderHand();
-    updateBoardState();
-  }
-
-  function renderLegend() {
-    document.getElementById('legend').innerHTML = game.players.map(p =>
-      `<span><span class="sw" style="background:${p.color}"></span>${p.name}${p.eliminated ? ' (out)' : ''}</span>`
-    ).join('');
-  }
-
-  function renderLog() {
     document.getElementById('log').innerHTML = game.log.map(l => `<div>${l}</div>`).join('');
+    updateBoard();
   }
 
-  function renderHand() {
-    const p = game.players[myPlayerIndex];
-    if (!p) return;
-    document.getElementById('handGrid').innerHTML = p.hand.map(c => `<div class="hand-card">${c.name}</div>`).join('');
+  // رمي النرد
+  document.getElementById('rollBtn').onclick = () => {
+    sendAction({ type: 'ROLL_DICE' });
+  };
+
+  // التحرك
+  function moveToRoom(rName){
+    const p = game.players[game.currentIndex];
+    const isMyTurn = (playMode === 'local') || (p.id === myPlayerId);
+    if(!isMyTurn || game.turnState.moved || !game.turnState.reachable.includes(rName)) return;
+
+    sendAction({ type: 'MOVE', room: rName });
   }
 
-  const SVGNS = 'http://www.w3.org/2000/svg';
-  function el(tag, attrs, parent) {
-    const e = document.createElementNS(SVGNS, tag);
-    for (let k in attrs) e.setAttribute(k, attrs[k]);
-    if (parent) parent.appendChild(e);
-    return e;
-  }
-  function roomPos(name) {
-    for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) if (ROOM_LAYOUT[r][c] === name) return { x: COL_X[c], y: ROW_Y[r] };
+  // إنهاء الدور
+  document.getElementById('endTurnBtn').onclick = () => {
+    sendAction({ type: 'END_TURN' });
+  };
+
+  // التخمين
+  document.getElementById('suggestBtn').onclick = () => {
+    document.getElementById('suggSuspect').innerHTML = SUSPECTS.map(s=>`<option>${s.name}</option>`).join('');
+    document.getElementById('suggWeapon').innerHTML = WEAPONS.map(w=>`<option>${w}</option>`).join('');
+    document.getElementById('suggestModal').classList.add('show');
+  };
+
+  document.getElementById('cancelSuggBtn').onclick = () => document.getElementById('suggestModal').classList.remove('show');
+
+  document.getElementById('confirmSuggBtn').onclick = () => {
+    document.getElementById('suggestModal').classList.remove('show');
+    const susp = document.getElementById('suggSuspect').value;
+    const weap = document.getElementById('suggWeapon').value;
+
+    sendAction({ type: 'SUGGEST', suspect: susp, weapon: weap });
+  };
+
+  // الاتهام النهائي
+  document.getElementById('accuseBtn').onclick = () => {
+    document.getElementById('accSuspect').innerHTML = SUSPECTS.map(s=>`<option>${s.name}</option>`).join('');
+    document.getElementById('accWeapon').innerHTML = WEAPONS.map(w=>`<option>${w}</option>`).join('');
+    document.getElementById('accRoom').innerHTML = ROOMS.map(r=>`<option>${r}</option>`).join('');
+    document.getElementById('accuseModal').classList.add('show');
+  };
+
+  document.getElementById('cancelAccBtn').onclick = () => document.getElementById('accuseModal').classList.remove('show');
+
+  document.getElementById('confirmAccBtn').onclick = () => {
+    document.getElementById('accuseModal').classList.remove('show');
+    const susp = document.getElementById('accSuspect').value;
+    const weap = document.getElementById('accWeapon').value;
+    const room = document.getElementById('accRoom').value;
+
+    sendAction({ type: 'ACCUSE', suspect: susp, weapon: weap, room: room });
+  };
+
+  function showGameOverScreen(winnerName, solution){
+    document.getElementById('overTitle').textContent = `🎉 فوز بطل التحقيق: ${winnerName}`;
+    document.getElementById('overText').textContent = 'لقد قمت بحل القضية وكشف القاتل والسلاح والغرفة بنجاح!';
+    document.getElementById('solutionText').innerHTML = `الحقيقة: القاتل هو <strong>${solution.suspect}</strong> بواسطة <strong>${solution.weapon}</strong> في <strong>${solution.room}</strong>`;
+    showScreen('overScreen');
   }
 
-  function initBoardSvg() {
+  // --- رسم لوحة اللعبة SVG ---
+  function initBoard(){
     const svg = document.getElementById('boardSvg');
     svg.innerHTML = '';
-    dom.roomGroups = {}; dom.playerTokens = []; dom.weaponTokens = {};
+    const size = 180, gap = 40;
 
-    ROOMS.forEach(name => {
-      const pos = roomPos(name);
-      const g = el('g', { class: 'room-g', transform: `translate(${pos.x},${pos.y})` }, svg);
-      el('rect', { width: ROOM_SIZE, height: ROOM_SIZE, rx: 10, class: 'room-rect' }, g);
-      const label = el('text', { x: ROOM_SIZE / 2, y: 25, class: 'room-label', 'text-anchor': 'middle' }, g);
-      label.textContent = name;
-      g.addEventListener('click', () => {
-        if (game.currentIndex === myPlayerIndex && !game.turnState.moved && game.turnState.reachable.includes(name)) {
-          sendActionToHost('MOVE', { room: name });
-        }
-      });
-      dom.roomGroups[name] = g;
-    });
+    ROOMS.forEach((rName, i) => {
+      const row = Math.floor(i / 3), col = i % 3;
+      const x = col * (size + gap) + 10, y = row * (size + gap) + 10;
 
-    WEAPONS.forEach((w, i) => {
-      const g = el('g', { class: 'weapon-token' }, svg);
-      el('circle', { r: 10, class: 'weapon-bg' }, g);
-      const t = el('text', { class: 'weapon-emoji', y: 1 }, g);
-      t.textContent = w.icon;
-      dom.weaponTokens[w.name] = g;
-    });
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('class', 'room-g');
+      g.setAttribute('id', `room_${rName}`);
 
-    game.players.forEach((p, i) => {
-      const g = el('g', { class: 'token-g' }, svg);
-      el('circle', { r: 13, class: 'token-circle', fill: p.color }, g);
-      const t = el('text', { class: 'token-label', y: 0.5 }, g);
-      t.textContent = p.code;
-      dom.playerTokens[i] = g;
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', x); rect.setAttribute('y', y);
+      rect.setAttribute('width', size); rect.setAttribute('height', size);
+      rect.setAttribute('rx', 10); rect.setAttribute('class', 'room-rect');
+
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', x + size/2); text.setAttribute('y', y + size/2);
+      text.setAttribute('class', 'room-label');
+      text.textContent = rName;
+
+      g.appendChild(rect); g.appendChild(text);
+      g.addEventListener('click', () => moveToRoom(rName));
+      svg.appendChild(g);
     });
   }
 
-  function updateBoardState() {
-    if (!game) return;
-    const isMyTurn = game.currentIndex === myPlayerIndex;
-    ROOMS.forEach(name => {
-      const g = dom.roomGroups[name];
-      const isReachable = isMyTurn && !game.turnState.moved && game.turnState.reachable.includes(name);
-      g.classList.toggle('reachable', isReachable);
-    });
-
-    game.players.forEach((p, i) => {
-      const pos = roomPos(p.room);
-      const slot = PLAYER_SLOTS[i];
-      dom.playerTokens[i].setAttribute('transform', `translate(${pos.x + slot[0]},${pos.y + slot[1]})`);
-    });
-
-    WEAPONS.forEach((w, i) => {
-      const pos = roomPos(game.weaponLocations[w.name]);
-      const slot = WEAPON_SLOTS[i];
-      dom.weaponTokens[w.name].setAttribute('transform', `translate(${pos.x + slot[0]},${pos.y + slot[1]})`);
-    });
-  }
-
-  function bfsReachable(start, maxSteps) {
-    const dist = { [start]: 0 };
-    const queue = [start];
-    while (queue.length) {
-      const cur = queue.shift();
-      if (dist[cur] >= maxSteps) continue;
-      for (const nb of ADJACENCY[cur]) {
-        if (!(nb in dist)) { dist[nb] = dist[cur] + 1; queue.push(nb); }
+  function updateBoard(){
+    ROOMS.forEach(rName => {
+      const g = document.getElementById(`room_${rName}`);
+      if(g){
+        const isReachable = game.turnState.reachable.includes(rName);
+        g.classList.toggle('reachable', isReachable);
       }
-    }
-    return Object.keys(dist);
+    });
   }
 
-  function show(id) {
+  function addLog(txt){ game.log.unshift(txt); }
+  function showScreen(id){
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
-
-  document.getElementById('rollBtn').addEventListener('click', () => sendActionToHost('ROLL'));
-  document.getElementById('endTurnBtn').addEventListener('click', () => sendActionToHost('END_TURN'));
-
-  // البدء التلقائي وإنشاء الغرفة
-  initPeer();
 
 })();
 </script>
