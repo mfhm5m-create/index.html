@@ -1,687 +1,1165 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cluedo — لعبة التحقيق (أونلاين ومحلي)</title>
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Mansion Mystery — a full online peer-to-peer and pass-and-play detective board game.">
+<title>Mansion Mystery — A Detective Board Game</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23120b08' stroke='%23c9a24b' stroke-width='4'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='%23c9a24b'%3E%3F%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;900&family=Cinzel+Decorative:wght@700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Special+Elite&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --ink:#0f0d0b;
-    --panel:#1c1815;
-    --panel-2:#241f1a;
-    --parchment:#ece0c3;
-    --parchment-dim:#c9bb99;
-    --gold:#c9a227;
-    --gold-bright:#e6c34a;
-    --burgundy:#7a1f2b;
-    --burgundy-bright:#a52a38;
-    --room-fill:#2a231c;
-    --room-fill-hover:#3a2f22;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0; min-height:100vh;
-    background: radial-gradient(ellipse at 50% -20%, #241d18 0%, var(--ink) 70%);
-    color:var(--parchment);
-    font-family: system-ui, -apple-system, sans-serif;
-    display:flex; flex-direction:column; align-items:center; padding:15px;
-  }
-  h1{ font-size:1.8rem; color:var(--gold-bright); margin:5px 0; text-align:center; text-shadow:0 2px 10px rgba(201,162,39,0.3); }
-  .subtitle{ font-style:italic; opacity:0.75; font-size:0.85rem; margin-bottom:15px; }
-  .screen{ width:100%; max-width:680px; display:none; }
-  .screen.active{ display:block; }
+/* =====================================================================
+   MANSION MYSTERY — DESIGN SYSTEM
+   Palette: aged gold / deep burgundy / polished mahogany / parchment
+   ===================================================================== */
+:root{
+  /* -- core palette -- */
+  --void:#0a0605;
+  --ink:#120b09;
+  --mahogany-1:#1c120c;
+  --mahogany-2:#2c1a10;
+  --mahogany-3:#4a2c17;
+  --mahogany-4:#6b4322;
+  --burgundy-1:#2a0810;
+  --burgundy-2:#4a0f1a;
+  --burgundy-3:#6b1a26;
+  --burgundy-4:#8f2433;
+  --gold-1:#7a5a24;
+  --gold-2:#a8822f;
+  --gold-3:#d4af37;
+  --gold-4:#f0d485;
+  --gold-glow:rgba(212,175,55,.55);
+  --parchment-1:#c9b688;
+  --parchment-2:#e7d9b3;
+  --parchment-3:#f4ecd8;
+  --parchment-ink:#2b1d10;
+  --parchment-ink-soft:#4a3620;
+  --danger-1:#4a0f0f;
+  --danger-2:#8f2020;
+  --danger-3:#d3453f;
+  --success-1:#123322;
+  --success-2:#2f6b3a;
+  --success-3:#5fae5a;
+  --info-2:#2f5a7a;
+  --info-3:#5fa0c9;
+  --paper-shadow:0 10px 30px rgba(0,0,0,.55);
+  --font-display:'Cinzel', Georgia, serif;
+  --font-display-deco:'Cinzel Decorative','Cinzel', Georgia, serif;
+  --font-body:'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-mono:'Special Elite', 'Courier New', monospace;
+  --radius-sm:6px;
+  --radius-md:12px;
+  --radius-lg:20px;
+  --safe-b:env(safe-area-inset-bottom, 0px);
+  --safe-t:env(safe-area-inset-top, 0px);
+}
 
-  .card{
-    background:linear-gradient(160deg, var(--panel), var(--panel-2));
-    border:1px solid rgba(201,162,39,0.3);
-    border-radius:10px; padding:15px; margin-bottom:12px;
-    box-shadow:0 8px 20px rgba(0,0,0,0.5);
-  }
-  .card h2{ margin:0 0 10px; font-size:1.1rem; color:var(--gold); border-bottom:1px solid rgba(201,162,39,0.2); padding-bottom:5px; }
+*,*::before,*::after{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  min-height:100%;
+  background:var(--void);
+  color:var(--parchment-3);
+  font-family:var(--font-body);
+  font-size:18px;
+  line-height:1.4;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3,h4{
+  font-family:var(--font-display);
+  letter-spacing:.04em;
+  margin:0 0 .4em;
+  color:var(--gold-4);
+  font-weight:600;
+}
+p{margin:0 0 .6em;}
+button{font-family:var(--font-display);}
+::selection{background:var(--gold-2);color:var(--ink);}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-track{background:rgba(0,0,0,.35);}
+::-webkit-scrollbar-thumb{background:linear-gradient(var(--gold-1),var(--gold-2));border-radius:8px;}
+:focus-visible{outline:2px solid var(--gold-3);outline-offset:2px;border-radius:4px;}
+a{color:var(--gold-3);}
+svg{display:block;}
 
-  label{ display:block; font-size:0.85rem; margin:8px 0 4px; opacity:0.9; }
-  input, select{
-    width:100%; padding:10px; background:#14100e; border:1px solid rgba(201,162,39,0.4);
-    color:var(--parchment); border-radius:6px; font-size:0.95rem; margin-bottom:8px;
-  }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important;}
+}
 
-  .mode-selector{ display:flex; gap:10px; margin-bottom:15px; }
-  .mode-btn{ flex:1; padding:12px; background:#241f1a; border:1px solid var(--gold); border-radius:8px; color:var(--parchment); cursor:pointer; font-weight:bold; text-align:center; }
-  .mode-btn.active{ background:var(--burgundy); border-color:var(--gold-bright); }
+/* ---------- Atmosphere background ---------- */
+#bgAtmosphere{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% -10%, rgba(112,70,30,.35), transparent 60%),
+    radial-gradient(ellipse 90% 70% at 85% 110%, rgba(74,15,26,.4), transparent 60%),
+    radial-gradient(ellipse 90% 70% at 5% 110%, rgba(30,20,10,.5), transparent 60%),
+    repeating-linear-gradient(115deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 3px, rgba(0,0,0,.05) 4px, rgba(0,0,0,0) 6px),
+    linear-gradient(160deg, var(--ink) 0%, var(--mahogany-1) 45%, var(--void) 100%);
+}
+#bgAtmosphere::after{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(ellipse 120% 90% at 50% 45%, transparent 45%, rgba(0,0,0,.65) 100%);
+}
+#bgVignetteFlicker{
+  position:fixed;inset:0;z-index:0;pointer-events:none;mix-blend-mode:soft-light;
+  background:radial-gradient(ellipse 60% 50% at 50% 15%, rgba(240,212,133,.12), transparent 65%);
+  animation:candleFlicker 6s ease-in-out infinite;
+}
+@keyframes candleFlicker{
+  0%,100%{opacity:.7;} 22%{opacity:.95;} 34%{opacity:.65;} 51%{opacity:.9;} 68%{opacity:.72;} 83%{opacity:1;}
+}
 
-  button{
-    background:linear-gradient(180deg, var(--burgundy-bright), var(--burgundy));
-    color:var(--parchment); border:1px solid rgba(201,162,39,0.4);
-    padding:10px 16px; border-radius:6px; font-size:0.9rem; font-weight:bold;
-    cursor:pointer; margin:4px 2px; transition:0.2s;
-  }
-  button.gold{ background:linear-gradient(180deg, var(--gold-bright), var(--gold)); color:#1a1000; }
-  button.secondary{ background:#3a332a; }
-  button:disabled{ opacity:0.4; cursor:not-allowed; }
+/* ---------- Layout shell ---------- */
+#app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;}
+.screen{
+  display:none;
+  flex:1;
+  flex-direction:column;
+  align-items:center;
+  padding:calc(28px + var(--safe-t)) 18px calc(28px + var(--safe-b));
+  min-height:100vh;
+  animation:screenIn .5s ease both;
+}
+.screen.active{display:flex;}
+@keyframes screenIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
 
-  .status-bar{
-    display:flex; justify-content:space-between; align-items:center;
-    background:rgba(0,0,0,0.4); padding:8px 15px; border-radius:20px;
-    border:1px solid rgba(201,162,39,0.2); margin-bottom:10px; font-size:0.9rem;
-  }
-  .dot{ width:12px; height:12px; border-radius:50%; display:inline-block; margin-left:6px; }
+/* ---------- Reusable panels ---------- */
+.wood-panel{
+  background:
+    repeating-linear-gradient(92deg, rgba(0,0,0,.14) 0 2px, rgba(255,255,255,.02) 2px 4px, rgba(0,0,0,.08) 4px 7px),
+    linear-gradient(160deg, var(--mahogany-3), var(--mahogany-1) 60%, var(--mahogany-2));
+  border:1px solid var(--gold-1);
+  box-shadow:var(--paper-shadow), inset 0 1px 0 rgba(255,255,255,.06), inset 0 0 40px rgba(0,0,0,.5);
+  border-radius:var(--radius-lg);
+}
+.parchment-panel{
+  background:
+    radial-gradient(circle at 15% 20%, rgba(120,90,40,.18), transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(120,90,40,.15), transparent 45%),
+    linear-gradient(155deg, var(--parchment-3), var(--parchment-2));
+  color:var(--parchment-ink);
+  border:1px solid var(--gold-2);
+  box-shadow:var(--paper-shadow);
+  border-radius:var(--radius-md);
+}
+.gold-frame{
+  border:1px solid var(--gold-2);
+  box-shadow:0 0 0 1px rgba(0,0,0,.5), 0 0 18px -4px var(--gold-glow), var(--paper-shadow);
+}
+.divider{
+  height:1px;margin:14px 0;border:none;
+  background:linear-gradient(90deg, transparent, var(--gold-2), transparent);
+}
+.eyebrow{
+  font-family:var(--font-mono);
+  font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gold-3);opacity:.85;
+}
 
-  .board-frame{ background:#1a140e; padding:10px; border-radius:10px; border:1px solid var(--gold); margin-bottom:12px; }
-  #boardSvg{ width:100%; height:auto; display:block; }
-  .room-rect{ fill:var(--room-fill); stroke:rgba(201,162,39,0.3); stroke-width:1.5; transition:0.2s; }
-  .room-g.reachable .room-rect{ fill:var(--room-fill-hover); stroke:var(--gold-bright); stroke-width:3; cursor:pointer; }
-  .room-label{ fill:var(--parchment-dim); font-size:12px; text-anchor:middle; font-weight:bold; }
+/* ---------- Buttons ---------- */
+.btn{
+  --btn-bg1:var(--gold-3); --btn-bg2:var(--gold-1);
+  position:relative;
+  display:inline-flex;align-items:center;justify-content:center;gap:.5em;
+  padding:.85em 1.5em;
+  min-height:48px;
+  font-size:1rem;letter-spacing:.05em;
+  color:var(--ink);
+  background:linear-gradient(180deg, var(--btn-bg1), var(--btn-bg2));
+  border:1px solid rgba(0,0,0,.35);
+  border-radius:999px;
+  cursor:pointer;
+  box-shadow:0 2px 0 rgba(0,0,0,.4), 0 6px 16px -6px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.5);
+  transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
+  text-transform:uppercase;
+  font-weight:600;
+  white-space:nowrap;
+}
+.btn:hover{filter:brightness(1.08);transform:translateY(-1px);}
+.btn:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(0,0,0,.4), 0 3px 8px -4px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.4);}
+.btn:disabled{filter:grayscale(.6) brightness(.55);cursor:not-allowed;transform:none;}
+.btn.secondary{--btn-bg1:#5a4326;--btn-bg2:#382a18;color:var(--parchment-3);}
+.btn.ghost{
+  background:transparent;color:var(--gold-3);border:1px solid var(--gold-2);
+  box-shadow:none;text-transform:none;font-family:var(--font-body);font-size:1.05rem;
+}
+.btn.ghost:hover{background:rgba(212,175,55,.08);}
+.btn.danger{--btn-bg1:var(--danger-3);--btn-bg2:var(--danger-1);color:#fff0ee;}
+.btn.success{--btn-bg1:var(--success-3);--btn-bg2:var(--success-1);color:#f0fff2;}
+.btn.small{padding:.5em 1em;min-height:38px;font-size:.85rem;}
+.btn.block{width:100%;}
+.btn.icon-only{padding:.6em;border-radius:50%;min-width:48px;}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
 
-  .hand-grid{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
-  .hand-card{ background:var(--parchment); color:#1a1000; border-radius:5px; padding:8px 12px; font-size:0.85rem; font-weight:bold; box-shadow:0 2px 6px rgba(0,0,0,0.4); }
+/* ---------- Form controls ---------- */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;text-align:left;}
+.field label{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-3);}
+.field input[type=text], .field input[type=text].code-input{
+  font-family:var(--font-display);
+  background:rgba(0,0,0,.35);
+  border:1px solid var(--gold-1);
+  color:var(--parchment-3);
+  padding:.8em 1em;
+  border-radius:var(--radius-sm);
+  font-size:1.05rem;
+  letter-spacing:.04em;
+}
+.field input:focus{border-color:var(--gold-3);}
+.code-input{text-transform:uppercase;letter-spacing:.3em !important;text-align:center;font-size:1.4rem !important;}
 
-  .log{ max-height:100px; overflow-y:auto; font-size:0.8rem; background:rgba(0,0,0,0.3); padding:8px; border-radius:5px; opacity:0.85; line-height:1.4; }
-  .log div{ border-bottom:1px dashed rgba(255,255,255,0.1); padding:3px 0; }
+/* ===================================================================
+   MENU SCREEN
+   =================================================================== */
+.brand{text-align:center;margin:26px 0 18px;}
+.brand .seal{
+  width:96px;height:96px;margin:0 auto 10px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, var(--gold-4), var(--gold-2) 55%, var(--gold-1) 100%);
+  box-shadow:0 0 0 4px var(--ink), 0 0 0 5px var(--gold-1), 0 10px 30px -6px rgba(0,0,0,.8), 0 0 40px -6px var(--gold-glow);
+}
+.brand .seal svg{width:56px;height:56px;}
+.brand h1{
+  font-family:var(--font-display-deco);
+  font-size:clamp(2rem, 7vw, 3.4rem);
+  margin-bottom:.15em;
+  background:linear-gradient(180deg, var(--gold-4), var(--gold-2));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 2px 24px rgba(212,175,55,.25);
+}
+.brand .tag{
+  font-family:var(--font-mono);color:var(--parchment-1);opacity:.8;
+  font-size:.85rem;letter-spacing:.16em;text-transform:uppercase;
+}
+.menu-card{
+  width:100%;max-width:420px;
+  padding:26px;
+  display:flex;flex-direction:column;gap:12px;
+  margin-top:10px;
+}
+.menu-card .btn{width:100%;}
+.menu-footer{margin-top:22px;display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--parchment-1);opacity:.75;font-size:.85rem;text-align:center;}
 
-  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); align-items:center; justify-content:center; padding:15px; z-index:100; }
-  .modal-overlay.show{ display:flex; }
-  .modal{ background:var(--panel-2); border:1px solid var(--gold); border-radius:10px; padding:20px; max-width:400px; width:100%; }
+/* ===================================================================
+   LOBBY / JOIN SCREENS
+   =================================================================== */
+.panel-header{display:flex;align-items:center;gap:12px;width:100%;max-width:640px;margin-bottom:14px;}
+.panel-header h2{margin:0;flex:1;text-align:center;}
+.top-bar{width:100%;max-width:900px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
 
-  .room-code-badge{ background:var(--gold); color:#000; font-weight:bold; padding:4px 10px; border-radius:6px; letter-spacing:2px; font-family:monospace; font-size:1.1rem; }
-  .player-list-item{ display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(201,162,39,0.1); font-size:0.88rem; }
+.room-code-display{
+  display:flex;align-items:center;gap:10px;justify-content:center;
+  padding:14px 20px;margin:6px 0 18px;
+}
+.room-code-display .code{
+  font-family:var(--font-display-deco);font-size:2rem;letter-spacing:.35em;color:var(--gold-4);
+  text-shadow:0 0 18px var(--gold-glow);
+}
+
+.card-panel{width:100%;max-width:640px;padding:22px;margin-bottom:16px;}
+.suspect-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0;}
+@media (max-width:520px){.suspect-grid{grid-template-columns:repeat(2,1fr);}}
+.suspect-pick{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:10px 6px;border-radius:var(--radius-md);
+  border:1px solid rgba(212,175,55,.25);
+  background:rgba(0,0,0,.25);
+  cursor:pointer;transition:all .15s ease;color:var(--parchment-3);
+}
+.suspect-pick svg{width:46px;height:46px;}
+.suspect-pick .name{font-size:.78rem;font-family:var(--font-mono);text-align:center;letter-spacing:.02em;}
+.suspect-pick:hover{border-color:var(--gold-3);background:rgba(212,175,55,.08);}
+.suspect-pick.selected{border-color:var(--gold-3);background:rgba(212,175,55,.16);box-shadow:0 0 0 1px var(--gold-3), 0 0 20px -4px var(--gold-glow);}
+.suspect-pick.taken{opacity:.35;cursor:not-allowed;filter:grayscale(.7);}
+.suspect-pick.taken:hover{border-color:rgba(212,175,55,.25);background:rgba(0,0,0,.25);}
+
+.player-list{list-style:none;margin:10px 0;padding:0;display:flex;flex-direction:column;gap:8px;}
+.player-row{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:var(--radius-md);
+  background:rgba(0,0,0,.28);border:1px solid rgba(212,175,55,.2);
+}
+.player-row .avatar{width:34px;height:34px;flex-shrink:0;border-radius:50%;}
+.player-row .avatar svg{width:100%;height:100%;}
+.player-row .pname{flex:1;font-family:var(--font-display);font-size:.95rem;}
+.player-row .ptag{font-family:var(--font-mono);font-size:.68rem;color:var(--gold-3);opacity:.8;}
+.player-row .badge{
+  font-family:var(--font-mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 8px;border-radius:20px;
+}
+.badge.ready{background:rgba(95,174,90,.18);color:var(--success-3);border:1px solid var(--success-2);}
+.badge.waiting{background:rgba(212,175,55,.1);color:var(--gold-3);border:1px solid var(--gold-1);}
+.badge.host{background:rgba(143,36,51,.25);color:#ff9aa6;border:1px solid var(--burgundy-4);}
+.badge.you{background:rgba(95,160,201,.18);color:var(--info-3);border:1px solid var(--info-2);}
+
+.status-line{font-family:var(--font-mono);font-size:.85rem;color:var(--parchment-1);text-align:center;min-height:1.4em;}
+.status-line.err{color:#ff8f8f;}
+.status-line.ok{color:var(--success-3);}
+
+/* ===================================================================
+   GAME SCREEN
+   =================================================================== */
+#screen-game{padding:calc(10px + var(--safe-t)) 8px calc(10px + var(--safe-b));align-items:stretch;}
+.game-layout{
+  width:100%;max-width:1400px;margin:0 auto;
+  display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,420px);gap:14px;
+  flex:1;min-height:0;
+}
+@media (max-width:980px){
+  .game-layout{grid-template-columns:1fr;}
+}
+
+.top-hud{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:8px 14px;margin-bottom:10px;
+}
+.top-hud .brand-mini{display:flex;align-items:center;gap:8px;font-family:var(--font-display);color:var(--gold-3);font-size:.95rem;}
+.top-hud .brand-mini svg{width:26px;height:26px;}
+.top-hud .spacer{flex:1;}
+.turn-banner{
+  flex:1;min-width:200px;
+  display:flex;align-items:center;gap:10px;justify-content:center;
+  padding:8px 16px;border-radius:999px;
+  font-family:var(--font-display);font-size:.95rem;
+  background:rgba(0,0,0,.3);border:1px solid var(--gold-2);
+}
+.turn-banner .tk-dot{width:14px;height:14px;border-radius:50%;box-shadow:0 0 10px currentColor;flex-shrink:0;}
+.turn-banner.you-turn{border-color:var(--gold-3);box-shadow:0 0 22px -4px var(--gold-glow);animation:pulseTurn 1.8s ease-in-out infinite;}
+@keyframes pulseTurn{0%,100%{box-shadow:0 0 14px -4px var(--gold-glow);}50%{box-shadow:0 0 26px -2px var(--gold-glow);}}
+
+.board-pane{display:flex;flex-direction:column;min-height:0;}
+.board-wrap{
+  position:relative;width:100%;
+  padding:10px;
+  display:flex;align-items:center;justify-content:center;
+}
+.board-frame{
+  position:relative;width:100%;max-width:800px;aspect-ratio:1/1;
+  border-radius:var(--radius-lg);
+  padding:14px;
+  background:
+    repeating-linear-gradient(92deg, rgba(0,0,0,.16) 0 2px, rgba(255,255,255,.02) 2px 4px, rgba(0,0,0,.1) 4px 8px),
+    linear-gradient(160deg, var(--mahogany-3), var(--mahogany-1) 65%, var(--mahogany-2));
+  border:2px solid var(--gold-2);
+  box-shadow:var(--paper-shadow), inset 0 0 0 1px rgba(0,0,0,.4), inset 0 0 60px rgba(0,0,0,.55), 0 0 40px -10px var(--gold-glow);
+}
+.board-frame::before{ /* brass pin corners */
+  content:"";position:absolute;inset:8px;pointer-events:none;border-radius:calc(var(--radius-lg) - 6px);
+  box-shadow:inset 0 0 0 1px rgba(212,175,55,.25);
+}
+#boardSvg{width:100%;height:100%;display:block;filter:drop-shadow(0 8px 18px rgba(0,0,0,.5));}
+.pin{position:absolute;width:16px;height:16px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, var(--gold-4), var(--gold-1));
+  box-shadow:0 2px 4px rgba(0,0,0,.6), inset 0 0 2px rgba(0,0,0,.5);
+}
+.pin.tl{top:2px;left:2px;} .pin.tr{top:2px;right:2px;} .pin.bl{bottom:2px;left:2px;} .pin.br{bottom:2px;right:2px;}
+
+.action-bar{
+  display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+  padding:12px;margin-top:10px;
+}
+.dice-tray{display:flex;align-items:center;gap:10px;}
+.die{
+  width:50px;height:50px;border-radius:12px;position:relative;flex-shrink:0;
+  background:linear-gradient(155deg, var(--parchment-3), var(--parchment-1));
+  box-shadow:0 4px 10px rgba(0,0,0,.5), inset 0 0 0 1px rgba(0,0,0,.15);
+  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:8px;gap:2px;
+}
+.die i{border-radius:50%;background:var(--parchment-ink);opacity:0;align-self:center;justify-self:center;width:70%;height:70%;}
+.die.rolling{animation:diceRoll .12s linear infinite;}
+@keyframes diceRoll{
+  0%{transform:rotate(0deg) scale(1);}
+  25%{transform:rotate(95deg) scale(1.08);}
+  50%{transform:rotate(190deg) scale(.94);}
+  75%{transform:rotate(280deg) scale(1.05);}
+  100%{transform:rotate(360deg) scale(1);}
+}
+.die.settle{animation:diceSettle .45s cubic-bezier(.34,1.56,.64,1);}
+@keyframes diceSettle{0%{transform:scale(1.35) rotate(-8deg);}60%{transform:scale(.92) rotate(4deg);}100%{transform:scale(1) rotate(0);}}
+
+/* ---------- SVG board contents ---------- */
+.room-rect{fill:var(--rf,#3a2c1c);stroke:var(--gold-2);stroke-width:2;transition:fill .3s ease;}
+.room-rect.reachable{stroke:var(--gold-4);stroke-width:3;filter:drop-shadow(0 0 6px var(--gold-glow));cursor:pointer;}
+.room-rect.current-room{stroke:var(--success-3);stroke-width:3;}
+.room-label{font-family:var(--font-display);fill:var(--parchment-2);text-anchor:middle;pointer-events:none;letter-spacing:.03em;}
+.corridor-cell{fill:rgba(0,0,0,.22);stroke:rgba(212,175,55,.12);stroke-width:1;}
+.corridor-cell.reachable{fill:rgba(212,175,55,.28);stroke:var(--gold-3);cursor:pointer;}
+.corridor-cell.occupied{fill:rgba(143,36,51,.25);}
+.door-mark{fill:var(--gold-3);}
+.passage-line{stroke:var(--gold-2);stroke-width:2;stroke-dasharray:6 6;fill:none;opacity:.55;}
+.passage-icon{cursor:pointer;}
+.passage-icon.usable circle{filter:drop-shadow(0 0 8px var(--gold-glow));}
+.passage-icon.usable{animation:passagePulse 2s ease-in-out infinite;}
+@keyframes passagePulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+.token-suspect{cursor:default;}
+.token-weapon{cursor:default;}
+.token-suspect.movable, .token-weapon.movable{cursor:pointer;}
+.token-label-bg{fill:rgba(10,6,5,.75);}
+.suggest-glow{filter:drop-shadow(0 0 10px var(--gold-glow));}
+.eliminated-token{opacity:.4;filter:grayscale(.8);}
+
+/* ---------- Side panel ---------- */
+.side-pane{display:flex;flex-direction:column;min-height:0;gap:10px;}
+.tabs{display:flex;gap:6px;padding:6px;}
+.tab-btn{
+  flex:1;padding:.6em .4em;border-radius:var(--radius-sm);border:1px solid transparent;
+  background:transparent;color:var(--parchment-1);font-family:var(--font-mono);font-size:.72rem;
+  letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+}
+.tab-btn.active{background:rgba(212,175,55,.14);border-color:var(--gold-2);color:var(--gold-3);}
+.tab-panels{flex:1;min-height:280px;display:flex;flex-direction:column;padding:14px;overflow:hidden;}
+.tab-panel{display:none;flex-direction:column;min-height:0;flex:1;}
+.tab-panel.active{display:flex;}
+
+.hand-grid{display:flex;flex-wrap:wrap;gap:10px;overflow-y:auto;padding:4px 2px;align-content:flex-start;flex:1;}
+.hand-card{
+  width:88px;height:124px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(160deg, var(--parchment-3), var(--parchment-2));
+  color:var(--parchment-ink);border:1px solid var(--gold-2);
+  box-shadow:0 6px 14px rgba(0,0,0,.4);
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:8px 6px;text-align:center;
+  transform-style:preserve-3d;
+  animation:cardDeal .5s cubic-bezier(.2,.8,.3,1) both;
+}
+@keyframes cardDeal{from{opacity:0;transform:translateY(16px) rotate(-6deg);}to{opacity:1;transform:none;}}
+.hand-card .cat{font-family:var(--font-mono);font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;opacity:.65;}
+.hand-card svg{width:44px;height:44px;}
+.hand-card .cname{font-family:var(--font-display);font-size:.72rem;line-height:1.15;font-weight:600;}
+.hand-card.suspect-card{--accent:var(--burgundy-3);}
+.hand-card.weapon-card{--accent:var(--gold-1);}
+.hand-card.room-card{--accent:var(--info-2);}
+.hand-card::before{content:"";position:absolute;}
+
+.log-list{list-style:none;margin:0;padding:2px 4px;overflow-y:auto;flex:1;display:flex;flex-direction:column-reverse;gap:0;}
+.log-entry{
+  font-family:var(--font-mono);font-size:.78rem;line-height:1.5;
+  padding:8px 0;border-bottom:1px dashed rgba(212,175,55,.18);color:var(--parchment-2);
+}
+.log-entry b{color:var(--gold-3);font-weight:normal;}
+.log-entry.log-suggest{color:var(--parchment-2);}
+.log-entry.log-accuse{color:#ffb3b3;}
+.log-entry.log-win{color:var(--success-3);}
+.log-entry.log-system{opacity:.7;font-style:italic;}
+.log-entry .t{opacity:.5;margin-right:6px;}
+
+.roster-list{list-style:none;margin:0;padding:2px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;}
+.roster-row{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius-md);
+  background:rgba(0,0,0,.25);border:1px solid rgba(212,175,55,.16);
+}
+.roster-row.current{border-color:var(--gold-3);box-shadow:0 0 14px -4px var(--gold-glow);}
+.roster-row.eliminated{opacity:.55;}
+.roster-row .avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;}
+.roster-row .avatar svg{width:100%;height:100%;}
+.roster-row .rname{flex:1;font-family:var(--font-display);font-size:.88rem;}
+.roster-row .rmeta{font-family:var(--font-mono);font-size:.62rem;color:var(--parchment-1);opacity:.75;display:block;}
+.roster-row .rstate{font-family:var(--font-mono);font-size:.62rem;padding:2px 7px;border-radius:12px;text-transform:uppercase;letter-spacing:.06em;}
+.rstate.active{background:rgba(95,174,90,.18);color:var(--success-3);}
+.rstate.out{background:rgba(211,69,63,.18);color:var(--danger-3);}
+.rstate.disc{background:rgba(120,120,120,.2);color:#bbb;}
+
+.floating-controls{
+  position:fixed;right:14px;bottom:calc(14px + var(--safe-b));z-index:40;
+  display:flex;flex-direction:column;gap:10px;
+}
+.fab{
+  width:52px;height:52px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(180deg, var(--gold-3), var(--gold-1));
+  border:1px solid rgba(0,0,0,.4);box-shadow:0 6px 16px rgba(0,0,0,.6);
+  cursor:pointer;color:var(--ink);
+}
+.fab svg{width:24px;height:24px;}
+
+/* ===================================================================
+   MODALS
+   =================================================================== */
+.modal-overlay{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(5,3,2,.72);backdrop-filter:blur(3px);
+  display:none;align-items:center;justify-content:center;padding:18px;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  display:none;flex-direction:column;
+  width:100%;max-width:480px;max-height:88vh;overflow:auto;
+  padding:24px;border-radius:var(--radius-lg);
+  animation:modalIn .3s cubic-bezier(.2,.8,.3,1) both;
+}
+.modal.wide{max-width:720px;}
+.modal.open{display:flex;}
+@keyframes modalIn{from{opacity:0;transform:scale(.94) translateY(10px);}to{opacity:1;transform:none;}}
+.modal h3{text-align:center;}
+.modal-sub{text-align:center;font-family:var(--font-mono);font-size:.8rem;color:var(--parchment-ink-soft);margin-bottom:14px;}
+.modal .close-x{position:absolute;top:14px;right:16px;background:none;border:none;color:inherit;font-size:1.3rem;cursor:pointer;opacity:.6;}
+.modal{position:relative;}
+
+.picker-group{margin-bottom:16px;}
+.picker-group .glabel{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;opacity:.7;margin-bottom:8px;display:block;}
+.picker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.picker-grid.rooms{grid-template-columns:repeat(3,1fr);}
+.pick-chip{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:8px 4px;border-radius:10px;border:1px solid rgba(43,29,16,.25);
+  background:rgba(255,255,255,.35);cursor:pointer;font-size:.72rem;text-align:center;font-family:var(--font-display);
+}
+.pick-chip svg{width:30px;height:30px;}
+.pick-chip.selected{border-color:var(--burgundy-3);background:rgba(139,20,30,.16);box-shadow:0 0 0 1px var(--burgundy-3);}
+.pick-chip.locked{opacity:.4;pointer-events:none;}
+
+.suggestion-summary{
+  font-family:var(--font-display);text-align:center;font-size:1.05rem;
+  padding:12px;border-radius:10px;background:rgba(0,0,0,.25);border:1px solid var(--gold-2);margin-bottom:14px;
+}
+.suggestion-summary b{color:var(--gold-3);}
+
+.reveal-card-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:16px 0;}
+.waiting-dots{display:flex;gap:6px;justify-content:center;margin:18px 0;}
+.waiting-dots span{width:9px;height:9px;border-radius:50%;background:var(--gold-3);animation:dotPulse 1.2s ease-in-out infinite;}
+.waiting-dots span:nth-child(2){animation-delay:.15s;} .waiting-dots span:nth-child(3){animation-delay:.3s;}
+@keyframes dotPulse{0%,100%{opacity:.25;transform:scale(.8);}50%{opacity:1;transform:scale(1.1);}}
+
+.passhand-shield{
+  text-align:center;padding:40px 20px;
+}
+.passhand-shield .big-icon{width:80px;height:80px;margin:0 auto 16px;}
+
+.notebook-modal{width:100%;max-width:900px;}
+.notebook-scroll{overflow:auto;max-height:60vh;border-radius:10px;}
+table.notebook-table{border-collapse:collapse;width:100%;font-family:var(--font-body);}
+table.notebook-table th, table.notebook-table td{border:1px solid rgba(43,29,16,.25);padding:6px 4px;text-align:center;font-size:.82rem;}
+table.notebook-table thead th{
+  font-family:var(--font-mono);font-size:.6rem;letter-spacing:.03em;text-transform:uppercase;
+  background:rgba(43,29,16,.08);position:sticky;top:0;
+  writing-mode:vertical-rl;transform:rotate(180deg);height:90px;padding:6px 2px;white-space:nowrap;
+}
+table.notebook-table thead th:first-child{writing-mode:horizontal-tb;transform:none;height:auto;}
+table.notebook-table tbody th{text-align:left;font-family:var(--font-display);font-weight:600;white-space:nowrap;padding-left:8px;}
+table.notebook-table tbody tr.grp-start td, table.notebook-table tbody tr.grp-start th{border-top:2px solid var(--burgundy-3);}
+.nb-cell{width:34px;height:34px;cursor:pointer;user-select:none;font-family:var(--font-display);font-size:1rem;}
+.nb-cell:hover{background:rgba(139,20,30,.08);}
+.nb-cell[data-mark="check"]{color:var(--success-2);font-weight:700;}
+.nb-cell[data-mark="x"]{color:var(--danger-2);font-weight:700;}
+.nb-cell[data-mark="q"]{color:var(--info-2);font-weight:700;}
+.nb-cell.own{background:rgba(95,174,90,.12);}
+.nb-legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:10px;font-family:var(--font-mono);font-size:.72rem;color:var(--parchment-ink-soft);}
+
+.victory-modal{text-align:center;}
+.victory-modal .seal-lg{width:110px;height:110px;margin:0 auto 14px;}
+.confetti-layer{position:fixed;inset:0;pointer-events:none;z-index:99;overflow:hidden;}
+.confetto{position:absolute;top:-20px;width:8px;height:14px;opacity:.9;animation:confettiFall linear forwards;}
+@keyframes confettiFall{to{transform:translateY(110vh) rotate(540deg);opacity:0;}}
+
+.eliminated-modal .stamp{
+  font-family:var(--font-display-deco);color:var(--danger-3);font-size:1.6rem;
+  border:4px solid var(--danger-3);border-radius:10px;display:inline-block;padding:6px 18px;
+  transform:rotate(-6deg);margin:14px 0;letter-spacing:.06em;
+  box-shadow:0 0 24px -6px rgba(211,69,63,.6);
+}
+
+.howto-body{font-size:.95rem;}
+.howto-body h4{margin-top:1em;color:var(--gold-3);}
+.howto-body ul{padding-left:1.2em;}
+.howto-body li{margin-bottom:.4em;}
+
+.toast-container{position:fixed;top:calc(14px + var(--safe-t));left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;}
+.toast{
+  font-family:var(--font-mono);font-size:.82rem;color:var(--parchment-2);
+  background:rgba(10,6,5,.92);border:1px solid var(--gold-2);border-radius:999px;
+  padding:9px 18px;box-shadow:0 8px 20px rgba(0,0,0,.5);
+  animation:toastIn .35s ease both, toastOut .4s ease 2.6s forwards;
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:none;}}
+@keyframes toastOut{to{opacity:0;transform:translateY(-6px);}}
+
+.conn-pill{
+  display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:.68rem;
+  padding:4px 10px;border-radius:999px;background:rgba(0,0,0,.3);border:1px solid rgba(212,175,55,.3);
+  text-transform:uppercase;letter-spacing:.06em;
+}
+.conn-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--success-3);}
+.conn-pill.bad .dot{background:var(--danger-3);}
+
+.spinner{width:20px;height:20px;border-radius:50%;border:2px solid rgba(212,175,55,.25);border-top-color:var(--gold-3);animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.hidden{display:none !important;}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+
+@media (max-width:640px){
+  body{font-size:16px;}
+  .brand h1{font-size:clamp(1.7rem,9vw,2.4rem);}
+  .action-bar{gap:8px;}
+  .btn{padding:.75em 1.1em;font-size:.9rem;}
+  table.notebook-table thead th{height:70px;font-size:.55rem;}
+  .hand-card{width:76px;height:108px;}
+}
 </style>
 </head>
 <body>
+<div id="bgAtmosphere"></div>
+<div id="bgVignetteFlicker"></div>
 
-<h1>Cluedo — كلويدو</h1>
-<div class="subtitle">لعبة التحقيق والغموض الشهيرة</div>
+<div id="app">
 
-<div class="screen active" id="setupScreen">
-  <div class="card">
-    <h2>اختيار نمط اللعب</h2>
-    <div class="mode-selector">
-      <div class="mode-btn active" id="modeOnlineBtn">أونلاين (عبر الإنترنت)</div>
-      <div class="mode-btn" id="modeLocalBtn">محلي (تمرير الجهاز)</div>
+<!-- =========================================================
+     SCREEN: MAIN MENU
+     ========================================================= -->
+<section id="screen-menu" class="screen active">
+  <div class="brand">
+    <div class="seal">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="44" fill="none" stroke="var(--ink)" stroke-width="2"/>
+        <path d="M50 18a20 20 0 0 1 8 38c-3 1.5-5 3.5-5 7v3" fill="none" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="50" cy="78" r="4" fill="var(--ink)"/>
+      </svg>
     </div>
+    <h1>Mansion Mystery</h1>
+    <div class="tag">A Detective Board Game — Est. 1926</div>
+  </div>
 
-    <div id="onlineSetup">
-      <label>اسمك داخل اللعبة:</label>
-      <input type="text" id="onlineMyName" value="المحقق 1">
+  <nav class="menu-card wood-panel">
+    <button class="btn" id="btnLocalPlay" type="button">🕯️ Local Pass &amp; Play</button>
+    <button class="btn" id="btnHostGame" type="button">🌐 Host Online Game</button>
+    <button class="btn secondary" id="btnJoinGame" type="button">🔑 Join Online Game</button>
+    <button class="btn ghost" id="btnHowToPlay" type="button">📖 How to Play</button>
+  </nav>
 
-      <div style="margin-top:15px; border-top:1px solid rgba(201,162,39,0.2); padding-top:10px;">
-        <button class="gold" id="createRoomBtn" style="width:100%;">إنشاء غرفة جديدة (Host)</button>
-      </div>
+  <div class="menu-footer">
+    <button class="btn ghost small" id="btnSoundToggleMenu" type="button">🔊 Sound: On</button>
+    <span>Self-hosted peer-to-peer detective mystery. No account, no server, no trace — except the killer's.</span>
+  </div>
+</section>
 
-      <div style="text-align:center; margin:10px 0; opacity:0.6;">— أو —</div>
-
-      <div>
-        <label>رمز الغرفة للانضمام (Room Code):</label>
-        <input type="text" id="joinRoomCode" placeholder="أدخل الرمز هنا (مثال: AB123)" style="text-transform:uppercase;">
-        <button class="secondary" id="joinRoomBtn" style="width:100%;">انضمام للغرفة</button>
-      </div>
+<!-- =========================================================
+     SCREEN: JOIN (enter room code)
+     ========================================================= -->
+<section id="screen-join" class="screen">
+  <div class="panel-header">
+    <button class="btn ghost small" data-nav="screen-menu" type="button">← Back</button>
+    <h2>Join Investigation</h2>
+    <span style="width:76px"></span>
+  </div>
+  <div class="card-panel parchment-panel">
+    <div class="field">
+      <label for="joinCodeInput">Room Code</label>
+      <input type="text" id="joinCodeInput" class="code-input" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="XXXXXX">
     </div>
-
-    <div id="localSetup" style="display:none;">
-      <label>عدد اللاعبين (2 إلى 6):</label>
-      <select id="playerCount">
-        <option value="2">2 لاعبين</option>
-        <option value="3">3 لاعبين</option>
-        <option value="4" selected>4 لاعبين</option>
-        <option value="5">5 لاعبين</option>
-        <option value="6">6 لاعبين</option>
-      </select>
-      <div id="playerInputs"></div>
-      <button class="gold" id="startLocalGameBtn" style="width:100%; margin-top:10px;">بدء اللعبة المحلية</button>
+    <div class="field">
+      <label for="joinNameInput">Detective Name</label>
+      <input type="text" id="joinNameInput" placeholder="Your name" maxlength="18" autocomplete="off">
     </div>
+    <button class="btn block" id="btnJoinConnect" type="button">Connect</button>
+    <p class="status-line" id="joinStatus"></p>
   </div>
-</div>
+</section>
 
-<div class="screen" id="lobbyScreen">
-  <div class="card" style="text-align:center;">
-    <h2>غرفة الانتظار (Lobby)</h2>
-    <p>شارك هذا الرمز مع أصدقائك للانضمام:</p>
-    <div style="margin:15px 0;"><span class="room-code-badge" id="displayRoomCode">------</span></div>
-    
-    <div style="text-align:right; margin-top:15px;">
-      <label>اللاعبون المتصلون حالياً:</label>
-      <div id="lobbyPlayerList"></div>
-    </div>
-
-    <button class="gold" id="hostStartGameBtn" style="width:100%; margin-top:20px; display:none;">بدء اللعبة الآن</button>
-    <p id="waitingHostText" style="font-size:0.85rem; opacity:0.8; margin-top:15px;">في انتظار منشئ الغرفة لتبدأ اللعبة...</p>
-  </div>
-</div>
-
-<div class="screen" id="passScreen">
-  <div class="card" style="text-align:center; padding:30px 10px;">
-    <h2 id="passTitle">مرر الجهاز إلى اللاعب</h2>
-    <p style="opacity:0.8;" id="passDesc">تأكد من عدم رؤية الآخرين للشاشة</p>
-    <button class="gold" id="passReadyBtn">أنا جاهز — عرض دوري</button>
-  </div>
-</div>
-
-<div class="screen" id="turnScreen">
-  <div class="status-bar">
-    <div><span class="dot" id="turnDot"></span><strong id="turnWho"></strong></div>
-    <span id="turnRoom"></span>
+<!-- =========================================================
+     SCREEN: LOBBY (host / join / local all share this)
+     ========================================================= -->
+<section id="screen-lobby" class="screen">
+  <div class="panel-header">
+    <button class="btn ghost small" id="btnLobbyLeave" type="button">← Leave</button>
+    <h2 id="lobbyTitle">Case Lobby</h2>
+    <span id="lobbyConnPill" class="conn-pill hidden"><span class="dot"></span><span id="lobbyConnText">Online</span></span>
   </div>
 
-  <div class="board-frame">
-    <svg id="boardSvg" viewBox="0 0 640 640" xmlns="http://www.w3.org/2000/svg"></svg>
-  </div>
-
-  <div class="card">
-    <h2>الإجراءات والتحركات</h2>
-    <div id="diceStatus" style="font-size:0.9rem; margin-bottom:8px;">رمي النرد لتحديد الحركة:</div>
+  <div id="lobbyRoomCodeWrap" class="room-code-display wood-panel hidden">
     <div>
-      <button class="gold" id="rollBtn">رمي النرد والحركة</button>
-      <button id="suggestBtn" class="secondary" disabled>تقديم تخمين</button>
-      <button id="accuseBtn" class="secondary">الاتهام النهائي</button>
-      <button id="endTurnBtn" class="secondary">إنهاء الدور</button>
+      <div class="eyebrow">Share this room code</div>
+      <div class="code" id="lobbyRoomCode">------</div>
+    </div>
+    <button class="btn small" id="btnCopyCode" type="button">Copy</button>
+  </div>
+
+  <div class="card-panel parchment-panel">
+    <div class="field" id="lobbyNameField">
+      <label for="lobbyNameInput">Your Name</label>
+      <input type="text" id="lobbyNameInput" placeholder="Detective name" maxlength="18" autocomplete="off">
+    </div>
+
+    <div class="picker-group">
+      <span class="glabel">Choose your Suspect</span>
+      <div class="suspect-grid" id="lobbySuspectGrid"></div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="picker-group">
+      <span class="glabel">Investigators (<span id="lobbyPlayerCount">0</span>)</span>
+      <ul class="player-list" id="lobbyPlayerList"></ul>
+    </div>
+
+    <div id="lobbyLocalCountWrap" class="picker-group hidden">
+      <span class="glabel">Number of Players</span>
+      <div class="btn-row" id="lobbyLocalCountRow"></div>
+    </div>
+
+    <p class="status-line" id="lobbyStatus"></p>
+
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn" id="btnLobbyReady" type="button">I'm Ready</button>
+      <button class="btn success hidden" id="btnLobbyStart" type="button">Begin Investigation</button>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     SCREEN: GAME
+     ========================================================= -->
+<section id="screen-game" class="screen">
+  <div class="top-hud">
+    <div class="brand-mini">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="var(--ink)" stroke="var(--gold-3)" stroke-width="4"/><text x="50" y="66" font-size="52" text-anchor="middle" fill="var(--gold-3)" font-family="Georgia,serif">?</text></svg>
+      <span class="hide-sm">Mansion Mystery</span>
+    </div>
+    <div class="turn-banner" id="turnBanner"><span class="tk-dot" id="turnDot"></span><span id="turnBannerText">Loading…</span></div>
+    <span id="gameConnPill" class="conn-pill hidden"><span class="dot"></span><span id="gameConnText">Online</span></span>
+    <button class="btn ghost small" id="btnLeaveGame" type="button">Leave</button>
+  </div>
+
+  <div class="game-layout">
+    <div class="board-pane">
+      <div class="board-wrap">
+        <div class="board-frame gold-frame">
+          <span class="pin tl"></span><span class="pin tr"></span><span class="pin bl"></span><span class="pin br"></span>
+          <svg id="boardSvg" viewBox="0 0 800 800" role="img" aria-label="Mansion board"></svg>
+        </div>
+      </div>
+
+      <div class="action-bar wood-panel">
+        <div class="dice-tray">
+          <div class="die" id="die1"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="die" id="die2"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+        <button class="btn" id="btnRollDice" type="button">🎲 Roll Dice</button>
+        <button class="btn secondary hidden" id="btnTakePassage" type="button">🕳️ Secret Passage</button>
+        <button class="btn secondary" id="btnSuggest" type="button" disabled>🔍 Suggest</button>
+        <button class="btn danger" id="btnAccuse" type="button">⚖️ Accuse</button>
+        <button class="btn ghost" id="btnEndTurn" type="button" disabled>End Turn →</button>
+      </div>
+    </div>
+
+    <aside class="side-pane wood-panel">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-hand" type="button">Your Hand</button>
+        <button class="tab-btn" data-tab="tab-log" type="button">Case Log</button>
+        <button class="tab-btn" data-tab="tab-players" type="button">Investigators</button>
+      </div>
+      <div class="tab-panels">
+        <div class="tab-panel active" id="tab-hand">
+          <div class="hand-grid" id="handGrid"></div>
+        </div>
+        <div class="tab-panel" id="tab-log">
+          <ul class="log-list" id="caseLog"></ul>
+        </div>
+        <div class="tab-panel" id="tab-players">
+          <ul class="roster-list" id="rosterList"></ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+</div><!-- /#app -->
+
+<!-- =========================================================
+     FLOATING CONTROLS (visible during game)
+     ========================================================= -->
+<div class="floating-controls hidden" id="floatingControls">
+  <button class="fab" id="btnOpenNotebook" title="Sleuth Notebook" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h13a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3V4z"/><path d="M4 4v13a3 3 0 0 0 3 3"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="14" y2="12"/></svg>
+  </button>
+  <button class="fab" id="btnSoundToggleGame" title="Toggle sound" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="soundIconGame"><polygon points="3 9 8 9 13 4 13 20 8 15 3 15"/><path d="M16 8a5 5 0 0 1 0 8"/><path d="M19 5a9 9 0 0 1 0 14"/></svg>
+  </button>
+</div>
+
+<!-- =========================================================
+     MODALS
+     ========================================================= -->
+<div class="modal-overlay" id="modalOverlay">
+
+  <div class="modal parchment-panel wide" id="modal-suggestion">
+    <button class="close-x" data-close type="button">✕</button>
+    <h3>Make a Suggestion</h3>
+    <p class="modal-sub">You are accusing, hypothetically, within this room only.</p>
+    <div class="suggestion-summary">I suggest it was <b id="sugRoomFixed">—</b> — with <b id="sugSuspectFixed">a suspect</b> and <b id="sugWeaponFixed">a weapon</b>.</div>
+    <div class="picker-group">
+      <span class="glabel">Suspect</span>
+      <div class="picker-grid" id="sugSuspectGrid"></div>
+    </div>
+    <div class="picker-group">
+      <span class="glabel">Weapon</span>
+      <div class="picker-grid" id="sugWeaponGrid"></div>
+    </div>
+    <button class="btn block" id="btnConfirmSuggest" type="button" disabled>Present Suggestion</button>
+  </div>
+
+  <div class="modal parchment-panel wide" id="modal-accusation">
+    <button class="close-x" data-close type="button">✕</button>
+    <h3>Formal Accusation</h3>
+    <p class="modal-sub">⚠ One chance only. A wrong accusation ends your investigation.</p>
+    <div class="picker-group">
+      <span class="glabel">Suspect</span>
+      <div class="picker-grid" id="accSuspectGrid"></div>
+    </div>
+    <div class="picker-group">
+      <span class="glabel">Weapon</span>
+      <div class="picker-grid" id="accWeaponGrid"></div>
+    </div>
+    <div class="picker-group">
+      <span class="glabel">Room</span>
+      <div class="picker-grid rooms" id="accRoomGrid"></div>
+    </div>
+    <button class="btn danger block" id="btnConfirmAccuse" type="button" disabled>I Accuse</button>
+  </div>
+
+  <div class="modal parchment-panel" id="modal-disprove-wait">
+    <h3>Suggestion Presented</h3>
+    <p class="suggestion-summary" id="waitSummaryText">—</p>
+    <p class="modal-sub" id="waitAskingText">Asking the other investigators…</p>
+    <div class="waiting-dots"><span></span><span></span><span></span></div>
+  </div>
+
+  <div class="modal parchment-panel" id="modal-disprove-prompt">
+    <h3>You Can Disprove This</h3>
+    <p class="modal-sub" id="disproveAskedBy">—</p>
+    <p>Choose ONE card to reveal privately:</p>
+    <div class="reveal-card-row" id="disproveCardChoices"></div>
+  </div>
+
+  <div class="modal parchment-panel" id="modal-private-reveal">
+    <h3>Card Revealed to You</h3>
+    <p class="modal-sub" id="revealFromText">—</p>
+    <div class="reveal-card-row" id="revealCardShown"></div>
+    <button class="btn block" data-close type="button">Continue</button>
+  </div>
+
+  <div class="modal parchment-panel" id="modal-disprove-none">
+    <h3>No One Could Disprove!</h3>
+    <p id="disproveNoneText" style="text-align:center">Every other investigator was asked, and none held a matching card.</p>
+    <button class="btn block" data-close type="button">Continue</button>
+  </div>
+
+  <div class="modal wood-panel" id="modal-passhand">
+    <div class="passhand-shield">
+      <svg class="big-icon" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="var(--gold-3)" stroke-width="4"/><path d="M30 65c0-15 9-30 20-30s20 15 20 30" fill="none" stroke="var(--gold-3)" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="32" r="10" fill="var(--gold-3)"/></svg>
+      <h3 id="passHandTitle">Pass the device to Player</h3>
+      <p class="modal-sub" id="passHandSub">Make sure no one else is looking at the screen.</p>
+      <button class="btn block" id="btnPassHandReady" type="button">I'm Ready — Show My Turn</button>
     </div>
   </div>
 
-  <div class="card">
-    <h2>كروت يدك الخاصة (سرية)</h2>
-    <div class="hand-grid" id="handGrid"></div>
+  <div class="modal parchment-panel notebook-modal" id="modal-notebook">
+    <button class="close-x" data-close type="button">✕</button>
+    <h3>Sleuth's Notebook</h3>
+    <p class="modal-sub">✔ auto-marks cards in your hand. Click any other cell to cycle ✔ → ✕ → ? → blank.</p>
+    <div class="notebook-scroll">
+      <table class="notebook-table" id="notebookTable"></table>
+    </div>
+    <div class="nb-legend">
+      <span>✔ = in a hand (yours)</span><span style="color:var(--danger-2)">✕ = ruled out</span><span style="color:var(--info-2)">? = suspected</span>
+    </div>
   </div>
 
-  <div class="card">
-    <h2>سجل أحداث القضية</h2>
-    <div class="log" id="log"></div>
+  <div class="modal victory-modal parchment-panel" id="modal-victory">
+    <svg class="seal-lg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="var(--gold-3)" stroke="var(--gold-1)" stroke-width="3"/><path d="M35 52l10 10 20-24" fill="none" stroke="var(--ink)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h3 id="victoryTitle">Case Solved!</h3>
+    <p id="victoryText" style="text-align:center;font-size:1.1rem"></p>
+    <div class="btn-row" style="justify-content:center;margin-top:14px">
+      <button class="btn" id="btnPlayAgain" type="button">Play Again</button>
+      <button class="btn ghost" id="btnBackToMenuVictory" type="button">Main Menu</button>
+    </div>
   </div>
-</div>
 
-<div class="screen" id="overScreen">
-  <div class="card" style="text-align:center;">
-    <h2 id="overTitle">تم إغلاق القضية</h2>
-    <p id="overText"></p>
-    <div style="background:var(--parchment); color:#000; padding:15px; border-radius:8px; margin:15px 0;" id="solutionText"></div>
-    <button class="gold" onclick="location.reload()">لعب مرة أخرى</button>
+  <div class="modal eliminated-modal parchment-panel" id="modal-eliminated">
+    <h3>Investigation Failed</h3>
+    <div style="text-align:center"><span class="stamp">CASE CLOSED — WRONG</span></div>
+    <p style="text-align:center" id="eliminatedText">Your accusation did not match the case file.</p>
+    <p class="modal-sub">You remain on the board as a witness — you can still be asked to disprove suggestions.</p>
+    <button class="btn block" data-close type="button">Continue Watching</button>
   </div>
-</div>
 
-<div class="modal-overlay" id="suggestModal">
-  <div class="modal">
-    <h2>تقديم تخمين (في الغرفة الحالية)</h2>
-    <label>المشتبه به</label><select id="suggSuspect"></select>
-    <label>السلاح</label><select id="suggWeapon"></select>
-    <button class="gold" id="confirmSuggBtn">إرسال التخمين</button>
-    <button class="secondary" id="cancelSuggBtn">إلغاء</button>
+  <div class="modal parchment-panel" id="modal-nosolution">
+    <h3>The Trail Goes Cold</h3>
+    <p style="text-align:center">Every investigator has made a failed accusation. The culprit escapes into the fog.</p>
+    <p class="suggestion-summary" id="noSolutionReveal">—</p>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn" id="btnBackToMenuNoSolution" type="button">Main Menu</button>
+    </div>
   </div>
-</div>
 
-<div class="modal-overlay" id="accuseModal">
-  <div class="modal">
-    <h2>الاتهام النهائي (حاسم وخروج عند الخطأ)</h2>
-    <label>المشتبه به</label><select id="accSuspect"></select>
-    <label>السلاح</label><select id="accWeapon"></select>
-    <label>الغرفة</label><select id="accRoom"></select>
-    <button class="gold" id="confirmAccBtn">تأكيد الاتهام النهائي</button>
-    <button class="secondary" id="cancelAccBtn">إلغاء</button>
+  <div class="modal howto-body parchment-panel wide" id="modal-howtoplay">
+    <button class="close-x" data-close type="button">✕</button>
+    <h3>How to Play</h3>
+    <div class="howto-body">
+      <h4>Goal</h4>
+      <p>Deduce the secret Suspect, Weapon, and Room hidden in the case file before your rivals — or before everyone runs out of guesses.</p>
+      <h4>On Your Turn</h4>
+      <ul>
+        <li>Roll the dice and move through corridors into any reachable room, or take a Secret Passage from a corner room straight to its diagonal partner.</li>
+        <li>If you're in a room, you may make a <b>Suggestion</b>: name a suspect and weapon (the room is whichever you're in). That suspect's and the weapon's tokens glide into the room with you.</li>
+        <li>Other investigators are asked — in turn order — whether they hold any of the three cards. The first one who can, privately reveals just one card to you.</li>
+        <li>At any point on your turn you may make a formal <b>Accusation</b> naming suspect + weapon + room. Guess right and you win instantly. Guess wrong and you're out as an active investigator — though you stay on the board to disprove others.</li>
+      </ul>
+      <h4>The Notebook</h4>
+      <p>Use the Sleuth's Notebook to track what's been ruled out. Cards in your own hand are auto-checked.</p>
+      <h4>Modes</h4>
+      <p><b>Local Pass &amp; Play</b> hides each hand between turns with a hand-off screen. <b>Online</b> uses direct peer-to-peer connections (PeerJS) — one player hosts and shares a room code.</p>
+    </div>
   </div>
-</div>
 
+  <div class="modal parchment-panel" id="modal-confirm">
+    <h3 id="confirmTitle">Are you sure?</h3>
+    <p id="confirmText" style="text-align:center"></p>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn ghost" id="btnConfirmNo" type="button">Cancel</button>
+      <button class="btn danger" id="btnConfirmYes" type="button">Confirm</button>
+    </div>
+  </div>
+
+</div><!-- /modalOverlay -->
+
+<div class="toast-container" id="toastContainer"></div>
+<div class="confetti-layer hidden" id="confettiLayer"></div>
+
+<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <script>
-(function(){
-  const SUSPECTS = [
-    {name:'الآنسة أرجوان', color:'#e0304a'},
-    {name:'العقيد أصفر', color:'#d4a520'},
-    {name:'السيدة بيضاء', color:'#f2ead6'},
-    {name:'الشيخ أخضر', color:'#3f9e68'},
-    {name:'السيدة زرقاء', color:'#3f7fc1'},
-    {name:'الأستاذ بنفسجي', color:'#9b5bc9'}
-  ];
-  const WEAPONS = ['شمعدان', 'سكين', 'أنبوب رصاص', 'مسدس', 'حبل', 'مفتاح ربط'];
-  const ROOMS = ['المكتب', 'الصالون', 'غرفة المعيشة', 'المكتبة', 'غرفة البلياردو', 'غرفة الطعام', 'المشتل', 'قاعة الرقص', 'المطبخ'];
+'use strict';
+/* =====================================================================
+   SECTION: DATA — suspects, weapons, rooms, board grid & graph
+   ===================================================================== */
+const GRID_SIZE = 17;
+const CELL = 44;
+const MARGIN = 26;
 
-  let playMode = 'online'; // 'online' or 'local'
-  let peer = null;
-  let roomConnections = []; // Host uses this to store guest conns
-  let hostConn = null; // Guest uses this to send data to host
-  let isHost = false;
-  let myPlayerId = 0;
+const SUSPECTS = [
+  { id:'scarlett', name:'Miss Scarlett',   color:'#c22a3e', dark:'#5c1420', initial:'S',  start:{col:11,row:0} },
+  { id:'mustard',  name:'Colonel Mustard', color:'#c08a2e', dark:'#5c3f14', initial:'M',  start:{col:0, row:11} },
+  { id:'white',    name:'Mrs. White',      color:'#d9d4c6', dark:'#75705f', initial:'W',  start:{col:5, row:0} },
+  { id:'green',    name:'Rev. Green',      color:'#2f8f4e', dark:'#144024', initial:'G',  start:{col:16,row:5} },
+  { id:'peacock',  name:'Mrs. Peacock',    color:'#2f7ec2', dark:'#153a5c', initial:'P',  start:{col:0, row:5} },
+  { id:'plum',     name:'Professor Plum',  color:'#7a3fae', dark:'#3a1a56', initial:'Pl', start:{col:11,row:16} },
+];
 
-  let game = {
-    players: [],
-    currentIndex: 0,
-    solution: {},
-    turnState: { moved: false, suggested: false, reachable: [] },
-    log: []
+const WEAPONS = [
+  { id:'candlestick', name:'Candlestick' },
+  { id:'knife',       name:'Knife' },
+  { id:'leadpipe',    name:'Lead Pipe' },
+  { id:'revolver',    name:'Revolver' },
+  { id:'rope',        name:'Rope' },
+  { id:'wrench',      name:'Wrench' },
+];
+
+const ROOMS = [
+  { id:'kitchen',      name:'Kitchen',       block:{c0:0, c1:4,  r0:0, r1:4},  doors:[{col:5, row:1}],                                     passageTo:'study',        tint:'#3a2416' },
+  { id:'ballroom',     name:'Ballroom',      block:{c0:6, c1:10, r0:0, r1:4},  doors:[{col:5,row:3},{col:11,row:3}],                        tint:'#3a1c24' },
+  { id:'conservatory', name:'Conservatory',  block:{c0:12,c1:16, r0:0, r1:4},  doors:[{col:14,row:5}],                                      passageTo:'lounge',       tint:'#173a2e' },
+  { id:'diningroom',   name:'Dining Room',   block:{c0:0, c1:4,  r0:6, r1:10}, doors:[{col:3,row:5},{col:5,row:8}],                         tint:'#3a2c16' },
+  { id:'billiardroom', name:'Billiard Room', block:{c0:6, c1:10, r0:6, r1:10}, doors:[{col:8,row:5},{col:8,row:11},{col:5,row:7},{col:11,row:7}], tint:'#1c2c3a' },
+  { id:'library',      name:'Library',       block:{c0:12,c1:16, r0:6, r1:10}, doors:[{col:11,row:9},{col:14,row:11}],                      tint:'#241c3a' },
+  { id:'lounge',       name:'Lounge',        block:{c0:0, c1:4,  r0:12,r1:16}, doors:[{col:1,row:11}],                                      passageTo:'conservatory', tint:'#3a1616' },
+  { id:'hall',         name:'Hall',          block:{c0:6, c1:10, r0:12,r1:16}, doors:[{col:5,row:13},{col:6,row:11},{col:11,row:13}],       tint:'#2c2c1c' },
+  { id:'study',        name:'Study',         block:{c0:12,c1:16, r0:12,r1:16}, doors:[{col:13,row:11}],                                     passageTo:'kitchen',      tint:'#241616' },
+];
+
+const ROOM_BY_ID = Object.fromEntries(ROOMS.map(r=>[r.id,r]));
+const SUSPECT_BY_ID = Object.fromEntries(SUSPECTS.map(s=>[s.id,s]));
+const WEAPON_BY_ID = Object.fromEntries(WEAPONS.map(w=>[w.id,w]));
+const SUSPECT_ORDER = SUSPECTS.map(s=>s.id);
+
+const ALL_CARDS = [
+  ...SUSPECTS.map(s=>({id:s.id, type:'suspect', name:s.name})),
+  ...WEAPONS.map(w=>({id:w.id, type:'weapon', name:w.name})),
+  ...ROOMS.map(r=>({id:r.id, type:'room', name:r.name})),
+];
+const CARD_BY_ID = Object.fromEntries(ALL_CARDS.map(c=>[c.id,c]));
+
+/* ---------- Grid / board-graph helpers ---------- */
+function isHallwayCell(col,row){
+  if(col<0||row<0||col>=GRID_SIZE||row>=GRID_SIZE) return false;
+  return col===5||col===11||row===5||row===11;
+}
+function cellKey(col,row){ return col+','+row; }
+function cellCenterPx(col,row){
+  return { x: MARGIN + col*CELL + CELL/2, y: MARGIN + row*CELL + CELL/2 };
+}
+function roomCenterPx(roomId){
+  const r = ROOM_BY_ID[roomId];
+  return {
+    x: MARGIN + ((r.block.c0+r.block.c1+1)/2)*CELL,
+    y: MARGIN + ((r.block.r0+r.block.r1+1)/2)*CELL,
   };
-
-  // --- التبديل بين أنماط اللعب المحلي والأونلاين ---
-  const modeOnlineBtn = document.getElementById('modeOnlineBtn');
-  const modeLocalBtn = document.getElementById('modeLocalBtn');
-  const onlineSetup = document.getElementById('onlineSetup');
-  const localSetup = document.getElementById('localSetup');
-
-  modeOnlineBtn.onclick = () => {
-    playMode = 'online';
-    modeOnlineBtn.classList.add('active');
-    modeLocalBtn.classList.remove('active');
-    onlineSetup.style.display = 'block';
-    localSetup.style.display = 'none';
+}
+function roomRectPx(roomId){
+  const r = ROOM_BY_ID[roomId];
+  return {
+    x: MARGIN + r.block.c0*CELL,
+    y: MARGIN + r.block.r0*CELL,
+    w: (r.block.c1-r.block.c0+1)*CELL,
+    h: (r.block.r1-r.block.r0+1)*CELL,
   };
+}
+function hallwayNeighbors(col,row){
+  const out=[];
+  [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dc,dr])=>{
+    const c=col+dc, r=row+dr;
+    if(isHallwayCell(c,r)) out.push({col:c,row:r});
+  });
+  return out;
+}
+const DOOR_CELL_TO_ROOMS = {};
+ROOMS.forEach(r=>{
+  r.doors.forEach(d=>{
+    const k = cellKey(d.col,d.row);
+    (DOOR_CELL_TO_ROOMS[k] = DOOR_CELL_TO_ROOMS[k]||[]).push(r.id);
+  });
+});
+function doorRoomsAt(col,row){ return DOOR_CELL_TO_ROOMS[cellKey(col,row)] || []; }
 
-  modeLocalBtn.onclick = () => {
-    playMode = 'local';
-    modeLocalBtn.classList.add('active');
-    modeOnlineBtn.classList.remove('active');
-    localSetup.style.display = 'block';
-    onlineSetup.style.display = 'none';
-  };
+function posKey(pos){ return pos.type==='room' ? 'room:'+pos.roomId : 'hall:'+pos.col+','+pos.row; }
+function posEquals(a,b){ return posKey(a)===posKey(b); }
+function posCenterPx(pos){ return pos.type==='room' ? roomCenterPx(pos.roomId) : cellCenterPx(pos.col,pos.row); }
 
-  // --- إعداد إدخالات أسماء اللاعبين المحليين ---
-  const playerCountSel = document.getElementById('playerCount');
-  function updatePlayerInputs(){
-    const n = parseInt(playerCountSel.value);
-    const wrap = document.getElementById('playerInputs');
-    wrap.innerHTML = '';
-    for(let i=0; i<n; i++){
-      wrap.innerHTML += `<label>اللاعب ${i+1} (${SUSPECTS[i].name}):</label>
-      <input type="text" id="pname_${i}" value="لاعب ${i+1}">`;
+function expandPos(pos){
+  if(pos.type==='hall'){
+    const out=[];
+    hallwayNeighbors(pos.col,pos.row).forEach(n=> out.push({type:'hall',col:n.col,row:n.row}));
+    doorRoomsAt(pos.col,pos.row).forEach(roomId=> out.push({type:'room', roomId}));
+    return out;
+  }
+  const room = ROOM_BY_ID[pos.roomId];
+  return room.doors.map(d=>({type:'hall', col:d.col, row:d.row}));
+}
+
+/**
+ * BFS movement search. Rooms are terminal (never expanded) except the
+ * starting position itself, matching classic rules: you may cross the
+ * hallway freely but your move ends the instant you step into a room.
+ */
+function computeReachable(startPos, maxSteps, occupiedHallwaySet){
+  const steps = new Map(), parent = new Map(), posOf = new Map();
+  const startKey = posKey(startPos);
+  steps.set(startKey, 0); posOf.set(startKey, startPos);
+  const queue = [startPos]; let qi = 0;
+  while(qi < queue.length){
+    const cur = queue[qi++];
+    const curKey = posKey(cur);
+    const curSteps = steps.get(curKey);
+    if(curSteps >= maxSteps) continue;
+    if(cur.type==='room' && curKey !== startKey) continue;
+    for(const npos of expandPos(cur)){
+      const nkey = posKey(npos);
+      if(steps.has(nkey)) continue;
+      if(npos.type==='hall' && occupiedHallwaySet.has(cellKey(npos.col,npos.row))) continue;
+      steps.set(nkey, curSteps+1);
+      parent.set(nkey, curKey);
+      posOf.set(nkey, npos);
+      queue.push(npos);
     }
   }
-  playerCountSel.addEventListener('change', updatePlayerInputs);
-  updatePlayerInputs();
-
-  // --- منطق شبكة PeerJS (الأونلاين) ---
-  function generateRoomCode(){
-    return Math.random().toString(36).substring(2, 7).toUpperCase();
+  steps.delete(startKey);
+  return { steps, parent, posOf, startKey };
+}
+function reconstructPath(reach, targetKey){
+  const path=[]; let k=targetKey;
+  while(k !== undefined && k !== reach.startKey){
+    path.unshift(reach.posOf.get(k));
+    k = reach.parent.get(k);
   }
+  return path;
+}
 
-  // 1. إنشاء غرفة (Host)
-  document.getElementById('createRoomBtn').onclick = () => {
-    const myName = document.getElementById('onlineMyName').value.trim() || 'المحقق 1';
-    const roomCode = generateRoomCode();
-    isHost = true;
-    myPlayerId = 0;
-
-    peer = new Peer('cluedo-' + roomCode);
-
-    peer.on('open', (id) => {
-      document.getElementById('displayRoomCode').textContent = roomCode;
-      document.getElementById('hostStartGameBtn').style.display = 'block';
-      document.getElementById('waitingHostText').style.display = 'none';
-      
-      game.players = [{
-        id: 0,
-        name: myName,
-        character: SUSPECTS[0].name,
-        color: SUSPECTS[0].color,
-        room: ROOMS[0],
-        hand: [],
-        eliminated: false
-      }];
-
-      updateLobbyUI();
-      showScreen('lobbyScreen');
-    });
-
-    peer.on('connection', (conn) => {
-      roomConnections.push(conn);
-      conn.on('data', (data) => handleHostReceiveData(data, conn));
-      conn.on('close', () => {
-        roomConnections = roomConnections.filter(c => c !== conn);
-      });
-    });
-
-    peer.on('error', (err) => alert('خطأ في الاتصال بالشبكة: ' + err.type));
-  };
-
-  // 2. الانضمام لغرفة (Guest)
-  document.getElementById('joinRoomBtn').onclick = () => {
-    const code = document.getElementById('joinRoomCode').value.trim().toUpperCase();
-    const myName = document.getElementById('onlineMyName').value.trim() || 'لاعب جديد';
-    if(!code){ alert('يرجى إدخال رمز الغرفة'); return; }
-
-    isHost = false;
-    peer = new Peer();
-
-    peer.on('open', () => {
-      hostConn = peer.connect('cluedo-' + code);
-
-      hostConn.on('open', () => {
-        hostConn.send({ type: 'JOIN', name: myName });
-        document.getElementById('displayRoomCode').textContent = code;
-        showScreen('lobbyScreen');
-      });
-
-      hostConn.on('data', (data) => handleGuestReceiveData(data));
-      hostConn.on('close', () => alert('تم قطع الاتصال بالغرفة من قبل المضيف'));
-    });
-
-    peer.on('error', (err) => alert('عذراً، لم يتم العثور على الغرفة بهذا الرمز!'));
-  };
-
-  function updateLobbyUI(){
-    const list = document.getElementById('lobbyPlayerList');
-    list.innerHTML = game.players.map((p, i) => `
-      <div class="player-list-item">
-        <span><span class="dot" style="background:${p.color}"></span> <strong>${p.name}</strong> (${p.character})</span>
-        <span style="color:var(--gold);">${i === 0 ? 'منشئ الغرفة' : 'متصل'}</span>
-      </div>
-    `).join('');
+/* ---------- Shuffling / dealing ---------- */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
   }
+  return a;
+}
+function getTurnOrder(players){
+  return players.slice().sort((a,b)=> SUSPECT_ORDER.indexOf(a.suspectId) - SUSPECT_ORDER.indexOf(b.suspectId));
+}
 
-  function broadcast(data){
-    roomConnections.forEach(conn => conn.send(data));
-  }
+/**
+ * Sets up a brand-new case: secret solution, dealt hands, weapon start rooms,
+ * fixed suspect start squares. `players` = [{id,name,suspectId}], any order.
+ */
+function setupNewGame(players){
+  const suspectIds = shuffle(SUSPECTS.map(s=>s.id));
+  const weaponIds  = shuffle(WEAPONS.map(w=>w.id));
+  const roomIds    = shuffle(ROOMS.map(r=>r.id));
+  const solution = { suspect: suspectIds[0], weapon: weaponIds[0], room: roomIds[0] };
 
-  // استقبال البيانات عند المضيف (Host)
-  function handleHostReceiveData(data, conn){
-    if(data.type === 'JOIN'){
-      if(game.players.length >= 6){
-        conn.send({ type: 'ERROR', message: 'الغرفة ممتلئة بالكامل' });
-        return;
-      }
-      const newId = game.players.length;
-      game.players.push({
-        id: newId,
-        name: data.name,
-        character: SUSPECTS[newId].name,
-        color: SUSPECTS[newId].color,
-        room: ROOMS[newId % ROOMS.length],
-        hand: [],
-        eliminated: false
-      });
+  const remaining = shuffle([
+    ...suspectIds.slice(1).map(id=>id),
+    ...weaponIds.slice(1).map(id=>id),
+    ...roomIds.slice(1).map(id=>id),
+  ]);
+  const hands = {}; players.forEach(p=> hands[p.id]=[]);
+  remaining.forEach((cardId,i)=>{
+    const p = players[i % players.length];
+    hands[p.id].push(cardId);
+  });
 
-      conn.send({ type: 'WELCOME', playerId: newId });
-      broadcastLobbyState();
-    } else if(data.type === 'ACTION'){
-      processGameAction(data.action);
-    }
-  }
+  const weaponPositions = {};
+  const roomsForWeapons = shuffle(ROOMS.map(r=>r.id)).slice(0,6);
+  WEAPONS.map(w=>w.id).forEach((wid,idx)=>{ weaponPositions[wid] = { type:'room', roomId: roomsForWeapons[idx] }; });
 
-  function broadcastLobbyState(){
-    updateLobbyUI();
-    broadcast({ type: 'LOBBY_STATE', players: game.players });
-  }
+  const suspectPositions = {};
+  SUSPECTS.forEach(s=>{ suspectPositions[s.id] = { type:'hall', col:s.start.col, row:s.start.row }; });
 
-  // استقبال البيانات عند المنضم (Guest)
-  function handleGuestReceiveData(data){
-    if(data.type === 'WELCOME'){
-      myPlayerId = data.playerId;
-    } else if(data.type === 'LOBBY_STATE'){
-      game.players = data.players;
-      updateLobbyUI();
-    } else if(data.type === 'GAME_START' || data.type === 'GAME_UPDATE'){
-      game = data.game;
-      initBoard();
-      showScreen('turnScreen');
-      renderTurnUI();
-    } else if(data.type === 'GAME_OVER'){
-      showGameOverScreen(data.winnerName, data.solution);
-    }
-  }
+  return { solution, hands, weaponPositions, suspectPositions };
+}
 
-  // --- بدء اللعبة الأونلاين (من قبل المضيف) ---
-  document.getElementById('hostStartGameBtn').onclick = () => {
-    if(game.players.length < 2){
-      alert('يلزم وجود لاعبين اثنين على الأقل لبدء اللعبة');
-      return;
-    }
-    setupCardsAndSolution();
-    initBoard();
-    showScreen('turnScreen');
-    renderTurnUI();
+/* =====================================================================
+   SECTION: AUDIO — Web Audio API synthesized SFX
+   ===================================================================== */
+/* @@SECTION_AUDIO@@ */
 
-    broadcast({ type: 'GAME_START', game: game });
-  };
+/* =====================================================================
+   SECTION: ICONS — SVG generators for suspects & weapons
+   ===================================================================== */
+/* @@SECTION_ICONS@@ */
 
-  // --- بدء اللعبة المحلية ---
-  document.getElementById('startLocalGameBtn').onclick = () => {
-    const n = parseInt(playerCountSel.value);
-    game.players = [];
-    for(let i=0; i<n; i++){
-      game.players.push({
-        id: i,
-        name: document.getElementById(`pname_${i}`).value || `لاعب ${i+1}`,
-        character: SUSPECTS[i].name,
-        color: SUSPECTS[i].color,
-        room: ROOMS[i % ROOMS.length],
-        hand: [],
-        eliminated: false
-      });
-    }
-    setupCardsAndSolution();
-    initBoard();
-    showPassScreen(0, startTurn);
-  };
+/* =====================================================================
+   SECTION: BOARD — SVG board builder & token animation
+   ===================================================================== */
+/* @@SECTION_BOARD@@ */
 
-  // تجهيز الحل وسحب الكروت
-  function setupCardsAndSolution(){
-    const sCards = [...SUSPECTS.map(s=>s.name)].sort(()=>Math.random()-0.5);
-    const wCards = [...WEAPONS].sort(()=>Math.random()-0.5);
-    const rCards = [...ROOMS].sort(()=>Math.random()-0.5);
+/* =====================================================================
+   SECTION: ENGINE — authoritative game logic (pure, host-side)
+   ===================================================================== */
+/* @@SECTION_ENGINE@@ */
 
-    game.solution = { suspect: sCards.pop(), weapon: wCards.pop(), room: rCards.pop() };
+/* =====================================================================
+   SECTION: NETWORK — PeerJS transport (host + client)
+   ===================================================================== */
+/* @@SECTION_NETWORK@@ */
 
-    let deck = [...sCards, ...wCards, ...rCards].sort(()=>Math.random()-0.5);
-    let pIdx = 0;
-    while(deck.length){
-      game.players[pIdx % game.players.length].hand.push(deck.pop());
-      pIdx++;
-    }
+/* =====================================================================
+   SECTION: LOCAL — Pass & Play transport
+   ===================================================================== */
+/* @@SECTION_LOCAL@@ */
 
-    game.currentIndex = 0;
-    game.log = [];
-    addLog('بدأت القضية بنجاح! تم تمويه الجريمة وتوزيع الكروت والأدلة.');
-  }
+/* =====================================================================
+   SECTION: UI — rendering, event wiring, modals, notebook
+   ===================================================================== */
+/* @@SECTION_UI@@ */
 
-  // --- إدارة حركة الأدوار والأعمال داخل اللعبة ---
-  function sendAction(action){
-    if(playMode === 'online'){
-      if(isHost){
-        processGameAction(action);
-      } else {
-        hostConn.send({ type: 'ACTION', action: action });
-      }
-    } else {
-      processGameAction(action);
-    }
-  }
-
-  function processGameAction(action){
-    if(action.type === 'ROLL_DICE'){
-      const roll = Math.floor(Math.random() * 6) + 1;
-      game.turnState.reachable = ROOMS.filter(r => r !== game.players[game.currentIndex].room);
-      addLog(`${game.players[game.currentIndex].name} رمى النرد وحصل على ${roll}`);
-    } else if(action.type === 'MOVE'){
-      const p = game.players[game.currentIndex];
-      p.room = action.room;
-      game.turnState.moved = true;
-      game.turnState.reachable = [];
-      addLog(`${p.name} انتقل إلى ${action.room}`);
-    } else if(action.type === 'SUGGEST'){
-      game.turnState.suggested = true;
-      addLog(`${game.players[game.currentIndex].name} يخمن: [${action.suspect}] بالسلاح [${action.weapon}] في [${game.players[game.currentIndex].room}]`);
-    } else if(action.type === 'END_TURN'){
-      let next = (game.currentIndex + 1) % game.players.length;
-      while(game.players[next].eliminated){
-        next = (next + 1) % game.players.length;
-      }
-      game.currentIndex = next;
-      game.turnState = { moved: false, suggested: false, reachable: [] };
-    } else if(action.type === 'ACCUSE'){
-      const win = (action.suspect === game.solution.suspect && action.weapon === game.solution.weapon && action.room === game.solution.room);
-      if(win){
-        if(playMode === 'online' && isHost){
-          broadcast({ type: 'GAME_OVER', winnerName: game.players[game.currentIndex].name, solution: game.solution });
-        }
-        showGameOverScreen(game.players[game.currentIndex].name, game.solution);
-        return;
-      } else {
-        addLog(`الاتهام النهائي لـ ${game.players[game.currentIndex].name} كان خاطئاً! خرج من المنافسة.`);
-        game.players[game.currentIndex].eliminated = true;
-        let next = (game.currentIndex + 1) % game.players.length;
-        while(game.players[next].eliminated){
-          next = (next + 1) % game.players.length;
-        }
-        game.currentIndex = next;
-        game.turnState = { moved: false, suggested: false, reachable: [] };
-      }
-    }
-
-    if(playMode === 'online' && isHost){
-      broadcast({ type: 'GAME_UPDATE', game: game });
-    }
-
-    if(playMode === 'local' && action.type === 'END_TURN'){
-      showPassScreen(game.currentIndex, startTurn);
-    } else {
-      renderTurnUI();
-    }
-  }
-
-  function showPassScreen(pIdx, onReady){
-    const p = game.players[pIdx];
-    document.getElementById('passTitle').textContent = `مرر الجهاز إلى: ${p.name}`;
-    document.getElementById('passDesc').textContent = `أنت تلعب بشخصية (${p.character})`;
-    
-    const btn = document.getElementById('passReadyBtn');
-    btn.onclick = () => {
-      showScreen('turnScreen');
-      onReady();
-    };
-    showScreen('passScreen');
-  }
-
-  function startTurn(){
-    game.turnState = { moved: false, suggested: false, reachable: [] };
-    renderTurnUI();
-  }
-
-  function renderTurnUI(){
-    const p = game.players[game.currentIndex];
-    const isMyTurn = (playMode === 'local') || (p.id === myPlayerId);
-
-    document.getElementById('turnDot').style.background = p.color;
-    document.getElementById('turnWho').textContent = `${p.name} (${p.character}) ${isMyTurn ? '— (دورك الآن!)' : ''}`;
-    document.getElementById('turnRoom').textContent = `الحالي: ${p.room}`;
-
-    document.getElementById('rollBtn').disabled = !isMyTurn || game.turnState.moved;
-    document.getElementById('suggestBtn').disabled = !isMyTurn || game.turnState.suggested || !game.turnState.moved;
-    document.getElementById('accuseBtn').disabled = !isMyTurn;
-    document.getElementById('endTurnBtn').disabled = !isMyTurn;
-
-    // عرض الكروت الخاصة باللاعب المحلي أو الأونلاين الحالي فقط
-    const me = (playMode === 'local') ? p : game.players.find(pl => pl.id === myPlayerId);
-    if(me){
-      document.getElementById('handGrid').innerHTML = me.hand.map(c => `<div class="hand-card">${c}</div>`).join('');
-    }
-
-    document.getElementById('log').innerHTML = game.log.map(l => `<div>${l}</div>`).join('');
-    updateBoard();
-  }
-
-  // رمي النرد
-  document.getElementById('rollBtn').onclick = () => {
-    sendAction({ type: 'ROLL_DICE' });
-  };
-
-  // التحرك
-  function moveToRoom(rName){
-    const p = game.players[game.currentIndex];
-    const isMyTurn = (playMode === 'local') || (p.id === myPlayerId);
-    if(!isMyTurn || game.turnState.moved || !game.turnState.reachable.includes(rName)) return;
-
-    sendAction({ type: 'MOVE', room: rName });
-  }
-
-  // إنهاء الدور
-  document.getElementById('endTurnBtn').onclick = () => {
-    sendAction({ type: 'END_TURN' });
-  };
-
-  // التخمين
-  document.getElementById('suggestBtn').onclick = () => {
-    document.getElementById('suggSuspect').innerHTML = SUSPECTS.map(s=>`<option>${s.name}</option>`).join('');
-    document.getElementById('suggWeapon').innerHTML = WEAPONS.map(w=>`<option>${w}</option>`).join('');
-    document.getElementById('suggestModal').classList.add('show');
-  };
-
-  document.getElementById('cancelSuggBtn').onclick = () => document.getElementById('suggestModal').classList.remove('show');
-
-  document.getElementById('confirmSuggBtn').onclick = () => {
-    document.getElementById('suggestModal').classList.remove('show');
-    const susp = document.getElementById('suggSuspect').value;
-    const weap = document.getElementById('suggWeapon').value;
-
-    sendAction({ type: 'SUGGEST', suspect: susp, weapon: weap });
-  };
-
-  // الاتهام النهائي
-  document.getElementById('accuseBtn').onclick = () => {
-    document.getElementById('accSuspect').innerHTML = SUSPECTS.map(s=>`<option>${s.name}</option>`).join('');
-    document.getElementById('accWeapon').innerHTML = WEAPONS.map(w=>`<option>${w}</option>`).join('');
-    document.getElementById('accRoom').innerHTML = ROOMS.map(r=>`<option>${r}</option>`).join('');
-    document.getElementById('accuseModal').classList.add('show');
-  };
-
-  document.getElementById('cancelAccBtn').onclick = () => document.getElementById('accuseModal').classList.remove('show');
-
-  document.getElementById('confirmAccBtn').onclick = () => {
-    document.getElementById('accuseModal').classList.remove('show');
-    const susp = document.getElementById('accSuspect').value;
-    const weap = document.getElementById('accWeapon').value;
-    const room = document.getElementById('accRoom').value;
-
-    sendAction({ type: 'ACCUSE', suspect: susp, weapon: weap, room: room });
-  };
-
-  function showGameOverScreen(winnerName, solution){
-    document.getElementById('overTitle').textContent = `🎉 فوز بطل التحقيق: ${winnerName}`;
-    document.getElementById('overText').textContent = 'لقد قمت بحل القضية وكشف القاتل والسلاح والغرفة بنجاح!';
-    document.getElementById('solutionText').innerHTML = `الحقيقة: القاتل هو <strong>${solution.suspect}</strong> بواسطة <strong>${solution.weapon}</strong> في <strong>${solution.room}</strong>`;
-    showScreen('overScreen');
-  }
-
-  // --- رسم لوحة اللعبة SVG ---
-  function initBoard(){
-    const svg = document.getElementById('boardSvg');
-    svg.innerHTML = '';
-    const size = 180, gap = 40;
-
-    ROOMS.forEach((rName, i) => {
-      const row = Math.floor(i / 3), col = i % 3;
-      const x = col * (size + gap) + 10, y = row * (size + gap) + 10;
-
-      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      g.setAttribute('class', 'room-g');
-      g.setAttribute('id', `room_${rName}`);
-
-      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      rect.setAttribute('x', x); rect.setAttribute('y', y);
-      rect.setAttribute('width', size); rect.setAttribute('height', size);
-      rect.setAttribute('rx', 10); rect.setAttribute('class', 'room-rect');
-
-      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      text.setAttribute('x', x + size/2); text.setAttribute('y', y + size/2);
-      text.setAttribute('class', 'room-label');
-      text.textContent = rName;
-
-      g.appendChild(rect); g.appendChild(text);
-      g.addEventListener('click', () => moveToRoom(rName));
-      svg.appendChild(g);
-    });
-  }
-
-  function updateBoard(){
-    ROOMS.forEach(rName => {
-      const g = document.getElementById(`room_${rName}`);
-      if(g){
-        const isReachable = game.turnState.reachable.includes(rName);
-        g.classList.toggle('reachable', isReachable);
-      }
-    });
-  }
-
-  function addLog(txt){ game.log.unshift(txt); }
-  function showScreen(id){
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-  }
-
-})();
+/* =====================================================================
+   SECTION: INIT
+   ===================================================================== */
+/* @@SECTION_INIT@@ */
 </script>
-
 </body>
 </html>
