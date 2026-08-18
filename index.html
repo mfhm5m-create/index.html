@@ -1356,11 +1356,15 @@ function nextSuggestionCheck(game){
    ===================================================================== */
 let peer=null, hostConn=null, clientConns={}, myPeerId=null, roomCode=null;
 let mode='menu', hostGame=null, clientGame=null, lobbyPlayers=[], myLobby={name:'',suspectId:'scarlett',ready:false};
+const PRIVATE_PEER_SERVER='https://mansion-mystery-peer-mfhm5m.onrender.com';
 function peerOptions(){
-  // Let PeerJS choose its official Cloud signalling endpoint automatically.
-  // Explicit host/port/path values can cause unnecessary socket disconnects
-  // on some browsers/networks (especially privacy-focused browsers).
+  // Private signalling server. Render terminates HTTPS/WSS for us.
+  const u=new URL(PRIVATE_PEER_SERVER);
   return {
+    host:u.hostname,
+    port:u.port?Number(u.port):(u.protocol==='https:'?443:80),
+    path:'/peerjs',
+    secure:u.protocol==='https:',
     debug:1,
     pingInterval:5000,
     config:{iceServers:[
@@ -1402,7 +1406,7 @@ async function hostOnline(){
   lobbyPlayers=[{id:'host-pending',name:myLobby.name,suspectId:myLobby.suspectId,ready:false,host:true,connected:false}];
   showLobby();
   setConnectionPills(false);
-  setLobbyStatus('Connecting to the online service…');
+  setLobbyStatus('Connecting to the private game server…');
   try{
     await ensurePeerJSLibrary();
     if(mode!=='online-host')return;
@@ -1424,7 +1428,7 @@ async function hostOnline(){
     let hostReconnectTimer=null;
     peer.on('disconnected',()=>{
       setConnectionPills(false);
-      setLobbyStatus('Online service connection was interrupted. Reconnecting…','err');
+      setLobbyStatus('Private game server connection was interrupted. Reconnecting…','err');
       clearTimeout(hostReconnectTimer);
       const tryReconnect=()=>{
         if(mode!=='online-host'||!peer||peer.destroyed)return;
@@ -1438,7 +1442,7 @@ async function hostOnline(){
       clearTimeout(hostReconnectTimer);
       if(mode==='online-host'){
         setConnectionPills(false);
-        setLobbyStatus('Online service closed the host session. Leave and press Host again.','err');
+        setLobbyStatus('Private game server closed the host session. Leave and press Host again.','err');
       }
     });
     peer.on('error',err=>{
