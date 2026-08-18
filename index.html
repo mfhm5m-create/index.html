@@ -1356,18 +1356,20 @@ function nextSuggestionCheck(game){
    ===================================================================== */
 let peer=null, hostConn=null, clientConns={}, myPeerId=null, roomCode=null;
 let mode='menu', hostGame=null, clientGame=null, lobbyPlayers=[], myLobby={name:'',suspectId:'scarlett',ready:false};
-function peerOptions(){return {
-  debug:1,
-  host:'0.peerjs.com',
-  port:443,
-  path:'/',
-  secure:true,
-  config:{iceServers:[
-    {urls:'stun:stun.l.google.com:19302'},
-    {urls:'stun:stun1.l.google.com:19302'},
-    {urls:'stun:stun2.l.google.com:19302'}
-  ]}
-};}
+function peerOptions(){
+  // Let PeerJS choose its official Cloud signalling endpoint automatically.
+  // Explicit host/port/path values can cause unnecessary socket disconnects
+  // on some browsers/networks (especially privacy-focused browsers).
+  return {
+    debug:1,
+    pingInterval:5000,
+    config:{iceServers:[
+      {urls:'stun:stun.l.google.com:19302'},
+      {urls:'stun:stun1.l.google.com:19302'},
+      {urls:'stun:stun2.l.google.com:19302'}
+    ]}
+  };
+}
 function generateRoomCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let out='';for(let i=0;i<6;i++)out+=chars[Math.floor(Math.random()*chars.length)];return out;}
 function destroyPeer(){try{hostConn?.close();}catch(_){} try{Object.values(clientConns).forEach(c=>c.close());}catch(_){} try{peer?.destroy();}catch(_){} peer=null;hostConn=null;clientConns={};myPeerId=null;}
 let peerJsLoadPromise=null;
@@ -1419,7 +1421,26 @@ async function hostOnline(){
       renderLobby();setConnectionPills(true);setLobbyStatus('Room ready. Share the code.','ok');
     });
     peer.on('connection',conn=>{clientConns[conn.peer]=conn;wireHostConnection(conn);});
-    peer.on('disconnected',()=>{setConnectionPills(false);setLobbyStatus('Connection to the PeerJS service was lost. Trying to reconnect…','err');try{peer.reconnect();}catch(_){}});
+    let hostReconnectTimer=null;
+    peer.on('disconnected',()=>{
+      setConnectionPills(false);
+      setLobbyStatus('Online service connection was interrupted. Reconnecting…','err');
+      clearTimeout(hostReconnectTimer);
+      const tryReconnect=()=>{
+        if(mode!=='online-host'||!peer||peer.destroyed)return;
+        if(!peer.disconnected)return;
+        try{peer.reconnect();}catch(_){}
+        hostReconnectTimer=setTimeout(tryReconnect,2500);
+      };
+      tryReconnect();
+    });
+    peer.on('close',()=>{
+      clearTimeout(hostReconnectTimer);
+      if(mode==='online-host'){
+        setConnectionPills(false);
+        setLobbyStatus('Online service closed the host session. Leave and press Host again.','err');
+      }
+    });
     peer.on('error',err=>{
       clearTimeout(openTimeout);
       if(err?.type==='unavailable-id'&&mode==='online-host'){
