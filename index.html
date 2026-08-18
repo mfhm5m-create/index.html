@@ -600,6 +600,46 @@ table.notebook-table tbody tr.grp-start td, table.notebook-table tbody tr.grp-st
   table.notebook-table thead th{height:70px;font-size:.55rem;}
   .hand-card{width:76px;height:108px;}
 }
+
+
+/* =====================================================================
+   CLASSIC EDITION V2 — board polish, notebook-first UI, audio feedback
+   ===================================================================== */
+.classic-second-die{display:none !important;}
+.dice-tray::after{
+  content:"CLASSIC • 1 DIE";font-family:var(--font-mono);font-size:.58rem;letter-spacing:.12em;
+  color:var(--gold-3);opacity:.72;align-self:center;white-space:nowrap;
+}
+.quick-notebook{display:flex;flex-direction:column;gap:10px;overflow:auto;flex:1;padding:2px 2px 10px;}
+.quick-nb-group{border:1px solid rgba(212,175,55,.18);border-radius:10px;padding:9px;background:rgba(0,0,0,.18);}
+.quick-nb-group b{display:block;font-family:var(--font-mono);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-3);margin-bottom:5px;}
+.quick-nb-chip{display:inline-block;font-size:.78rem;padding:3px 7px;margin:2px;border-radius:999px;background:rgba(212,175,55,.09);border:1px solid rgba(212,175,55,.18);}
+.quick-nb-empty{font-family:var(--font-mono);font-size:.72rem;opacity:.58;}
+.notebook-insights{margin:0 0 12px;padding:10px 12px;border-radius:10px;background:rgba(43,29,16,.07);border:1px solid rgba(43,29,16,.14);font-size:.86rem;}
+.notebook-insights strong{font-family:var(--font-display);}
+.notebook-table{min-width:680px;}
+table.notebook-table thead th{writing-mode:horizontal-tb;transform:none;height:auto;min-width:72px;padding:8px 5px;vertical-align:bottom;}
+table.notebook-table thead th:first-child{position:sticky;left:0;z-index:4;background:var(--parchment-2);min-width:145px;}
+table.notebook-table tbody th{position:sticky;left:0;z-index:3;background:rgba(231,217,179,.96);}
+.nb-cell.auto{background:rgba(43,29,16,.06);cursor:default;}
+.nb-cell.known{background:rgba(95,174,90,.18);font-weight:700;}
+.nb-cell.case-star{background:rgba(212,175,55,.22);color:#6b4b0c;font-weight:900;}
+.nb-cell[data-mark="x"]{color:var(--danger-2);font-weight:700;}
+.nb-cell[data-mark="q"]{color:var(--info-2);font-weight:700;}
+.board-frame{overflow:hidden;}
+#boardSvg{background:radial-gradient(circle at 50% 45%,rgba(240,212,133,.06),transparent 45%);border-radius:12px;}
+.room-label{font-weight:700;text-shadow:0 2px 5px rgba(0,0,0,.8);}
+.room-decor{pointer-events:none;opacity:.18;filter:drop-shadow(0 2px 2px rgba(0,0,0,.7));}
+.board-title{font-family:var(--font-display-deco);fill:rgba(240,212,133,.2);letter-spacing:.16em;text-anchor:middle;pointer-events:none;}
+.corridor-cell{transition:fill .16s ease,stroke .16s ease,filter .16s ease;}
+.corridor-cell.reachable{filter:drop-shadow(0 0 4px rgba(212,175,55,.55));}
+.token-suspect,.token-weapon{transition:transform .42s cubic-bezier(.2,.85,.25,1.18);}
+.modal#modal-accusation.open{animation:accuseIn .38s cubic-bezier(.2,.8,.25,1) both;}
+@keyframes accuseIn{0%{opacity:0;transform:scale(.88) rotate(-.6deg)}70%{transform:scale(1.02) rotate(.2deg)}100%{opacity:1;transform:none}}
+@media(max-width:640px){
+  .tabs{overflow-x:auto;}.tab-btn{min-width:82px}.notebook-modal{padding:16px}.notebook-scroll{max-height:68vh}
+}
+
 </style>
 </head>
 <body>
@@ -736,9 +776,9 @@ table.notebook-table tbody tr.grp-start td, table.notebook-table tbody tr.grp-st
       <div class="action-bar wood-panel">
         <div class="dice-tray">
           <div class="die" id="die1"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-          <div class="die" id="die2"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="die classic-second-die" id="die2" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
         </div>
-        <button class="btn" id="btnRollDice" type="button">🎲 Roll Dice</button>
+        <button class="btn" id="btnRollDice" type="button">🎲 Roll Die</button>
         <button class="btn secondary hidden" id="btnTakePassage" type="button">🕳️ Secret Passage</button>
         <button class="btn secondary" id="btnSuggest" type="button" disabled>🔍 Suggest</button>
         <button class="btn danger" id="btnAccuse" type="button">⚖️ Accuse</button>
@@ -749,12 +789,17 @@ table.notebook-table tbody tr.grp-start td, table.notebook-table tbody tr.grp-st
     <aside class="side-pane wood-panel">
       <div class="tabs">
         <button class="tab-btn active" data-tab="tab-hand" type="button">Your Hand</button>
+        <button class="tab-btn" data-tab="tab-notebook" type="button">Notebook</button>
         <button class="tab-btn" data-tab="tab-log" type="button">Case Log</button>
         <button class="tab-btn" data-tab="tab-players" type="button">Investigators</button>
       </div>
       <div class="tab-panels">
         <div class="tab-panel active" id="tab-hand">
           <div class="hand-grid" id="handGrid"></div>
+        </div>
+        <div class="tab-panel" id="tab-notebook">
+          <div class="quick-notebook" id="notebookQuick"></div>
+          <button class="btn block small" id="btnOpenNotebookPanel" type="button">Open Full Detective Notebook</button>
         </div>
         <div class="tab-panel" id="tab-log">
           <ul class="log-list" id="caseLog"></ul>
@@ -859,13 +904,14 @@ table.notebook-table tbody tr.grp-start td, table.notebook-table tbody tr.grp-st
 
   <div class="modal parchment-panel notebook-modal" id="modal-notebook">
     <button class="close-x" data-close type="button">✕</button>
-    <h3>Sleuth's Notebook</h3>
-    <p class="modal-sub">✔ auto-marks cards in your hand. Click any other cell to cycle ✔ → ✕ → ? → blank.</p>
+    <h3>Detective Notebook</h3>
+    <p class="modal-sub">Classic deduction sheet: players who could not disprove are marked automatically; privately revealed cards are recorded only for you.</p>
+    <div id="notebookInsights" class="notebook-insights"></div>
     <div class="notebook-scroll">
       <table class="notebook-table" id="notebookTable"></table>
     </div>
     <div class="nb-legend">
-      <span>✔ = in a hand (yours)</span><span style="color:var(--danger-2)">✕ = ruled out</span><span style="color:var(--info-2)">? = suspected</span>
+      <span>✔ = confirmed</span><span style="color:var(--danger-2)">✕ = cannot be here</span><span style="color:var(--info-2)">? = your suspicion</span><span>★ = logically forced into the case file</span>
     </div>
   </div>
 
@@ -898,21 +944,33 @@ table.notebook-table tbody tr.grp-start td, table.notebook-table tbody tr.grp-st
 
   <div class="modal howto-body parchment-panel wide" id="modal-howtoplay">
     <button class="close-x" data-close type="button">✕</button>
-    <h3>How to Play</h3>
+    <h3>How to Play — Classic Rules</h3>
     <div class="howto-body">
       <h4>Goal</h4>
-      <p>Deduce the secret Suspect, Weapon, and Room hidden in the case file before your rivals — or before everyone runs out of guesses.</p>
-      <h4>On Your Turn</h4>
+      <p>Deduce the three cards in the Case File: one Suspect, one Weapon, and one Room.</p>
+      <h4>Setup & Turn Order</h4>
       <ul>
-        <li>Roll the dice and move through corridors into any reachable room, or take a Secret Passage from a corner room straight to its diagonal partner.</li>
-        <li>If you're in a room, you may make a <b>Suggestion</b>: name a suspect and weapon (the room is whichever you're in). That suspect's and the weapon's tokens glide into the room with you.</li>
-        <li>Other investigators are asked — in turn order — whether they hold any of the three cards. The first one who can, privately reveals just one card to you.</li>
-        <li>At any point on your turn you may make a formal <b>Accusation</b> naming suspect + weapon + room. Guess right and you win instantly. Guess wrong and you're out as an active investigator — though you stay on the board to disprove others.</li>
+        <li>Classic play is for 3–6 investigators. One card from each category is hidden in the Case File; all remaining cards are dealt.</li>
+        <li>All six suspect tokens remain on the board, even when fewer than six people play. The six weapons begin in six different rooms.</li>
+        <li>Miss Scarlett has first priority in classic turn order; play then continues around the table.</li>
       </ul>
-      <h4>The Notebook</h4>
-      <p>Use the Sleuth's Notebook to track what's been ruled out. Cards in your own hand are auto-checked.</p>
-      <h4>Modes</h4>
-      <p><b>Local Pass &amp; Play</b> hides each hand between turns with a hand-off screen. <b>Online</b> uses direct peer-to-peer connections (PeerJS) — one player hosts and shares a room code.</p>
+      <h4>Movement</h4>
+      <ul>
+        <li>Roll <b>one die</b>. Move horizontally or vertically, never diagonally. You cannot enter the same corridor square twice during the same turn.</li>
+        <li>You cannot move through or land on a corridor square occupied by another token. Entering a room ends movement immediately.</li>
+        <li>If you begin your turn in a corner room, you may use its Secret Passage <b>instead of rolling</b>.</li>
+      </ul>
+      <h4>Suggestions</h4>
+      <ul>
+        <li>After entering a room, you may make one Suggestion for that room: name one Suspect and one Weapon. Both tokens are moved into your room.</li>
+        <li>Starting with the next investigator in turn order, the first person able to disprove must privately reveal exactly one matching card of their choice.</li>
+        <li>You may include cards from your own hand in a Suggestion. You may also make a Suggestion and an Accusation on the same turn.</li>
+        <li>You cannot simply remain in a room and make the same room's Suggestion again next turn. If another player's Suggestion moves your token into a room, on your next turn you may Suggest there without rolling.</li>
+      </ul>
+      <h4>Accusations</h4>
+      <p>On your turn you may accuse any Suspect, Weapon, and Room. A correct Accusation wins. A wrong Accusation removes you from movement, Suggestions, and future Accusations, but you still privately disprove other players' Suggestions when able.</p>
+      <h4>Detective Notebook</h4>
+      <p>The notebook is private to each investigator. Your own cards, public “could not disprove” information, and cards privately shown to you are tracked automatically. You can add your own ✕, ?, and ✔ marks.</p>
     </div>
   </div>
 
@@ -1421,10 +1479,10 @@ function renderLobby(){
   $('lobbyPlayerList').innerHTML=lobbyPlayers.map(p=>`<li class="player-row"><span class="avatar">${suspectIcon(p.suspectId,34)}</span><span class="pname">${escapeHtml(p.name)}</span>${p.host?'<span class="badge host">Host</span>':''}${p.id===myPeerId?'<span class="badge you">You</span>':''}<span class="badge ${p.ready?'ready':'waiting'}">${p.ready?'Ready':'Waiting'}</span></li>`).join('');
   if(mode==='local'){
     $('lobbySuspectGrid').innerHTML=lobbyPlayers.map(p=>`<div class="suspect-pick selected">${suspectIcon(p.suspectId)}<span class="name">${escapeHtml(p.name)}</span></div>`).join('');
-    $('lobbyLocalCountRow').innerHTML=[2,3,4,5,6].map(n=>`<button class="btn small ${n===localCount?'success':'secondary'}" data-count="${n}">${n}</button>`).join('');$('lobbyLocalCountRow').querySelectorAll('[data-count]').forEach(b=>b.onclick=()=>setLocalCount(+b.dataset.count));
+    $('lobbyLocalCountRow').innerHTML=[3,4,5,6].map(n=>`<button class="btn small ${n===localCount?'success':'secondary'}" data-count="${n}">${n}</button>`).join('');$('lobbyLocalCountRow').querySelectorAll('[data-count]').forEach(b=>b.onclick=()=>setLocalCount(+b.dataset.count));
   }else renderSuspectPicks();
   const ready=$('btnLobbyReady');ready.classList.toggle('hidden',mode==='local');if(online){const me=lobbyPlayers.find(p=>p.id===myPeerId);ready.textContent=me?.ready?'Ready ✓':"I'm Ready";}
-  const start=$('btnLobbyStart');const canStart=mode==='local'||(mode==='online-host'&&lobbyPlayers.length>=2&&lobbyPlayers.every(p=>p.ready));start.classList.toggle('hidden',!(mode==='local'||mode==='online-host'));start.disabled=!canStart;
+  const start=$('btnLobbyStart');const canStart=mode==='local'||(mode==='online-host'&&lobbyPlayers.length>=3&&lobbyPlayers.every(p=>p.ready));start.classList.toggle('hidden',!(mode==='local'||mode==='online-host'));start.disabled=!canStart;
   setConnectionPills(online?true:false);
 }
 function setDie(el,val){if(!el)return;const patterns={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};[...el.children].forEach((x,i)=>x.style.opacity=(patterns[val]||[]).includes(i)?'1':'0');}
@@ -1448,7 +1506,7 @@ function openSuggestion(){const me=myPlayer();if(!me?.position||me.position.type
 function updateSuggestConfirm(){$('btnConfirmSuggest').disabled=!(suggestPick.suspect&&suggestPick.weapon);}
 function openAccusation(){accusePick={suspect:null,weapon:null,room:null};buildPicker('accSuspectGrid',SUSPECTS,suspectIcon,id=>{accusePick.suspect=id;updateAccuseConfirm();});buildPicker('accWeaponGrid',WEAPONS,weaponIcon,id=>{accusePick.weapon=id;updateAccuseConfirm();});buildPicker('accRoomGrid',ROOMS,null,id=>{accusePick.room=id;updateAccuseConfirm();});updateAccuseConfirm();openModal('modal-accusation');}
 function updateAccuseConfirm(){$('btnConfirmAccuse').disabled=!(accusePick.suspect&&accusePick.weapon&&accusePick.room);}
-function showDisprovePrompt(data,isLocal=false){const g=getVisibleGame()||hostGame;const sugg=g?.players?.find(p=>p.id===data.suggesterId);$('disproveAskedBy').textContent=`${sugg?.name||'Another investigator'} made a suggestion.`;$('disproveCardChoices').innerHTML=(data.matches||[]).map(id=>`<button class="pick-chip" data-card="${id}">${cardHtml(id)}</button>`).join('');$('disproveCardChoices').querySelectorAll('[data-card]').forEach(b=>b.onclick=()=>{const cardId=b.dataset.card;if(isLocal){const res=engineAction(hostGame,localTurnViewingId,'DISPROVE',{cardId});if(res.ok&&res.reveal){localTurnViewingId=res.reveal.to;showPrivateReveal({cardId:res.reveal.cardId,fromId:res.reveal.from});}renderGame();}else sendGameAction('DISPROVE',{cardId});});openModal('modal-disprove-prompt');}
+function showDisprovePrompt(data,isLocal=false){const g=getVisibleGame()||hostGame;const sugg=g?.players?.find(p=>p.id===data.suggesterId);$('disproveAskedBy').textContent=`${sugg?.name||'Another investigator'} made a suggestion.`;$('disproveCardChoices').innerHTML=(data.matches||[]).map(id=>`<button class="pick-chip" data-card="${id}">${cardHtml(id)}</button>`).join('');$('disproveCardChoices').querySelectorAll('[data-card]').forEach(b=>b.onclick=()=>{const cardId=b.dataset.card;if(isLocal){const res=engineAction(hostGame,localTurnViewingId,'DISPROVE',{cardId});if(res.ok&&res.reveal){localTurnViewingId=res.reveal.to;showPrivateReveal({cardId:res.reveal.cardId,fromId:res.reveal.from,toId:res.reveal.to});}renderGame();}else sendGameAction('DISPROVE',{cardId});});openModal('modal-disprove-prompt');}
 function showPrivateReveal(data){const g=getVisibleGame()||hostGame;const from=g?.players?.find(p=>p.id===data.fromId);$('revealFromText').textContent=`${from?.name||'An investigator'} revealed:`;$('revealCardShown').innerHTML=cardHtml(data.cardId);openModal('modal-private-reveal');if(mode==='local')localTurnViewingId=currentPlayer(hostGame)?.id;}
 function showNoDisprove(){$('disproveNoneText').textContent='Every other investigator was checked, and none held a matching card.';openModal('modal-disprove-none');}
 function showGameOver(g){
@@ -1465,22 +1523,484 @@ function wireUI(){
   $('joinCodeInput').addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6));
   $('lobbyNameInput').addEventListener('change',()=>{const name=cleanName($('lobbyNameInput').value);if(mode==='online-host'){const p=lobbyPlayers.find(x=>x.id===myPeerId);if(p){p.name=name;broadcastLobby();}}else if(mode==='online-client'&&hostConn?.open)hostConn.send({type:'LOBBY_UPDATE_SELF',name});});
   $('btnLobbyReady').onclick=()=>{if(mode==='online-host'){const p=lobbyPlayers.find(x=>x.id===myPeerId);p.ready=!p.ready;broadcastLobby();}else if(mode==='online-client'){const p=lobbyPlayers.find(x=>x.id===myPeerId);const next=!(p?.ready);myLobby.ready=next;hostConn?.send({type:'LOBBY_UPDATE_SELF',ready:next});}};
-  $('btnLobbyStart').onclick=()=>{if(mode==='local')return startLocalGame();if(mode!=='online-host')return;if(lobbyPlayers.length<2||!lobbyPlayers.every(p=>p.ready))return toast('Everyone must be ready.');hostGame=newAuthoritativeGame(lobbyPlayers.map(p=>({id:p.id,name:p.name,suspectId:p.suspectId})));broadcastGame();showGame();};
+  $('btnLobbyStart').onclick=()=>{if(mode==='local')return startLocalGame();if(mode!=='online-host')return;if(lobbyPlayers.length<3||!lobbyPlayers.every(p=>p.ready))return toast('Everyone must be ready.');hostGame=newAuthoritativeGame(lobbyPlayers.map(p=>({id:p.id,name:p.name,suspectId:p.suspectId})));broadcastGame();showGame();};
   $('btnLobbyLeave').onclick=leaveToMenu;$('btnLeaveGame').onclick=leaveToMenu;$('btnCopyCode').onclick=()=>navigator.clipboard?.writeText(roomCode||'').then(()=>toast('Room code copied.')).catch(()=>toast('Code: '+roomCode));
   $('btnRollDice').onclick=()=>{sfx('roll');sendGameAction('ROLL');};$('btnTakePassage').onclick=()=>sendGameAction('PASSAGE');$('btnSuggest').onclick=openSuggestion;$('btnAccuse').onclick=openAccusation;$('btnEndTurn').onclick=()=>sendGameAction('END_TURN');
   $('btnConfirmSuggest').onclick=()=>{closeModal();sendGameAction('SUGGEST',suggestPick);};$('btnConfirmAccuse').onclick=()=>{closeModal();sendGameAction('ACCUSE',accusePick);};
-  $('btnOpenNotebook').onclick=()=>{renderNotebook();openModal('modal-notebook');};$('btnHowToPlay').onclick=()=>openModal('modal-howtoplay');document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeModal);
+  $('btnOpenNotebook').onclick=()=>{renderNotebook();openModal('modal-notebook');};if($('btnOpenNotebookPanel'))$('btnOpenNotebookPanel').onclick=()=>{renderNotebook();openModal('modal-notebook');};$('btnHowToPlay').onclick=()=>openModal('modal-howtoplay');document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeModal);
   $('btnPassHandReady').onclick=()=>{closeModal();renderGame();};
-  $('btnSoundToggleMenu').onclick=()=>{soundEnabled=!soundEnabled;updateSoundButtons();};$('btnSoundToggleGame').onclick=()=>{soundEnabled=!soundEnabled;updateSoundButtons();};
+  $('btnSoundToggleMenu').onclick=async()=>{soundEnabled=!soundEnabled;if(soundEnabled){await ensureAudio();sfx('good');}updateSoundButtons();};$('btnSoundToggleGame').onclick=async()=>{soundEnabled=!soundEnabled;if(soundEnabled){await ensureAudio();sfx('good');}updateSoundButtons();};
   document.querySelectorAll('.tab-btn').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.tab).classList.add('active');});
-  $('btnBackToMenuVictory').onclick=leaveToMenu;$('btnBackToMenuNoSolution').onclick=leaveToMenu;$('btnPlayAgain').onclick=leaveToMenu;
+  $('btnBackToMenuVictory').onclick=leaveToMenu;$('btnBackToMenuNoSolution').onclick=leaveToMenu;$('btnPlayAgain').onclick=leaveToMenu;document.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{if(soundEnabled&&!b.disabled)sfx('click');},{passive:true}));
 }
+
+
+
+/* =====================================================================
+   CLASSIC EDITION V2 PATCH
+   Rules target: Parker Brothers / Hasbro classic 1986 ruleset.
+   This block intentionally overrides selected V1 functions above.
+   ===================================================================== */
+
+/* ---------- Physical board-game Web Audio SFX ---------- */
+let audioUnlocked=false;
+async function ensureAudio(){
+  if(!soundEnabled)return null;
+  try{
+    audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended')await audioCtx.resume();
+    audioUnlocked=audioCtx.state==='running';
+    return audioCtx;
+  }catch(_){return null;}
+}
+function makeNoiseBuffer(ctx,dur=.12){
+  const len=Math.max(1,Math.floor(ctx.sampleRate*dur));
+  const b=ctx.createBuffer(1,len,ctx.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<len;i++) d[i]=(Math.random()*2-1);
+  return b;
+}
+function noiseHit(ctx,start,{dur=.07,gain=.08,filter='bandpass',freq=1200,q=.8,decay=true}={}){
+  const src=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();
+  src.buffer=makeNoiseBuffer(ctx,dur); f.type=filter; f.frequency.value=freq; f.Q.value=q;
+  const end=start+dur;
+  g.gain.setValueAtTime(Math.max(.0001,gain),start);
+  if(decay) g.gain.exponentialRampToValueAtTime(.0001,end); else g.gain.setValueAtTime(gain,end);
+  src.connect(f);f.connect(g);g.connect(ctx.destination);src.start(start);src.stop(end+.01);
+}
+function impact(ctx,start,{freq=160,gain=.11,dur=.07,type='sine',drop=.55}={}){
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.type=type;o.frequency.setValueAtTime(freq,start);o.frequency.exponentialRampToValueAtTime(Math.max(25,freq*drop),start+dur);
+  g.gain.setValueAtTime(gain,start);g.gain.exponentialRampToValueAtTime(.0001,start+dur);
+  o.connect(g);g.connect(ctx.destination);o.start(start);o.stop(start+dur+.01);
+}
+function woodTap(ctx,start,strength=1){
+  impact(ctx,start,{freq:150,gain:.085*strength,dur:.055,type:'sine',drop:.48});
+  noiseHit(ctx,start,{dur:.035,gain:.035*strength,filter:'highpass',freq:900,q:.5});
+}
+function plasticTap(ctx,start,strength=1){
+  impact(ctx,start,{freq:430,gain:.055*strength,dur:.035,type:'triangle',drop:.72});
+  noiseHit(ctx,start,{dur:.025,gain:.026*strength,filter:'bandpass',freq:2400,q:1.4});
+}
+function paperSlide(ctx,start,dur=.18,gain=.035){
+  const src=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();
+  src.buffer=makeNoiseBuffer(ctx,dur);f.type='highpass';f.frequency.value=1400;f.Q.value=.4;
+  g.gain.setValueAtTime(.0001,start);g.gain.linearRampToValueAtTime(gain,start+.025);g.gain.exponentialRampToValueAtTime(.0001,start+dur);
+  src.connect(f);f.connect(g);g.connect(ctx.destination);src.start(start);src.stop(start+dur+.01);
+}
+function diceImpact(ctx,start,strength=1){
+  // Layered die-on-board collision: hard plastic click + cardboard/wood body + tiny scrape.
+  impact(ctx,start,{freq:118+Math.random()*38,gain:.050*strength,dur:.050,type:'sine',drop:.40});
+  impact(ctx,start+.001,{freq:760+Math.random()*320,gain:.025*strength,dur:.018,type:'triangle',drop:.62});
+  noiseHit(ctx,start,{dur:.020+Math.random()*.012,gain:.030*strength,filter:'bandpass',freq:1850+Math.random()*1250,q:.75+Math.random()*.65});
+  noiseHit(ctx,start+.004,{dur:.030,gain:.014*strength,filter:'lowpass',freq:720+Math.random()*260,q:.45});
+}
+function diceRattle(ctx,start){
+  // One real die thrown onto a cardboard/wood board: airborne tumble, irregular bounces, then a short settle.
+  // Very light release/air movement.
+  noiseHit(ctx,start,{dur:.045,gain:.008,filter:'highpass',freq:2200,q:.35});
+
+  // First contact is the loudest, followed by naturally uneven rebounds.
+  const hits=[
+    [0.090,1.00],
+    [0.139,0.78],
+    [0.184,0.61],
+    [0.222,0.47],
+    [0.255,0.36],
+    [0.282,0.27],
+    [0.306,0.20]
+  ];
+  hits.forEach(([d,k],i)=>{
+    const jitter=(Math.random()-.5)*(i?0.009:0.003);
+    diceImpact(ctx,start+d+jitter,k*(.92+Math.random()*.16));
+  });
+
+  // Final corner/edge ticks as the die rocks to a stop.
+  [0.333,0.353,0.371].forEach((d,i)=>{
+    const k=[.15,.105,.07][i];
+    impact(ctx,start+d,{freq:520+Math.random()*220,gain:.022*k/.15,dur:.016,type:'triangle',drop:.72});
+    noiseHit(ctx,start+d,{dur:.014,gain:.010*k/.15,filter:'highpass',freq:2100+Math.random()*900,q:.7});
+  });
+}
+function pawnMove(ctx,start){
+  // Felt/plastic pawn lifted and placed on cardboard.
+  noiseHit(ctx,start,{dur:.035,gain:.018,filter:'highpass',freq:1700,q:.5});
+  plasticTap(ctx,start+.038,.72);
+  woodTap(ctx,start+.042,.42);
+}
+function secretPassage(ctx,start){
+  // Pawn slides briefly across the board, then lands.
+  paperSlide(ctx,start,.22,.028);
+  noiseHit(ctx,start+.02,{dur:.18,gain:.022,filter:'bandpass',freq:650,q:.7});
+  pawnMove(ctx,start+.205);
+}
+function cardReveal(ctx,start){
+  // A card drawn/slid from a small stack and tapped on the table.
+  paperSlide(ctx,start,.16,.045);
+  paperSlide(ctx,start+.055,.13,.022);
+  woodTap(ctx,start+.17,.28);
+}
+function cardDeal(ctx,start){
+  [0,.085,.17].forEach((d,i)=>{paperSlide(ctx,start+d,.095,.032-i*.004);woodTap(ctx,start+d+.09,.18);});
+}
+function envelopeThump(ctx,start,heavy=false){
+  // Case-file/envelope placed on the table.
+  impact(ctx,start,{freq:heavy?78:105,gain:heavy?.13:.09,dur:heavy?.16:.11,type:'sine',drop:.45});
+  noiseHit(ctx,start,{dur:.055,gain:heavy?.045:.035,filter:'lowpass',freq:850,q:.6});
+}
+// REAL recorded dice audio (CC0): Wuzzy / OpenGameArt — wooden die rolled on a wooden table.
+// Four separate field recordings are rotated so repeated rolls do not sound identical.
+const REAL_DICE_URLS=[
+  'https://opengameart.org/sites/default/files/Holzw%C3%BCrfel_auf_Holztisch_1.flac',
+  'https://opengameart.org/sites/default/files/Holzw%C3%BCrfel_auf_Holztisch_2.flac',
+  'https://opengameart.org/sites/default/files/Holzw%C3%BCrfel_auf_Holztisch_3.flac',
+  'https://opengameart.org/sites/default/files/Holzw%C3%BCrfel_auf_Holztisch_4.flac'
+];
+const realDicePool=REAL_DICE_URLS.map(url=>{
+  const a=new Audio();
+  a.preload='auto';
+  a.src=url;
+  a.volume=.92;
+  return a;
+});
+let lastRealDice=-1;
+function playRealDice(){
+  if(!soundEnabled)return false;
+  let idx=Math.floor(Math.random()*realDicePool.length);
+  if(realDicePool.length>1 && idx===lastRealDice) idx=(idx+1)%realDicePool.length;
+  lastRealDice=idx;
+  const base=realDicePool[idx];
+  // Clone lets rapid/repeated clicks overlap correctly without cutting the prior throw.
+  const a=base.cloneNode(true);
+  a.volume=.92;
+  const p=a.play();
+  if(p&&typeof p.catch==='function')p.catch(()=>{});
+  return true;
+}
+
+async function sfx(name){
+  if(!soundEnabled)return;
+  // Dice uses an actual microphone recording, not synthesized Web Audio.
+  if(name==='roll'){
+    playRealDice();
+    return;
+  }
+  const ctx=await ensureAudio();if(!ctx)return;
+  const t=ctx.currentTime+.008;
+  if(name==='click') plasticTap(ctx,t,.36);
+  else if(name==='move') pawnMove(ctx,t);
+  else if(name==='door'){woodTap(ctx,t,.55);noiseHit(ctx,t+.025,{dur:.12,gain:.026,filter:'bandpass',freq:420,q:1});}
+  else if(name==='passage') secretPassage(ctx,t);
+  else if(name==='suggest'){cardDeal(ctx,t);envelopeThump(ctx,t+.28,false);}
+  else if(name==='reveal') cardReveal(ctx,t);
+  else if(name==='accuse'){envelopeThump(ctx,t,true);paperSlide(ctx,t+.12,.2,.04);woodTap(ctx,t+.31,.4);}
+  else if(name==='good'||name==='win'){cardReveal(ctx,t);woodTap(ctx,t+.2,.55);plasticTap(ctx,t+.27,.5);}
+  else if(name==='bad'){envelopeThump(ctx,t,true);woodTap(ctx,t+.12,.7);}
+}
+function updateSoundButtons(){
+  const label=soundEnabled?'🔊 Sound: On':'🔇 Sound: Off';
+  const m=$('btnSoundToggleMenu');if(m)m.textContent=label;
+  const g=$('btnSoundToggleGame');if(g){g.title=soundEnabled?'Sound on — click to mute':'Sound off — click to enable';g.style.opacity=soundEnabled?'1':'.55';}
+}
+document.addEventListener('pointerdown',()=>{if(soundEnabled)ensureAudio();},{once:true,capture:true});
+
+/* ---------- More faithful classic mansion topology ---------- */
+(function applyClassicBoardTopology(){
+  const billiard=ROOM_BY_ID.billiardroom,library=ROOM_BY_ID.library;
+  if(billiard){billiard.block={c0:12,c1:16,r0:6,r1:7};billiard.doors=[{col:11,row:7},{col:14,row:8}];}
+  if(library){library.block={c0:12,c1:16,r0:9,r1:10};library.doors=[{col:11,row:9},{col:14,row:11}];}
+  Object.keys(DOOR_CELL_TO_ROOMS).forEach(k=>delete DOOR_CELL_TO_ROOMS[k]);
+  ROOMS.forEach(r=>r.doors.forEach(d=>{const k=cellKey(d.col,d.row);(DOOR_CELL_TO_ROOMS[k]=DOOR_CELL_TO_ROOMS[k]||[]).push(r.id);}));
+})();
+function isHallwayCell(col,row){
+  if(col<0||row<0||col>=GRID_SIZE||row>=GRID_SIZE)return false;
+  // Main marble corridors plus the short gallery separating Billiard Room and Library.
+  return col===5||col===11||row===5||row===11||(row===8&&col>=11&&col<=16);
+}
+
+/* ---------- Classic movement: one die, exact corridor count, no revisits ---------- */
+function computeClassicReachable(startPos,maxSteps,occupiedHallwaySet){
+  const targets=new Map();
+  function walk(pos,depth,visited){
+    if(depth>0&&pos.type==='room'){
+      targets.set(posKey(pos),JSON.parse(JSON.stringify(pos)));
+      return; // entering a room ends movement immediately
+    }
+    if(depth===maxSteps){
+      if(pos.type==='hall')targets.set(posKey(pos),JSON.parse(JSON.stringify(pos)));
+      return;
+    }
+    for(const npos of expandPos(pos)){
+      const nk=posKey(npos);
+      if(visited.has(nk))continue; // no square twice in one turn
+      if(npos.type==='hall'&&occupiedHallwaySet.has(cellKey(npos.col,npos.row)))continue;
+      const next=new Set(visited);next.add(nk);walk(npos,depth+1,next);
+    }
+  }
+  walk(startPos,0,new Set([posKey(startPos)]));
+  return [...targets.values()];
+}
+function getTurnOrder(players){
+  const a=players.slice();
+  // Digital table order is lobby order; rotate so Scarlett has classic first priority when present.
+  const scar=a.findIndex(p=>p.suspectId==='scarlett');
+  return scar>0?a.slice(scar).concat(a.slice(0,scar)):a;
+}
+function newAuthoritativeGame(players){
+  const setup=setupNewGame(players),ordered=getTurnOrder(players.map(p=>({...p})));
+  ordered.forEach(p=>{
+    p.eliminated=false;p.connected=true;p.position=JSON.parse(JSON.stringify(setup.suspectPositions[p.suspectId]));
+    p.roomEntry=0;p.lastSuggestedEntry=-1;p.movedBySuggestion=false;
+  });
+  return {rulesEdition:'Classic 1986',players:ordered,currentIndex:0,phase:'roll',roll:null,reachable:[],solution:setup.solution,hands:setup.hands,suspectPositions:setup.suspectPositions,weaponPositions:setup.weaponPositions,log:[makeLog('The classic investigation begins. Miss Scarlett has first priority.','system')],pendingSuggestion:null,publicDeductions:[],deductionSeq:0,winnerId:null,gameOver:false};
+}
+function canPlayerSuggest(game,p){
+  return !!p&&!p.eliminated&&p.position?.type==='room'&&p.lastSuggestedEntry!==p.roomEntry;
+}
+function advanceTurn(game){
+  if(activePlayers(game).length===0){game.gameOver=true;game.phase='over';game.log.unshift(makeLog('Every active investigator has made a false accusation.','system'));return;}
+  let n=game.currentIndex;
+  for(let i=0;i<game.players.length;i++){n=(n+1)%game.players.length;if(!game.players[n].eliminated){game.currentIndex=n;break;}}
+  game.phase='roll';game.roll=null;game.reachable=[];game.pendingSuggestion=null;
+  game.log.unshift(makeLog(`It is now ${game.players[game.currentIndex].name}'s turn.`,'system'));
+}
+function engineAction(game,actorId,action,payload={}){
+  const p=currentPlayer(game);if(!game||!p)return {ok:false,error:'No active game'};
+  if(action==='DISPROVE')return engineDisprove(game,actorId,payload);
+  if(!validateTurnActor(game,actorId))return {ok:false,error:'Not your turn'};
+  if(action==='ROLL'){
+    if(game.phase!=='roll')return {ok:false,error:'You cannot roll now'};
+    const d1=1+Math.floor(Math.random()*6);
+    const reachable=computeClassicReachable(p.position,d1,occupiedHallways(game,p.id));
+    game.roll={d1,total:d1};game.reachable=reachable;p.movedBySuggestion=false;
+    game.phase=reachable.length?'move':'action';
+    game.log.unshift(makeLog(`${p.name} rolled ${d1}.`));
+    if(!reachable.length)game.log.unshift(makeLog(`${p.name} has no legal move for that roll.`,'system'));
+    return {ok:true};
+  }
+  if(action==='MOVE'){
+    if(game.phase!=='move')return {ok:false,error:'Roll first'};
+    const pos=payload.pos;if(!pos||(game.reachable||[]).every(x=>!posEquals(x,pos)))return {ok:false,error:'That destination is not legal for this roll'};
+    p.position=JSON.parse(JSON.stringify(pos));game.suspectPositions[p.suspectId]=JSON.parse(JSON.stringify(pos));game.reachable=[];p.movedBySuggestion=false;
+    if(pos.type==='room')p.roomEntry=(p.roomEntry||0)+1;
+    game.phase='action';game.log.unshift(makeLog(`${p.name} moved${pos.type==='room'?' into '+ROOM_BY_ID[pos.roomId].name:''}.`));
+    return {ok:true,movedToRoom:pos.type==='room'};
+  }
+  if(action==='PASSAGE'){
+    if(game.phase!=='roll')return {ok:false,error:'A Secret Passage is used instead of rolling'};
+    if(p.position?.type!=='room')return {ok:false,error:'You are not in a corner room'};
+    const r=ROOM_BY_ID[p.position.roomId];if(!r?.passageTo)return {ok:false,error:'No Secret Passage here'};
+    p.position={type:'room',roomId:r.passageTo};game.suspectPositions[p.suspectId]={...p.position};p.roomEntry=(p.roomEntry||0)+1;p.movedBySuggestion=false;
+    game.phase='action';game.log.unshift(makeLog(`${p.name} used the Secret Passage to ${ROOM_BY_ID[r.passageTo].name}.`));return {ok:true,passage:true};
+  }
+  if(action==='SUGGEST'){
+    if(game.phase!=='action'&&game.phase!=='roll')return {ok:false,error:'You cannot suggest now'};
+    if(!canPlayerSuggest(game,p))return {ok:false,error:'Classic rule: enter a new room before making another Suggestion here'};
+    if(game.pendingSuggestion)return {ok:false,error:'A Suggestion is already being resolved'};
+    const suspect=payload.suspect,weapon=payload.weapon,room=p.position.roomId;if(!SUSPECT_BY_ID[suspect]||!WEAPON_BY_ID[weapon])return {ok:false,error:'Invalid Suggestion'};
+    p.lastSuggestedEntry=p.roomEntry;p.movedBySuggestion=false;
+    game.suspectPositions[suspect]={type:'room',roomId:room};game.weaponPositions[weapon]={type:'room',roomId:room};
+    const transferred=game.players.find(x=>x.suspectId===suspect);
+    if(transferred){transferred.position={type:'room',roomId:room};transferred.roomEntry=(transferred.roomEntry||0)+1;transferred.movedBySuggestion=true;}
+    const ids=[];for(let i=1;i<game.players.length;i++)ids.push(game.players[(game.currentIndex+i)%game.players.length].id);
+    game.pendingSuggestion={suggesterId:p.id,cards:[suspect,weapon,room],checkIds:ids,index:0,waitingFor:null};game.phase='suggestion';
+    game.log.unshift(makeLog(`${p.name} suggests ${SUSPECT_BY_ID[suspect].name}, with the ${WEAPON_BY_ID[weapon].name}, in the ${ROOM_BY_ID[room].name}.`,'suggest'));
+    return {ok:true,resolveSuggestion:true,suggestion:true};
+  }
+  if(action==='ACCUSE'){
+    const {suspect,weapon,room}=payload;if(!SUSPECT_BY_ID[suspect]||!WEAPON_BY_ID[weapon]||!ROOM_BY_ID[room])return {ok:false,error:'Complete the Accusation'};
+    const correct=game.solution.suspect===suspect&&game.solution.weapon===weapon&&game.solution.room===room;
+    game.log.unshift(makeLog(`${p.name} made a formal Accusation.`,'accuse'));
+    if(correct){game.winnerId=p.id;game.gameOver=true;game.phase='over';game.log.unshift(makeLog(`${p.name} solved the case!`,'win'));return {ok:true,win:true};}
+    p.eliminated=true;game.reachable=[];game.log.unshift(makeLog(`${p.name}'s Accusation was false. They may still disprove Suggestions.`,'accuse'));
+    if(activePlayers(game).length===0){game.gameOver=true;game.phase='over';return {ok:true,eliminated:true,noSolution:true};}
+    advanceTurn(game);return {ok:true,eliminated:true};
+  }
+  if(action==='END_TURN'){
+    if(game.pendingSuggestion)return {ok:false,error:'Finish the Suggestion first'};
+    if(game.phase!=='action')return {ok:false,error:'You must move, use a passage, or make an available Suggestion before ending your turn'};
+    advanceTurn(game);return {ok:true};
+  }
+  return {ok:false,error:'Unknown action'};
+}
+function nextSuggestionCheck(game){
+  const ps=game.pendingSuggestion;if(!ps)return {done:true};
+  while(ps.index<ps.checkIds.length){
+    const id=ps.checkIds[ps.index++],matches=(game.hands[id]||[]).filter(c=>ps.cards.includes(c));
+    if(matches.length){ps.waitingFor=id;return {done:false,request:{to:id,matches,suggesterId:ps.suggesterId,cards:ps.cards}};}
+    game.publicDeductions=game.publicDeductions||[];game.deductionSeq=(game.deductionSeq||0)+1;
+    game.publicDeductions.push({seq:game.deductionSeq,type:'NO_MATCH',playerId:id,cards:ps.cards.slice()});
+  }
+  const suggester=ps.suggesterId;game.pendingSuggestion=null;game.phase='action';game.log.unshift(makeLog('No investigator could disprove the Suggestion.','suggest'));return {done:true,none:true,to:suggester};
+}
+
+/* ---------- Notebook: private per investigator + safe automatic deductions ---------- */
+const notebookByViewer={};
+function nbState(viewerId){
+  if(!viewerId)return null;
+  return notebookByViewer[viewerId]||(notebookByViewer[viewerId]={manual:{},knownOwner:{},autoNo:{},processedPublic:{}});
+}
+function nbKey(cardId,ownerId){return cardId+'|'+ownerId;}
+function nbKnown(viewerId,cardId,ownerId){
+  const st=nbState(viewerId);if(!st)return;st.knownOwner[cardId]=ownerId;
+  const g=getVisibleGame()||hostGame;if(!g)return;
+  st.autoNo[cardId]=st.autoNo[cardId]||{};
+  g.players.forEach(p=>{if(p.id!==ownerId)st.autoNo[cardId][p.id]=true;});st.autoNo[cardId].__case__=true;
+}
+function nbApplyAuto(g,viewerId){
+  const st=nbState(viewerId);if(!st||!g)return;
+  const own=g.hands?.[viewerId]||[];own.forEach(cardId=>nbKnown(viewerId,cardId,viewerId));
+  (g.publicDeductions||[]).forEach(ev=>{
+    if(st.processedPublic[ev.seq])return;st.processedPublic[ev.seq]=true;
+    if(ev.type==='NO_MATCH')ev.cards.forEach(cardId=>{st.autoNo[cardId]=st.autoNo[cardId]||{};st.autoNo[cardId][ev.playerId]=true;});
+  });
+}
+function nbCaseForced(g,st,cardId){
+  if(st.knownOwner[cardId])return false;
+  return g.players.every(p=>st.autoNo[cardId]?.[p.id]===true);
+}
+function nbCell(g,st,cardId,ownerId){
+  if(st.knownOwner[cardId]===ownerId)return {mark:'check',locked:true,cls:'known'};
+  if(ownerId==='__case__'&&nbCaseForced(g,st,cardId))return {mark:'star',locked:true,cls:'case-star'};
+  if(st.knownOwner[cardId]&&st.knownOwner[cardId]!==ownerId)return {mark:'x',locked:true,cls:'auto'};
+  if(st.autoNo[cardId]?.[ownerId])return {mark:'x',locked:true,cls:'auto'};
+  return {mark:st.manual[nbKey(cardId,ownerId)]||'',locked:false,cls:''};
+}
+function markGlyph(m){return m==='check'?'✔':m==='x'?'✕':m==='q'?'?':m==='star'?'★':'';}
+function renderNotebook(){
+  const g=getVisibleGame(),viewer=visiblePlayerId();if(!g||!viewer)return;nbApplyAuto(g,viewer);const st=nbState(viewer);
+  const owners=[...g.players.map(p=>({id:p.id,name:p.id===viewer?'You':p.name})),{id:'__case__',name:'Case File'}];
+  let html='<thead><tr><th>Card</th>'+owners.map(o=>`<th>${escapeHtml(o.name)}</th>`).join('')+'</tr></thead><tbody>';
+  ALL_CARDS.forEach((c,i)=>{
+    html+=`<tr class="${i===6||i===12?'grp-start':''}"><th>${escapeHtml(c.name)}</th>`;
+    owners.forEach(o=>{const x=nbCell(g,st,c.id,o.id);html+=`<td class="nb-cell ${x.locked?'auto ':''}${x.cls}" data-card="${c.id}" data-owner="${o.id}" data-mark="${x.mark}">${markGlyph(x.mark)}</td>`;});
+    html+='</tr>';
+  });html+='</tbody>';$('notebookTable').innerHTML=html;
+  $('notebookTable').querySelectorAll('.nb-cell:not(.auto)').forEach(td=>td.onclick=()=>{
+    const key=nbKey(td.dataset.card,td.dataset.owner),seq=['','x','q','check'];const cur=st.manual[key]||'';st.manual[key]=seq[(seq.indexOf(cur)+1)%seq.length];renderNotebook();
+  });
+  const forced=ALL_CARDS.filter(c=>nbCaseForced(g,st,c.id));
+  const known=Object.keys(st.knownOwner).length;
+  if($('notebookInsights'))$('notebookInsights').innerHTML=`<strong>Automatic deductions:</strong> ${known} card${known===1?'':'s'} positively located. ${forced.length?`<b>${forced.length}</b> card${forced.length===1?' is':'s are'} forced into the Case File by information you have.`:'No Case File card is logically forced yet.'}`;
+  renderNotebookQuick(g,st,forced);
+}
+function renderNotebookQuick(g,st,forced){
+  const q=$('notebookQuick');if(!q)return;
+  const byType=t=>forced.filter(c=>c.type===t);
+  const grp=(title,cards)=>`<div class="quick-nb-group"><b>${title}</b>${cards.length?cards.map(c=>`<span class="quick-nb-chip">★ ${escapeHtml(c.name)}</span>`).join(''):'<span class="quick-nb-empty">No forced deduction yet.</span>'}</div>`;
+  q.innerHTML=grp('Suspect',byType('suspect'))+grp('Weapon',byType('weapon'))+grp('Room',byType('room'))+`<div class="quick-nb-group"><b>Known cards</b><span class="quick-nb-empty">${Object.keys(st.knownOwner).length} positively located.</span></div>`;
+}
+function showPrivateReveal(data){
+  const g=getVisibleGame()||hostGame,viewer=data.toId||visiblePlayerId();
+  if(viewer)nbKnown(viewer,data.cardId,data.fromId);
+  if(mode==='local'&&data.toId)localTurnViewingId=data.toId;
+  const from=g?.players?.find(p=>p.id===data.fromId);$('revealFromText').textContent=`${from?.name||'An investigator'} revealed privately:`;$('revealCardShown').innerHTML=cardHtml(data.cardId);sfx('reveal');openModal('modal-private-reveal');renderNotebook();
+}
+function showNoDisprove(){sfx('suggest');$('disproveNoneText').textContent='Every other investigator was asked in turn, and none held a matching card. Your notebook recorded those deductions.';openModal('modal-disprove-none');renderNotebook();}
+
+/* ---------- Board visual pass ---------- */
+function buildBoard(){
+  const svg=$('boardSvg');if(!svg)return;svg.innerHTML='';Object.keys(boardDom).forEach(k=>boardDom[k]={});
+  const defs=svgEl('defs',{},svg);
+  const pat=svgEl('pattern',{id:'marblePattern',width:18,height:18,patternUnits:'userSpaceOnUse'},defs);svgEl('rect',{width:18,height:18,fill:'#17110d'},pat);svgEl('path',{d:'M0 16 Q7 9 18 4',stroke:'#5a4935','stroke-width':1,opacity:.23,fill:'none'},pat);
+  const glow=svgEl('filter',{id:'softGlow',x:'-30%',y:'-30%',width:'160%',height:'160%'},defs);svgEl('feGaussianBlur',{stdDeviation:'3',result:'b'},glow);const merge=svgEl('feMerge',{},glow);svgEl('feMergeNode',{in:'b'},merge);svgEl('feMergeNode',{in:'SourceGraphic'},merge);
+  svgEl('rect',{x:MARGIN+6*CELL+6,y:MARGIN+6*CELL+6,width:5*CELL-12,height:5*CELL-12,rx:16,fill:'#0c0907',stroke:'#6f5524','stroke-width':2,opacity:.94},svg);
+  svgEl('text',{x:400,y:382,class:'board-title','font-size':13},svg).textContent='CASE FILE';
+  const cellarText=svgEl('text',{x:400,y:408,'text-anchor':'middle',fill:'rgba(240,212,133,.28)','font-family':'var(--font-display)','font-size':16,'pointer-events':'none'},svg);cellarText.textContent='CELLAR';
+  for(let r=0;r<GRID_SIZE;r++)for(let c=0;c<GRID_SIZE;c++)if(isHallwayCell(c,r)){
+    const p=cellCenterPx(c,r),rect=svgEl('rect',{x:p.x-CELL/2+2,y:p.y-CELL/2+2,width:CELL-4,height:CELL-4,rx:4,class:'corridor-cell',fill:'url(#marblePattern)'},svg);
+    rect.dataset.key=cellKey(c,r);rect.addEventListener('click',()=>onBoardTarget({type:'hall',col:c,row:r}));boardDom.halls[cellKey(c,r)]=rect;
+  }
+  const roomEmoji={kitchen:'♨',ballroom:'♫',conservatory:'❧',diningroom:'♨',billiardroom:'●',library:'⌘',lounge:'♜',hall:'⚜',study:'✒'};
+  ROOMS.forEach(room=>{
+    const q=roomRectPx(room.id),g=svgEl('g',{},svg),rect=svgEl('rect',{x:q.x+2,y:q.y+2,width:q.w-4,height:q.h-4,rx:12,class:'room-rect',style:`--rf:${room.tint}`},g);
+    rect.addEventListener('click',()=>onBoardTarget({type:'room',roomId:room.id}));
+    svgEl('rect',{x:q.x+9,y:q.y+9,width:q.w-18,height:q.h-18,rx:9,fill:'none',stroke:'#d4af37','stroke-width':1,opacity:.25,'pointer-events':'none'},g);
+    const center=roomCenterPx(room.id),smallRoom=q.h<130,decor=svgEl('text',{x:center.x,y:center.y-(smallRoom?5:12),class:'room-decor','font-size':smallRoom?28:52,'text-anchor':'middle',fill:'#f0d485'},g);decor.textContent=roomEmoji[room.id]||'◆';
+    const label=svgEl('text',{x:center.x,y:center.y+(smallRoom?18:24),class:'room-label','font-size':smallRoom?'12':'17'},g);label.textContent=room.name;
+    room.doors.forEach(d=>{const p=cellCenterPx(d.col,d.row);svgEl('circle',{cx:p.x,cy:p.y,r:4,class:'door-mark'},svg);});
+    if(room.passageTo){
+      const target=roomCenterPx(room.passageTo);svgEl('path',{d:`M${center.x},${center.y+34} Q400,400 ${target.x},${target.y+34}`,class:'passage-line'},svg);
+      const pg=svgEl('g',{class:'passage-icon'},svg);svgEl('circle',{cx:center.x+q.w*.18,cy:center.y+q.h*.18,r:12,fill:'#120b09',stroke:'#d4af37','stroke-width':1.5},pg);const t=svgEl('text',{x:center.x+q.w*.18,y:center.y+q.h*.18+4,'text-anchor':'middle',fill:'#f0d485','font-size':'13'},pg);t.textContent='↯';boardDom.passages[room.id]=pg;
+    }boardDom.rooms[room.id]=rect;
+  });
+  WEAPONS.forEach(w=>{const g=svgEl('g',{class:'token-weapon'},svg);svgEl('circle',{r:12,fill:'#120b09',stroke:'#d4af37','stroke-width':2},g);const t=svgEl('text',{y:5,'text-anchor':'middle','font-size':14},g);t.textContent={candlestick:'🕯',knife:'🔪',leadpipe:'▰',revolver:'●',rope:'∞',wrench:'🔧'}[w.id]||'?';boardDom.weapons[w.id]=g;});
+  SUSPECTS.forEach(s=>{const g=svgEl('g',{class:'token-suspect'},svg);svgEl('circle',{r:15,fill:s.color,stroke:s.dark,'stroke-width':3,filter:'url(#softGlow)'},g);const t=svgEl('text',{y:4,'text-anchor':'middle',fill:'#100','font-size':10,'font-weight':'700'},g);t.textContent=s.initial;boardDom.suspects[s.id]=g;});
+}
+
+/* ---------- Render using classic phase constraints ---------- */
+function renderGame(){
+  const g=getVisibleGame();if(!g)return;const cur=g.players[g.currentIndex],me=myPlayer();
+  $('turnBannerText').textContent=g.gameOver?(g.winnerId?`${g.players.find(p=>p.id===g.winnerId)?.name} solved the case!`:'Case closed'):isMyTurn()?'Your turn':`${cur?.name||'—'}'s turn`;
+  $('turnBanner').classList.toggle('you-turn',isMyTurn());$('turnDot').style.background=SUSPECT_BY_ID[cur?.suspectId]?.color||'#888';
+  setDie($('die1'),g.roll?.d1||1);if($('die2'))$('die2').classList.add('classic-second-die');
+  const myTurn=isMyTurn()&&!g.gameOver&&!me?.eliminated,room=me?.position?.type==='room'?ROOM_BY_ID[me.position.roomId]:null;
+  $('btnRollDice').disabled=!myTurn||g.phase!=='roll';
+  $('btnTakePassage').classList.toggle('hidden',!(myTurn&&room?.passageTo&&g.phase==='roll'));
+  $('btnSuggest').disabled=!(myTurn&&!g.pendingSuggestion&&(g.phase==='action'||g.phase==='roll')&&canPlayerSuggest(g,me));
+  $('btnAccuse').disabled=!myTurn;$('btnEndTurn').disabled=!(myTurn&&!g.pendingSuggestion&&g.phase==='action');
+  const hand=g.hands?.[visiblePlayerId()]||[];$('handGrid').innerHTML=hand.map(cardHtml).join('');
+  $('caseLog').innerHTML=(g.log||[]).map(x=>`<li class="log-entry log-${x.type||'system'}">${escapeHtml(x.text||x)}</li>`).join('');
+  $('rosterList').innerHTML=g.players.map((p,i)=>`<li class="roster-row ${i===g.currentIndex?'current':''} ${p.eliminated?'eliminated':''}"><span class="avatar">${suspectIcon(p.suspectId,32)}</span><span class="rname">${escapeHtml(p.name)}<span class="rmeta">${escapeHtml(SUSPECT_BY_ID[p.suspectId]?.name||'')}${p.connected===false?' • disconnected':''}</span></span><span class="rstate ${p.eliminated?'out':'active'}">${p.eliminated?'Out':'Active'}</span></li>`).join('');
+  renderBoard();renderNotebook();if(g.gameOver)showGameOver(g);
+}
+
+/* ---------- Connection recovery for clients using a stable session Peer ID ---------- */
+let reconnectTimer=null,reconnectAttempts=0,clientStablePeerId=null,manualPeerClose=false;
+function stableClientId(code){
+  const key='mm-client-'+String(code).toUpperCase();let suffix='';try{suffix=sessionStorage.getItem(key)||'';}catch(_){}
+  if(!suffix){suffix=Math.random().toString(36).slice(2,10);try{sessionStorage.setItem(key,suffix);}catch(_){}}
+  return `mmc-${String(code).toLowerCase()}-${suffix}`;
+}
+function joinOnline(code,name){
+  manualPeerClose=true;destroyPeer();manualPeerClose=false;mode='online-client';roomCode=String(code||'').trim().toUpperCase();myLobby={name:name||defaultName(),suspectId:'scarlett',ready:false};clientStablePeerId=stableClientId(roomCode);reconnectAttempts=0;setJoinStatus('Connecting…');openClientPeer();
+}
+function openClientPeer(){
+  if(mode!=='online-client')return;try{peer?.destroy();}catch(_){}peer=new Peer(clientStablePeerId,peerOptions());
+  peer.on('open',id=>{myPeerId=id;hostConn=peer.connect('mm-'+roomCode.toLowerCase(),{reliable:true});wireClientConnection(hostConn);});
+  peer.on('error',err=>{if(err.type==='unavailable-id'&&reconnectAttempts<4){scheduleReconnect();}else setJoinStatus('Network error: '+err.type,'err');});
+}
+function scheduleReconnect(){
+  if(mode!=='online-client'||manualPeerClose)return;clearTimeout(reconnectTimer);reconnectAttempts++;
+  setConnectionPills(false);setJoinStatus(`Reconnecting… (${reconnectAttempts})`,'');
+  reconnectTimer=setTimeout(openClientPeer,Math.min(6000,1000+reconnectAttempts*900));
+}
+function wireClientConnection(conn){
+  const timer=setTimeout(()=>{if(!conn.open){setJoinStatus('Could not reach that room. Retrying…','err');scheduleReconnect();}},9000);
+  conn.on('open',()=>{clearTimeout(timer);reconnectAttempts=0;setConnectionPills(true);conn.send({type:'JOIN_LOBBY',name:myLobby.name,suspectId:myLobby.suspectId,rejoin:true});setJoinStatus('Connected.','ok');});
+  conn.on('data',handleClientNet);
+  conn.on('close',()=>{setConnectionPills(false);toast('Connection lost — attempting to reconnect.');scheduleReconnect();});
+  conn.on('error',()=>{setConnectionPills(false);scheduleReconnect();});
+}
+function handleHostNet(data,conn){
+  if(!data||typeof data!=='object')return;
+  if(data.type==='JOIN_LOBBY'){
+    const existing=lobbyPlayers.find(p=>p.id===conn.peer);
+    if(existing){existing.connected=true;if(data.name)existing.name=cleanName(data.name);clientConns[conn.peer]=conn;if(hostGame){const gp=hostGame.players.find(p=>p.id===conn.peer);if(gp)gp.connected=true;conn.send({type:'GAME_STATE',game:sanitizedGameFor(conn.peer)});broadcastGame();}else broadcastLobby();return;}
+    if(hostGame){conn.send({type:'ERROR',message:'This game has already started and this device is not part of it.'});return;}
+    if(lobbyPlayers.length>=6){conn.send({type:'ERROR',message:'Room is full.'});return;}
+    const taken=new Set(lobbyPlayers.map(p=>p.suspectId)),choice=!taken.has(data.suspectId)?data.suspectId:SUSPECTS.find(s=>!taken.has(s.id))?.id;
+    lobbyPlayers.push({id:conn.peer,name:cleanName(data.name),suspectId:choice||'plum',ready:false,host:false,connected:true});broadcastLobby();
+  }else if(data.type==='LOBBY_UPDATE_SELF'&&!hostGame){
+    const p=lobbyPlayers.find(x=>x.id===conn.peer);if(!p)return;if(data.name)p.name=cleanName(data.name);if(data.suspectId&&!lobbyPlayers.some(x=>x.id!==p.id&&x.suspectId===data.suspectId))p.suspectId=data.suspectId;if(typeof data.ready==='boolean')p.ready=data.ready;broadcastLobby();
+  }else if(data.type==='ACTION'&&hostGame)processHostAction(conn.peer,data.action,data.payload);
+}
+
+/* ---------- Small cinematic/audio hooks ---------- */
+const _v2ProcessHostAction=processHostAction;
+processHostAction=function(actorId,action,payload){
+  const before=hostGame?{phase:hostGame.phase,gameOver:hostGame.gameOver}:null;_v2ProcessHostAction(actorId,action,payload);
+  if(actorId===myPeerId){if(action==='MOVE')sfx('move');else if(action==='PASSAGE')sfx('passage');else if(action==='SUGGEST')sfx('suggest');else if(action==='ACCUSE')sfx(hostGame?.gameOver&&hostGame?.winnerId===actorId?'win':'accuse');}
+};
+const _v2ProcessLocalAction=processLocalAction;
+processLocalAction=function(action,payload){_v2ProcessLocalAction(action,payload);if(action==='MOVE')sfx('move');else if(action==='PASSAGE')sfx('passage');else if(action==='SUGGEST')sfx('suggest');else if(action==='ACCUSE')sfx(hostGame?.gameOver&&hostGame?.winnerId?'win':'accuse');};
+const _v2ShowGameOver=showGameOver;
+showGameOver=function(g){if(!showGameOver._last||showGameOver._last!==g.winnerId+'|'+g.gameOver){sfx(g.winnerId?'win':'bad');showGameOver._last=g.winnerId+'|'+g.gameOver;}_v2ShowGameOver(g);};
 
 
 /* =====================================================================
    SECTION: INIT
    ===================================================================== */
-function init(){wireUI();updateSoundButtons();buildBoard();showScreen('screen-menu');}
+function init(){wireUI();updateSoundButtons();buildBoard();showScreen('screen-menu');console.info('Mansion Mystery — Classic 1986 Edition V2 loaded');}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 
 </script>
