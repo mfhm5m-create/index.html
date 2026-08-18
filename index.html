@@ -1124,42 +1124,365 @@ function setupNewGame(players){
 /* =====================================================================
    SECTION: AUDIO — Web Audio API synthesized SFX
    ===================================================================== */
-/* @@SECTION_AUDIO@@ */
+let soundEnabled = true;
+let audioCtx = null;
+function playTone(freq=440, duration=.07, type='sine', gain=.035){
+  if(!soundEnabled) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type=type; o.frequency.value=freq; g.gain.value=gain;
+    o.connect(g); g.connect(audioCtx.destination); o.start();
+    g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+duration);
+    o.stop(audioCtx.currentTime+duration);
+  }catch(_){ }
+}
+function sfx(name){
+  const f={click:420,roll:180,move:520,good:760,bad:120,reveal:620}[name]||360;
+  playTone(f,name==='bad'?.18:.07,name==='bad'?'sawtooth':'sine');
+}
+function updateSoundButtons(){
+  const label=soundEnabled?'🔊 Sound: On':'🔇 Sound: Off';
+  const m=document.getElementById('btnSoundToggleMenu'); if(m)m.textContent=label;
+}
+
 
 /* =====================================================================
    SECTION: ICONS — SVG generators for suspects & weapons
    ===================================================================== */
-/* @@SECTION_ICONS@@ */
+function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function suspectIcon(id,size=42){
+  const s=SUSPECT_BY_ID[id]||SUSPECTS[0];
+  return `<svg viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="${s.dark}" stroke="${s.color}" stroke-width="3"/><circle cx="32" cy="24" r="9" fill="${s.color}"/><path d="M16 51c3-12 10-18 16-18s13 6 16 18" fill="${s.color}"/><text x="32" y="61" text-anchor="middle" font-size="9" fill="#fff">${escapeHtml(s.initial)}</text></svg>`;
+}
+function weaponIcon(id,size=34){
+  const map={candlestick:'🕯️',knife:'🔪',leadpipe:'🔩',revolver:'🔫',rope:'🪢',wrench:'🔧'};
+  return `<svg viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="#21170f" stroke="#a8822f" stroke-width="2"/><text x="32" y="42" text-anchor="middle" font-size="30">${map[id]||'?'}</text></svg>`;
+}
+function cardHtml(cardId){
+  const c=CARD_BY_ID[cardId]; if(!c)return '';
+  const icon=c.type==='suspect'?suspectIcon(c.id,40):c.type==='weapon'?weaponIcon(c.id,40):`<svg viewBox="0 0 64 64" width="40" height="40"><rect x="8" y="10" width="48" height="44" rx="6" fill="#d9c89f" stroke="#7a5a24"/><path d="M16 45h32M20 37h24M24 29h16" stroke="#4a3620" stroke-width="3"/></svg>`;
+  return `<div class="hand-card ${c.type}-card"><span class="cat">${escapeHtml(c.type)}</span>${icon}<span class="cname">${escapeHtml(c.name)}</span></div>`;
+}
+
 
 /* =====================================================================
    SECTION: BOARD — SVG board builder & token animation
    ===================================================================== */
-/* @@SECTION_BOARD@@ */
+const SVG_NS='http://www.w3.org/2000/svg';
+const boardDom={rooms:{},halls:{},suspects:{},weapons:{},passages:{}};
+function svgEl(tag,attrs={},parent){const e=document.createElementNS(SVG_NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));if(parent)parent.appendChild(e);return e;}
+function buildBoard(){
+  const svg=document.getElementById('boardSvg'); if(!svg)return; svg.innerHTML='';
+  Object.keys(boardDom).forEach(k=>boardDom[k]={});
+  for(let r=0;r<GRID_SIZE;r++) for(let c=0;c<GRID_SIZE;c++) if(isHallwayCell(c,r)){
+    const p=cellCenterPx(c,r); const rect=svgEl('rect',{x:p.x-CELL/2+2,y:p.y-CELL/2+2,width:CELL-4,height:CELL-4,rx:4,class:'corridor-cell'},svg);
+    rect.dataset.key=cellKey(c,r); rect.addEventListener('click',()=>onBoardTarget({type:'hall',col:c,row:r})); boardDom.halls[cellKey(c,r)]=rect;
+  }
+  ROOMS.forEach(room=>{
+    const q=roomRectPx(room.id); const g=svgEl('g',{},svg);
+    const rect=svgEl('rect',{x:q.x+2,y:q.y+2,width:q.w-4,height:q.h-4,rx:12,class:'room-rect',style:`--rf:${room.tint}`},g);
+    rect.addEventListener('click',()=>onBoardTarget({type:'room',roomId:room.id}));
+    const center=roomCenterPx(room.id); const label=svgEl('text',{x:center.x,y:center.y,class:'room-label','font-size':'18'},g); label.textContent=room.name;
+    room.doors.forEach(d=>{const p=cellCenterPx(d.col,d.row);svgEl('circle',{cx:p.x,cy:p.y,r:4,class:'door-mark'},svg);});
+    if(room.passageTo){
+      const target=roomCenterPx(room.passageTo); svgEl('path',{d:`M${center.x},${center.y+18} Q400,400 ${target.x},${target.y+18}`,class:'passage-line'},svg);
+      const pg=svgEl('g',{class:'passage-icon'},svg); svgEl('circle',{cx:center.x+q.w*.18,cy:center.y+q.h*.18,r:11,fill:'#120b09',stroke:'#d4af37'},pg); const t=svgEl('text',{x:center.x+q.w*.18,y:center.y+q.h*.18+4,'text-anchor':'middle',fill:'#d4af37','font-size':'13'},pg);t.textContent='↯';boardDom.passages[room.id]=pg;
+    }
+    boardDom.rooms[room.id]=rect;
+  });
+  WEAPONS.forEach(w=>{
+    const g=svgEl('g',{class:'token-weapon'},svg); svgEl('circle',{r:12,fill:'#120b09',stroke:'#d4af37','stroke-width':2},g); const t=svgEl('text',{y:5,'text-anchor':'middle','font-size':14},g);t.textContent={candlestick:'🕯',knife:'🔪',leadpipe:'🔩',revolver:'●',rope:'∞',wrench:'🔧'}[w.id]||'?';boardDom.weapons[w.id]=g;
+  });
+  SUSPECTS.forEach(s=>{
+    const g=svgEl('g',{class:'token-suspect'},svg); svgEl('circle',{r:15,fill:s.color,stroke:s.dark,'stroke-width':3},g); const t=svgEl('text',{y:4,'text-anchor':'middle',fill:'#100','font-size':10,'font-weight':'700'},g);t.textContent=s.initial;boardDom.suspects[s.id]=g;
+  });
+}
+function tokenOffset(index,total){const a=(index/Math.max(1,total))*Math.PI*2; return {x:Math.cos(a)*18,y:Math.sin(a)*18};}
+function renderBoard(){
+  const g=getVisibleGame(); if(!g)return;
+  const reachable=new Set((g.reachable||[]).map(posKey));
+  Object.entries(boardDom.halls).forEach(([k,e])=>e.classList.toggle('reachable',reachable.has('hall:'+k)));
+  Object.entries(boardDom.rooms).forEach(([id,e])=>{e.classList.toggle('reachable',reachable.has('room:'+id));e.classList.toggle('current-room',myPlayer()&&myPlayer().position?.type==='room'&&myPlayer().position.roomId===id);});
+  const posGroups={};
+  SUSPECTS.forEach(s=>{const p=g.suspectPositions?.[s.id]||{type:'hall',col:s.start.col,row:s.start.row};(posGroups[posKey(p)] ||= []).push({kind:'s',id:s.id,pos:p});});
+  WEAPONS.forEach(w=>{const p=g.weaponPositions?.[w.id];if(p)(posGroups[posKey(p)] ||= []).push({kind:'w',id:w.id,pos:p});});
+  Object.values(posGroups).forEach(items=>items.forEach((it,i)=>{const base=posCenterPx(it.pos), off=tokenOffset(i,items.length); const el=it.kind==='s'?boardDom.suspects[it.id]:boardDom.weapons[it.id]; if(el)el.setAttribute('transform',`translate(${base.x+off.x},${base.y+off.y})`);}));
+}
+function onBoardTarget(pos){
+  const g=getVisibleGame(), me=myPlayer(); if(!g||!me||!isMyTurn()||g.phase!=='move')return;
+  if(!(g.reachable||[]).some(p=>posEquals(p,pos)))return;
+  sendGameAction('MOVE',{pos});
+}
+
 
 /* =====================================================================
    SECTION: ENGINE — authoritative game logic (pure, host-side)
    ===================================================================== */
-/* @@SECTION_ENGINE@@ */
+function makeLog(text,type='system'){return {t:Date.now(),text,type};}
+function newAuthoritativeGame(players){
+  const setup=setupNewGame(players); const ordered=getTurnOrder(players.map(p=>({...p})));
+  ordered.forEach(p=>{p.eliminated=false;p.connected=true;p.position=JSON.parse(JSON.stringify(setup.suspectPositions[p.suspectId]));});
+  return {players:ordered,currentIndex:0,phase:'roll',roll:null,reachable:[],solution:setup.solution,hands:setup.hands,suspectPositions:setup.suspectPositions,weaponPositions:setup.weaponPositions,log:[makeLog('The investigation begins.','system')],pendingSuggestion:null,winnerId:null,gameOver:false};
+}
+function currentPlayer(game=hostGame){return game?.players?.[game.currentIndex]||null;}
+function occupiedHallways(game,exceptId){const s=new Set();game.players.forEach(p=>{if(p.id!==exceptId&&p.position?.type==='hall')s.add(cellKey(p.position.col,p.position.row));});return s;}
+function activePlayers(game){return game.players.filter(p=>!p.eliminated);}
+function advanceTurn(game){
+  if(activePlayers(game).length===0){game.gameOver=true;game.log.unshift(makeLog('Every investigator has been eliminated.','system'));return;}
+  let n=game.currentIndex;
+  for(let i=0;i<game.players.length;i++){n=(n+1)%game.players.length;if(!game.players[n].eliminated){game.currentIndex=n;break;}}
+  game.phase='roll';game.roll=null;game.reachable=[];game.pendingSuggestion=null;game.log.unshift(makeLog(`It is now ${game.players[game.currentIndex].name}'s turn.`,'system'));
+}
+function validateTurnActor(game,actorId){const p=currentPlayer(game);return !!p&&!game.gameOver&&!p.eliminated&&p.id===actorId;}
+function engineAction(game,actorId,action,payload={}){
+  const p=currentPlayer(game); if(!game||!p)return {ok:false,error:'No active game'};
+  if(action==='DISPROVE') return engineDisprove(game,actorId,payload);
+  if(!validateTurnActor(game,actorId))return {ok:false,error:'Not your turn'};
+  if(action==='ROLL'){
+    if(game.phase!=='roll')return {ok:false,error:'You already rolled'};
+    const d1=1+Math.floor(Math.random()*6),d2=1+Math.floor(Math.random()*6),total=d1+d2;
+    const reach=computeReachable(p.position,total,occupiedHallways(game,p.id));
+    game.roll={d1,d2,total};game.reachable=[...reach.posOf.values()].filter(x=>reach.steps.has(posKey(x)));game.phase='move';game.log.unshift(makeLog(`${p.name} rolled ${d1} + ${d2} = ${total}.`));return {ok:true};
+  }
+  if(action==='MOVE'){
+    if(game.phase!=='move')return {ok:false,error:'Roll first'};
+    const pos=payload.pos;if(!pos||(game.reachable||[]).every(x=>!posEquals(x,pos)))return {ok:false,error:'That space is not reachable'};
+    p.position=JSON.parse(JSON.stringify(pos));game.suspectPositions[p.suspectId]=JSON.parse(JSON.stringify(pos));game.reachable=[];game.phase='action';game.log.unshift(makeLog(`${p.name} moved${pos.type==='room'?' into '+ROOM_BY_ID[pos.roomId].name:''}.`));return {ok:true};
+  }
+  if(action==='PASSAGE'){
+    if(p.position?.type!=='room')return {ok:false,error:'You are not in a room'}; const r=ROOM_BY_ID[p.position.roomId]; if(!r?.passageTo)return {ok:false,error:'No secret passage here'};
+    p.position={type:'room',roomId:r.passageTo};game.suspectPositions[p.suspectId]={...p.position};game.phase='action';game.log.unshift(makeLog(`${p.name} took a secret passage to ${ROOM_BY_ID[r.passageTo].name}.`));return {ok:true};
+  }
+  if(action==='SUGGEST'){
+    if(p.position?.type!=='room')return {ok:false,error:'Enter a room before suggesting'}; if(game.pendingSuggestion)return {ok:false,error:'A suggestion is already being resolved'};
+    const suspect=payload.suspect, weapon=payload.weapon, room=p.position.roomId;if(!SUSPECT_BY_ID[suspect]||!WEAPON_BY_ID[weapon])return {ok:false,error:'Invalid suggestion'};
+    game.suspectPositions[suspect]={type:'room',roomId:room};game.weaponPositions[weapon]={type:'room',roomId:room};
+    const ids=[];for(let i=1;i<game.players.length;i++)ids.push(game.players[(game.currentIndex+i)%game.players.length].id);
+    game.pendingSuggestion={suggesterId:p.id,cards:[suspect,weapon,room],checkIds:ids,index:0,waitingFor:null};game.phase='suggestion';
+    game.log.unshift(makeLog(`${p.name} suggests ${SUSPECT_BY_ID[suspect].name}, with the ${WEAPON_BY_ID[weapon].name}, in the ${ROOM_BY_ID[room].name}.`,'suggest'));
+    return {ok:true,resolveSuggestion:true};
+  }
+  if(action==='ACCUSE'){
+    const {suspect,weapon,room}=payload;if(!SUSPECT_BY_ID[suspect]||!WEAPON_BY_ID[weapon]||!ROOM_BY_ID[room])return {ok:false,error:'Complete the accusation'};
+    const correct=game.solution.suspect===suspect&&game.solution.weapon===weapon&&game.solution.room===room;
+    game.log.unshift(makeLog(`${p.name} made a formal accusation.`,'accuse'));
+    if(correct){game.winnerId=p.id;game.gameOver=true;game.phase='over';game.log.unshift(makeLog(`${p.name} solved the case!`,'win'));return {ok:true,win:true};}
+    p.eliminated=true;game.log.unshift(makeLog(`${p.name}'s accusation was wrong.`,'accuse'));
+    if(activePlayers(game).length===0){game.gameOver=true;game.phase='over';return {ok:true,eliminated:true,noSolution:true};}
+    advanceTurn(game);return {ok:true,eliminated:true};
+  }
+  if(action==='END_TURN'){
+    if(game.pendingSuggestion)return {ok:false,error:'Finish the suggestion first'};advanceTurn(game);return {ok:true};
+  }
+  return {ok:false,error:'Unknown action'};
+}
+function engineDisprove(game,actorId,payload){
+  const ps=game.pendingSuggestion;if(!ps||ps.waitingFor!==actorId)return {ok:false,error:'No card requested from you'};
+  const cardId=payload.cardId;const hand=game.hands[actorId]||[];if(!ps.cards.includes(cardId)||!hand.includes(cardId))return {ok:false,error:'Invalid reveal'};
+  const suggester=ps.suggesterId, revealer=actorId;game.pendingSuggestion=null;game.phase='action';game.log.unshift(makeLog(`${game.players.find(p=>p.id===revealer)?.name||'A player'} disproved the suggestion.`,'suggest'));
+  return {ok:true,reveal:{to:suggester,from:revealer,cardId}};
+}
+function nextSuggestionCheck(game){
+  const ps=game.pendingSuggestion;if(!ps)return {done:true};
+  while(ps.index<ps.checkIds.length){
+    const id=ps.checkIds[ps.index++], matches=(game.hands[id]||[]).filter(c=>ps.cards.includes(c));
+    if(matches.length){ps.waitingFor=id;return {done:false,request:{to:id,matches,suggesterId:ps.suggesterId,cards:ps.cards}};}
+  }
+  const suggester=ps.suggesterId;game.pendingSuggestion=null;game.phase='action';game.log.unshift(makeLog('No investigator could disprove the suggestion.','suggest'));return {done:true,none:true,to:suggester};
+}
+
 
 /* =====================================================================
    SECTION: NETWORK — PeerJS transport (host + client)
    ===================================================================== */
-/* @@SECTION_NETWORK@@ */
+let peer=null, hostConn=null, clientConns={}, myPeerId=null, roomCode=null;
+let mode='menu', hostGame=null, clientGame=null, lobbyPlayers=[], myLobby={name:'',suspectId:'scarlett',ready:false};
+function peerOptions(){return {debug:1,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun2.l.google.com:19302'}]}};}
+function generateRoomCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let out='';for(let i=0;i<6;i++)out+=chars[Math.floor(Math.random()*chars.length)];return out;}
+function destroyPeer(){try{hostConn?.close();}catch(_){} try{Object.values(clientConns).forEach(c=>c.close());}catch(_){} try{peer?.destroy();}catch(_){} peer=null;hostConn=null;clientConns={};myPeerId=null;}
+function hostOnline(){
+  destroyPeer();mode='online-host';roomCode=generateRoomCode();setJoinStatus('');
+  const peerId='mm-'+roomCode.toLowerCase();peer=new Peer(peerId,peerOptions());
+  setLobbyStatus('Connecting to PeerJS…');
+  peer.on('open',id=>{myPeerId=id;myLobby={name:defaultName(),suspectId:'scarlett',ready:false};lobbyPlayers=[{id,name:myLobby.name,suspectId:myLobby.suspectId,ready:false,host:true,connected:true}];showLobby();setLobbyStatus('Room ready. Share the code.','ok');});
+  peer.on('connection',conn=>{clientConns[conn.peer]=conn;wireHostConnection(conn);});
+  peer.on('error',err=>{if(err.type==='unavailable-id'){roomCode=generateRoomCode();destroyPeer();hostOnline();}else setLobbyStatus('Network error: '+err.type,'err');});
+}
+function wireHostConnection(conn){
+  conn.on('data',data=>handleHostNet(data,conn));
+  conn.on('close',()=>{delete clientConns[conn.peer];const lp=lobbyPlayers.find(p=>p.id===conn.peer);if(lp)lp.connected=false;if(hostGame){const gp=hostGame.players.find(p=>p.id===conn.peer);if(gp)gp.connected=false;broadcastGame();}else broadcastLobby();});
+  conn.on('error',()=>{});
+}
+function joinOnline(code,name){
+  destroyPeer();mode='online-client';roomCode=String(code||'').trim().toUpperCase();myLobby={name:name||defaultName(),suspectId:'scarlett',ready:false};setJoinStatus('Connecting…');
+  peer=new Peer(undefined,peerOptions());
+  peer.on('open',id=>{myPeerId=id;hostConn=peer.connect('mm-'+roomCode.toLowerCase(),{reliable:true});wireClientConnection(hostConn);});
+  peer.on('error',err=>setJoinStatus('Network error: '+err.type,'err'));
+}
+function wireClientConnection(conn){
+  const timer=setTimeout(()=>{if(!conn.open)setJoinStatus('Could not reach that room. Check the code or network.','err');},10000);
+  conn.on('open',()=>{clearTimeout(timer);conn.send({type:'JOIN_LOBBY',name:myLobby.name,suspectId:myLobby.suspectId});setJoinStatus('Connected.','ok');});
+  conn.on('data',handleClientNet);
+  conn.on('close',()=>{setConnectionPills(false);toast('Connection to host closed.');});
+  conn.on('error',()=>setJoinStatus('Could not connect to host.','err'));
+}
+function handleHostNet(data,conn){
+  if(!data||typeof data!=='object')return;
+  if(data.type==='JOIN_LOBBY'&&!hostGame){
+    if(lobbyPlayers.some(p=>p.id===conn.peer))return;
+    if(lobbyPlayers.length>=6){conn.send({type:'ERROR',message:'Room is full.'});return;}
+    const taken=new Set(lobbyPlayers.map(p=>p.suspectId));const choice=!taken.has(data.suspectId)?data.suspectId:SUSPECTS.find(s=>!taken.has(s.id))?.id;
+    lobbyPlayers.push({id:conn.peer,name:cleanName(data.name),suspectId:choice||'plum',ready:false,host:false,connected:true});broadcastLobby();
+  }else if(data.type==='LOBBY_UPDATE_SELF'&&!hostGame){
+    const p=lobbyPlayers.find(x=>x.id===conn.peer);if(!p)return;
+    if(data.name)p.name=cleanName(data.name);if(data.suspectId&&!lobbyPlayers.some(x=>x.id!==p.id&&x.suspectId===data.suspectId))p.suspectId=data.suspectId;if(typeof data.ready==='boolean')p.ready=data.ready;broadcastLobby();
+  }else if(data.type==='ACTION'&&hostGame){processHostAction(conn.peer,data.action,data.payload);}
+}
+function handleClientNet(data){
+  if(!data||typeof data!=='object')return;
+  if(data.type==='LOBBY_STATE'){lobbyPlayers=data.players||[];showLobby();renderLobby();}
+  else if(data.type==='GAME_STATE'){clientGame=data.game;showGame();renderGame();}
+  else if(data.type==='DISPROVE_REQUEST'){showDisprovePrompt(data);}
+  else if(data.type==='PRIVATE_REVEAL'){showPrivateReveal(data);}
+  else if(data.type==='SUGGEST_NONE'){showNoDisprove();}
+  else if(data.type==='ERROR'){toast(data.message||'Network error');setJoinStatus(data.message||'Network error','err');}
+}
+function broadcastLobby(){renderLobby();const msg={type:'LOBBY_STATE',players:lobbyPlayers};Object.values(clientConns).forEach(c=>{if(c.open)c.send(msg);});}
+function sanitizedGameFor(playerId){const g=JSON.parse(JSON.stringify(hostGame));g.solution=g.gameOver?g.solution:null;const own=g.hands[playerId]||[];g.hands={[playerId]:own};return g;}
+function broadcastGame(){if(!hostGame)return;clientGame=sanitizedGameFor(myPeerId);renderGame();Object.entries(clientConns).forEach(([id,c])=>{if(c.open)c.send({type:'GAME_STATE',game:sanitizedGameFor(id)});});}
+function processHostAction(actorId,action,payload){
+  const res=engineAction(hostGame,actorId,action,payload);if(!res.ok){sendTo(actorId,{type:'ERROR',message:res.error});return;}
+  if(res.reveal)sendTo(res.reveal.to,{type:'PRIVATE_REVEAL',cardId:res.reveal.cardId,fromId:res.reveal.from});
+  broadcastGame();
+  if(res.resolveSuggestion)resolveSuggestionNetwork();
+  if(action==='DISPROVE'&&res.ok){closeModal();}
+}
+function resolveSuggestionNetwork(){
+  const step=nextSuggestionCheck(hostGame);broadcastGame();
+  if(step.request){sendTo(step.request.to,{type:'DISPROVE_REQUEST',matches:step.request.matches,suggesterId:step.request.suggesterId,cards:step.request.cards});}
+  else if(step.none){sendTo(step.to,{type:'SUGGEST_NONE'});}
+}
+function sendTo(id,msg){if(id===myPeerId){handleClientNet(msg);return;}const c=clientConns[id];if(c?.open)c.send(msg);}
+function sendGameAction(action,payload={}){if(mode==='online-client'){if(hostConn?.open)hostConn.send({type:'ACTION',action,payload});else toast('Not connected to host.');}else if(mode==='online-host'){processHostAction(myPeerId,action,payload);}else if(mode==='local'){processLocalAction(action,payload);}}
+
 
 /* =====================================================================
    SECTION: LOCAL — Pass & Play transport
    ===================================================================== */
-/* @@SECTION_LOCAL@@ */
+let localCount=3,localTurnViewingId=null;
+function startLocalLobby(){mode='local';destroyPeer();localCount=3;lobbyPlayers=Array.from({length:localCount},(_,i)=>({id:'local-'+i,name:'Player '+(i+1),suspectId:SUSPECTS[i].id,ready:true,host:i===0,connected:true}));showLobby();renderLobby();}
+function setLocalCount(n){localCount=n;lobbyPlayers=Array.from({length:n},(_,i)=>({id:'local-'+i,name:'Player '+(i+1),suspectId:SUSPECTS[i].id,ready:true,host:i===0,connected:true}));renderLobby();}
+function startLocalGame(){hostGame=newAuthoritativeGame(lobbyPlayers.map(p=>({id:p.id,name:p.name,suspectId:p.suspectId})));clientGame=null;showGame();promptLocalTurn();}
+function processLocalAction(action,payload){const actor=currentPlayer(hostGame)?.id;if(!actor)return;const res=engineAction(hostGame,actor,action,payload);if(!res.ok){toast(res.error);return;}if(res.resolveSuggestion)resolveSuggestionLocal();renderGame();if(action==='END_TURN'||(action==='ACCUSE'&&res.eliminated&&!hostGame.gameOver))promptLocalTurn();}
+function resolveSuggestionLocal(){
+  const step=nextSuggestionCheck(hostGame);renderGame();
+  if(step.request){localTurnViewingId=step.request.to;showDisprovePrompt(step.request,true);}
+  else if(step.none){showNoDisprove();}
+}
+function promptLocalTurn(){if(hostGame?.gameOver)return;localTurnViewingId=currentPlayer(hostGame)?.id;document.getElementById('passHandTitle').textContent=`Pass the device to ${currentPlayer(hostGame).name}`;openModal('modal-passhand');}
+function localVisiblePlayerId(){return localTurnViewingId||currentPlayer(hostGame)?.id;}
+
 
 /* =====================================================================
    SECTION: UI — rendering, event wiring, modals, notebook
    ===================================================================== */
-/* @@SECTION_UI@@ */
+function $(id){return document.getElementById(id);}
+function cleanName(v){return String(v||'Player').trim().slice(0,18)||'Player';}
+function defaultName(){return cleanName($('joinNameInput')?.value||$('lobbyNameInput')?.value||'Detective');}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));}
+function showLobby(){showScreen('screen-lobby');renderLobby();}
+function showGame(){showScreen('screen-game');$('floatingControls').classList.remove('hidden');setConnectionPills(mode!=='local');if(!$('boardSvg').childElementCount)buildBoard();renderGame();}
+function setConnectionPills(ok){['lobbyConnPill','gameConnPill'].forEach(id=>{const e=$(id);if(!e)return;e.classList.toggle('hidden',mode==='local');e.classList.toggle('bad',!ok);});}
+function setLobbyStatus(text,cls=''){const e=$('lobbyStatus');if(e){e.textContent=text;e.className='status-line '+cls;}}
+function setJoinStatus(text,cls=''){const e=$('joinStatus');if(e){e.textContent=text;e.className='status-line '+cls;}}
+function toast(text){const d=document.createElement('div');d.className='toast';d.textContent=text;$('toastContainer').appendChild(d);setTimeout(()=>d.remove(),3200);}
+function openModal(id){$('modalOverlay').classList.add('open');document.querySelectorAll('.modal').forEach(m=>m.classList.toggle('open',m.id===id));}
+function closeModal(){$('modalOverlay').classList.remove('open');document.querySelectorAll('.modal').forEach(m=>m.classList.remove('open'));}
+function getVisibleGame(){return mode==='online-client'?clientGame:hostGame;}
+function visiblePlayerId(){if(mode==='online-client')return myPeerId;if(mode==='online-host')return myPeerId;if(mode==='local')return localVisiblePlayerId();return null;}
+function myPlayer(){const g=getVisibleGame();return g?.players?.find(p=>p.id===visiblePlayerId())||null;}
+function isMyTurn(){const g=getVisibleGame(),me=myPlayer();return !!g&&!!me&&g.players[g.currentIndex]?.id===me.id;}
+function renderSuspectPicks(){
+  const grid=$('lobbySuspectGrid');if(!grid)return;const meId=mode==='online-client'?myPeerId:mode==='online-host'?myPeerId:null;const me=lobbyPlayers.find(p=>p.id===meId);
+  grid.innerHTML=SUSPECTS.map(s=>{const holder=lobbyPlayers.find(p=>p.suspectId===s.id&&p.id!==meId);return `<button type="button" class="suspect-pick ${me?.suspectId===s.id?'selected':''} ${holder?'taken':''}" data-suspect="${s.id}" ${holder?'disabled':''}>${suspectIcon(s.id)}<span class="name">${escapeHtml(s.name)}</span></button>`;}).join('');
+  grid.querySelectorAll('[data-suspect]').forEach(b=>b.addEventListener('click',()=>setMyLobbySuspect(b.dataset.suspect)));
+}
+function setMyLobbySuspect(id){
+  if(mode==='local')return; const meId=mode==='online-host'?myPeerId:myPeerId;
+  if(mode==='online-host'){const p=lobbyPlayers.find(x=>x.id===meId);if(p&&!lobbyPlayers.some(x=>x.id!==meId&&x.suspectId===id)){p.suspectId=id;myLobby.suspectId=id;broadcastLobby();}}
+  else if(mode==='online-client'&&hostConn?.open){myLobby.suspectId=id;hostConn.send({type:'LOBBY_UPDATE_SELF',suspectId:id});}
+}
+function renderLobby(){
+  const online=mode==='online-host'||mode==='online-client';$('lobbyTitle').textContent=mode==='local'?'Local Case Lobby':'Online Case Lobby';
+  $('lobbyRoomCodeWrap').classList.toggle('hidden',!online);if(online)$('lobbyRoomCode').textContent=roomCode||'------';
+  $('lobbyLocalCountWrap').classList.toggle('hidden',mode!=='local');$('lobbyNameField').classList.toggle('hidden',mode==='local');
+  $('lobbyPlayerCount').textContent=lobbyPlayers.length;
+  $('lobbyPlayerList').innerHTML=lobbyPlayers.map(p=>`<li class="player-row"><span class="avatar">${suspectIcon(p.suspectId,34)}</span><span class="pname">${escapeHtml(p.name)}</span>${p.host?'<span class="badge host">Host</span>':''}${p.id===myPeerId?'<span class="badge you">You</span>':''}<span class="badge ${p.ready?'ready':'waiting'}">${p.ready?'Ready':'Waiting'}</span></li>`).join('');
+  if(mode==='local'){
+    $('lobbySuspectGrid').innerHTML=lobbyPlayers.map(p=>`<div class="suspect-pick selected">${suspectIcon(p.suspectId)}<span class="name">${escapeHtml(p.name)}</span></div>`).join('');
+    $('lobbyLocalCountRow').innerHTML=[2,3,4,5,6].map(n=>`<button class="btn small ${n===localCount?'success':'secondary'}" data-count="${n}">${n}</button>`).join('');$('lobbyLocalCountRow').querySelectorAll('[data-count]').forEach(b=>b.onclick=()=>setLocalCount(+b.dataset.count));
+  }else renderSuspectPicks();
+  const ready=$('btnLobbyReady');ready.classList.toggle('hidden',mode==='local');if(online){const me=lobbyPlayers.find(p=>p.id===myPeerId);ready.textContent=me?.ready?'Ready ✓':"I'm Ready";}
+  const start=$('btnLobbyStart');const canStart=mode==='local'||(mode==='online-host'&&lobbyPlayers.length>=2&&lobbyPlayers.every(p=>p.ready));start.classList.toggle('hidden',!(mode==='local'||mode==='online-host'));start.disabled=!canStart;
+  setConnectionPills(online?true:false);
+}
+function setDie(el,val){if(!el)return;const patterns={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};[...el.children].forEach((x,i)=>x.style.opacity=(patterns[val]||[]).includes(i)?'1':'0');}
+function renderGame(){
+  const g=getVisibleGame();if(!g)return;const cur=g.players[g.currentIndex],me=myPlayer();
+  $('turnBannerText').textContent=g.gameOver?(g.winnerId?`${g.players.find(p=>p.id===g.winnerId)?.name} solved the case!`:'Case closed'):isMyTurn()?'Your turn':`${cur?.name||'—'}'s turn`;
+  $('turnBanner').classList.toggle('you-turn',isMyTurn());$('turnDot').style.background=SUSPECT_BY_ID[cur?.suspectId]?.color||'#888';
+  setDie($('die1'),g.roll?.d1||1);setDie($('die2'),g.roll?.d2||1);
+  const myTurn=isMyTurn()&&!g.gameOver&&!me?.eliminated;$('btnRollDice').disabled=!myTurn||g.phase!=='roll';
+  const room=me?.position?.type==='room'?ROOM_BY_ID[me.position.roomId]:null;$('btnTakePassage').classList.toggle('hidden',!(myTurn&&room?.passageTo&&(g.phase==='roll'||g.phase==='action')));
+  $('btnSuggest').disabled=!(myTurn&&room&&!g.pendingSuggestion&&(g.phase==='action'||g.phase==='roll'));$('btnAccuse').disabled=!myTurn;$('btnEndTurn').disabled=!(myTurn&&!g.pendingSuggestion&&g.phase!=='move');
+  const hand=g.hands?.[visiblePlayerId()]||[];$('handGrid').innerHTML=hand.map(cardHtml).join('');
+  $('caseLog').innerHTML=(g.log||[]).map(x=>`<li class="log-entry log-${x.type||'system'}">${escapeHtml(x.text||x)}</li>`).join('');
+  $('rosterList').innerHTML=g.players.map((p,i)=>`<li class="roster-row ${i===g.currentIndex?'current':''} ${p.eliminated?'eliminated':''}"><span class="avatar">${suspectIcon(p.suspectId,32)}</span><span class="rname">${escapeHtml(p.name)}<span class="rmeta">${escapeHtml(SUSPECT_BY_ID[p.suspectId]?.name||'')}</span></span><span class="rstate ${p.eliminated?'out':'active'}">${p.eliminated?'Out':'Active'}</span></li>`).join('');
+  renderBoard();renderNotebook();
+  if(g.gameOver)showGameOver(g);
+}
+function buildPicker(containerId,items,iconFn,onPick){const el=$(containerId);el.innerHTML=items.map(x=>`<button class="pick-chip" type="button" data-id="${x.id}">${iconFn?iconFn(x.id,30):''}<span>${escapeHtml(x.name)}</span></button>`).join('');el.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{el.querySelectorAll('.pick-chip').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');onPick(b.dataset.id);});}
+let suggestPick={suspect:null,weapon:null},accusePick={suspect:null,weapon:null,room:null};
+function openSuggestion(){const me=myPlayer();if(!me?.position||me.position.type!=='room')return toast('You must be in a room.');suggestPick={suspect:null,weapon:null};$('sugRoomFixed').textContent=ROOM_BY_ID[me.position.roomId].name;$('sugSuspectFixed').textContent='a suspect';$('sugWeaponFixed').textContent='a weapon';buildPicker('sugSuspectGrid',SUSPECTS,suspectIcon,id=>{suggestPick.suspect=id;$('sugSuspectFixed').textContent=SUSPECT_BY_ID[id].name;updateSuggestConfirm();});buildPicker('sugWeaponGrid',WEAPONS,weaponIcon,id=>{suggestPick.weapon=id;$('sugWeaponFixed').textContent=WEAPON_BY_ID[id].name;updateSuggestConfirm();});updateSuggestConfirm();openModal('modal-suggestion');}
+function updateSuggestConfirm(){$('btnConfirmSuggest').disabled=!(suggestPick.suspect&&suggestPick.weapon);}
+function openAccusation(){accusePick={suspect:null,weapon:null,room:null};buildPicker('accSuspectGrid',SUSPECTS,suspectIcon,id=>{accusePick.suspect=id;updateAccuseConfirm();});buildPicker('accWeaponGrid',WEAPONS,weaponIcon,id=>{accusePick.weapon=id;updateAccuseConfirm();});buildPicker('accRoomGrid',ROOMS,null,id=>{accusePick.room=id;updateAccuseConfirm();});updateAccuseConfirm();openModal('modal-accusation');}
+function updateAccuseConfirm(){$('btnConfirmAccuse').disabled=!(accusePick.suspect&&accusePick.weapon&&accusePick.room);}
+function showDisprovePrompt(data,isLocal=false){const g=getVisibleGame()||hostGame;const sugg=g?.players?.find(p=>p.id===data.suggesterId);$('disproveAskedBy').textContent=`${sugg?.name||'Another investigator'} made a suggestion.`;$('disproveCardChoices').innerHTML=(data.matches||[]).map(id=>`<button class="pick-chip" data-card="${id}">${cardHtml(id)}</button>`).join('');$('disproveCardChoices').querySelectorAll('[data-card]').forEach(b=>b.onclick=()=>{const cardId=b.dataset.card;if(isLocal){const res=engineAction(hostGame,localTurnViewingId,'DISPROVE',{cardId});if(res.ok&&res.reveal){localTurnViewingId=res.reveal.to;showPrivateReveal({cardId:res.reveal.cardId,fromId:res.reveal.from});}renderGame();}else sendGameAction('DISPROVE',{cardId});});openModal('modal-disprove-prompt');}
+function showPrivateReveal(data){const g=getVisibleGame()||hostGame;const from=g?.players?.find(p=>p.id===data.fromId);$('revealFromText').textContent=`${from?.name||'An investigator'} revealed:`;$('revealCardShown').innerHTML=cardHtml(data.cardId);openModal('modal-private-reveal');if(mode==='local')localTurnViewingId=currentPlayer(hostGame)?.id;}
+function showNoDisprove(){$('disproveNoneText').textContent='Every other investigator was checked, and none held a matching card.';openModal('modal-disprove-none');}
+function showGameOver(g){
+  if(g.winnerId){const w=g.players.find(p=>p.id===g.winnerId);$('victoryTitle').textContent='Case Solved!';$('victoryText').textContent=`${w?.name||'An investigator'} solved the mystery: ${SUSPECT_BY_ID[g.solution?.suspect]?.name}, with the ${WEAPON_BY_ID[g.solution?.weapon]?.name}, in the ${ROOM_BY_ID[g.solution?.room]?.name}.`;openModal('modal-victory');}
+  else if(g.solution){$('noSolutionReveal').textContent=`${SUSPECT_BY_ID[g.solution.suspect]?.name} — ${WEAPON_BY_ID[g.solution.weapon]?.name} — ${ROOM_BY_ID[g.solution.room]?.name}`;openModal('modal-nosolution');}
+}
+const notebookMarks={};
+function renderNotebook(){const g=getVisibleGame(),me=myPlayer();if(!g||!me)return;const own=new Set(g.hands?.[visiblePlayerId()]||[]);let html='<thead><tr><th>Card</th><th>You</th></tr></thead><tbody>';ALL_CARDS.forEach((c,i)=>{const mark=own.has(c.id)?'check':(notebookMarks[c.id]||'');html+=`<tr class="${i===6||i===12?'grp-start':''}"><th>${escapeHtml(c.name)}</th><td class="nb-cell ${own.has(c.id)?'own':''}" data-card="${c.id}" data-mark="${mark}">${mark==='check'?'✔':mark==='x'?'✕':mark==='q'?'?':''}</td></tr>`;});html+='</tbody>';$('notebookTable').innerHTML=html;$('notebookTable').querySelectorAll('.nb-cell:not(.own)').forEach(td=>td.onclick=()=>{const seq=['','check','x','q'];notebookMarks[td.dataset.card]=seq[(seq.indexOf(notebookMarks[td.dataset.card]||'')+1)%seq.length];renderNotebook();});}
+function leaveToMenu(){destroyPeer();hostGame=null;clientGame=null;lobbyPlayers=[];mode='menu';$('floatingControls').classList.add('hidden');closeModal();showScreen('screen-menu');}
+function wireUI(){
+  $('btnLocalPlay').onclick=()=>startLocalLobby();$('btnHostGame').onclick=()=>hostOnline();$('btnJoinGame').onclick=()=>showScreen('screen-join');
+  document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>showScreen(b.dataset.nav));
+  $('btnJoinConnect').onclick=()=>{const code=$('joinCodeInput').value.trim();if(code.length<4)return setJoinStatus('Enter the room code.','err');joinOnline(code,$('joinNameInput').value);};
+  $('joinCodeInput').addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6));
+  $('lobbyNameInput').addEventListener('change',()=>{const name=cleanName($('lobbyNameInput').value);if(mode==='online-host'){const p=lobbyPlayers.find(x=>x.id===myPeerId);if(p){p.name=name;broadcastLobby();}}else if(mode==='online-client'&&hostConn?.open)hostConn.send({type:'LOBBY_UPDATE_SELF',name});});
+  $('btnLobbyReady').onclick=()=>{if(mode==='online-host'){const p=lobbyPlayers.find(x=>x.id===myPeerId);p.ready=!p.ready;broadcastLobby();}else if(mode==='online-client'){const p=lobbyPlayers.find(x=>x.id===myPeerId);const next=!(p?.ready);myLobby.ready=next;hostConn?.send({type:'LOBBY_UPDATE_SELF',ready:next});}};
+  $('btnLobbyStart').onclick=()=>{if(mode==='local')return startLocalGame();if(mode!=='online-host')return;if(lobbyPlayers.length<2||!lobbyPlayers.every(p=>p.ready))return toast('Everyone must be ready.');hostGame=newAuthoritativeGame(lobbyPlayers.map(p=>({id:p.id,name:p.name,suspectId:p.suspectId})));broadcastGame();showGame();};
+  $('btnLobbyLeave').onclick=leaveToMenu;$('btnLeaveGame').onclick=leaveToMenu;$('btnCopyCode').onclick=()=>navigator.clipboard?.writeText(roomCode||'').then(()=>toast('Room code copied.')).catch(()=>toast('Code: '+roomCode));
+  $('btnRollDice').onclick=()=>{sfx('roll');sendGameAction('ROLL');};$('btnTakePassage').onclick=()=>sendGameAction('PASSAGE');$('btnSuggest').onclick=openSuggestion;$('btnAccuse').onclick=openAccusation;$('btnEndTurn').onclick=()=>sendGameAction('END_TURN');
+  $('btnConfirmSuggest').onclick=()=>{closeModal();sendGameAction('SUGGEST',suggestPick);};$('btnConfirmAccuse').onclick=()=>{closeModal();sendGameAction('ACCUSE',accusePick);};
+  $('btnOpenNotebook').onclick=()=>{renderNotebook();openModal('modal-notebook');};$('btnHowToPlay').onclick=()=>openModal('modal-howtoplay');document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeModal);
+  $('btnPassHandReady').onclick=()=>{closeModal();renderGame();};
+  $('btnSoundToggleMenu').onclick=()=>{soundEnabled=!soundEnabled;updateSoundButtons();};$('btnSoundToggleGame').onclick=()=>{soundEnabled=!soundEnabled;updateSoundButtons();};
+  document.querySelectorAll('.tab-btn').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.tab).classList.add('active');});
+  $('btnBackToMenuVictory').onclick=leaveToMenu;$('btnBackToMenuNoSolution').onclick=leaveToMenu;$('btnPlayAgain').onclick=leaveToMenu;
+}
+
 
 /* =====================================================================
    SECTION: INIT
    ===================================================================== */
-/* @@SECTION_INIT@@ */
+function init(){wireUI();updateSoundButtons();buildBoard();showScreen('screen-menu');}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+
 </script>
 </body>
 </html>
