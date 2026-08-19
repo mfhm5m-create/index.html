@@ -988,7 +988,7 @@ table.notebook-table tbody th{position:sticky;left:0;z-index:3;background:rgba(2
 <div class="toast-container" id="toastContainer"></div>
 <div class="confetti-layer hidden" id="confettiLayer"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
+
 <script>
 'use strict';
 /* =====================================================================
@@ -2095,6 +2095,165 @@ processLocalAction=function(action,payload){_v2ProcessLocalAction(action,payload
 const _v2ShowGameOver=showGameOver;
 showGameOver=function(g){if(!showGameOver._last||showGameOver._last!==g.winnerId+'|'+g.gameOver){sfx(g.winnerId?'win':'bad');showGameOver._last=g.winnerId+'|'+g.gameOver;}_v2ShowGameOver(g);};
 
+
+/* =====================================================================
+   ONLINE TRANSPORT V3 — TRYSTERO (serverless signalling)
+   Replaces PeerJS Cloud / private PeerServer. One HTML file only.
+   ===================================================================== */
+let trysteroModule=null, trysteroRoom=null, trysteroAction=null, trysteroHostId=null;
+const TRYSTERO_APP_ID='mansion-mystery-mfhm5m-classic-v3';
+
+async function ensureTrystero(){
+  if(trysteroModule)return trysteroModule;
+  trysteroModule=await import('https://esm.run/trystero');
+  return trysteroModule;
+}
+
+function makeNetConn(peerId){
+  return {
+    peer:peerId,
+    open:true,
+    send(msg){
+      if(!trysteroAction)return;
+      trysteroAction.send(msg,{target:peerId}).catch?.(()=>{});
+    },
+    close(){}
+  };
+}
+
+function resetTrystero(){
+  try{trysteroRoom?.leave();}catch(_){}
+  trysteroRoom=null;trysteroAction=null;trysteroHostId=null;
+}
+
+destroyPeer=function(){
+  resetTrystero();
+  peer=null;hostConn=null;clientConns={};myPeerId=null;
+};
+
+function wireTrysteroRoom(isHost){
+  trysteroAction=trysteroRoom.makeAction('mm-packet');
+  trysteroAction.onMessage=(data,{peerId})=>{
+    if(!data||typeof data!=='object')return;
+    if(isHost){
+      if(data.type==='HOST_HELLO')return;
+      handleHostNet(data,makeNetConn(peerId));
+      return;
+    }
+    if(data.type==='HOST_HELLO'){
+      trysteroHostId=peerId;
+      hostConn=makeNetConn(peerId);
+      setConnectionPills(true);
+      setJoinStatus('Connected.','ok');
+      hostConn.send({type:'JOIN_LOBBY',name:myLobby.name,suspectId:myLobby.suspectId,rejoin:true});
+      return;
+    }
+    if(trysteroHostId&&peerId!==trysteroHostId)return;
+    handleClientNet(data);
+  };
+
+  trysteroRoom.onPeerJoin=peerId=>{
+    if(isHost){
+      clientConns[peerId]=makeNetConn(peerId);
+      trysteroAction.send({type:'HOST_HELLO'},{target:peerId}).catch?.(()=>{});
+    }
+  };
+  trysteroRoom.onPeerLeave=peerId=>{
+    if(isHost){
+      delete clientConns[peerId];
+      const lp=lobbyPlayers.find(p=>p.id===peerId);if(lp)lp.connected=false;
+      if(hostGame){const gp=hostGame.players.find(p=>p.id===peerId);if(gp)gp.connected=false;broadcastGame();}
+      else broadcastLobby();
+    }else if(peerId===trysteroHostId){
+      hostConn=null;setConnectionPills(false);
+      setJoinStatus('Host connection lost. Trystero will keep trying to reconnect.','err');
+      toast('Connection to host lost — reconnecting automatically.');
+    }
+  };
+}
+
+hostOnline=async function(){
+  destroyPeer();mode='online-host';roomCode=generateRoomCode();setJoinStatus('');
+  myLobby={name:defaultName(),suspectId:'scarlett',ready:false};
+  lobbyPlayers=[];
+  showLobby();setConnectionPills(false);setLobbyStatus('Opening online room…');
+  try{
+    const mod=await ensureTrystero();
+    if(mode!=='online-host')return;
+    myPeerId=mod.selfId;
+    peer={open:true,destroy:resetTrystero};
+    lobbyPlayers=[{id:myPeerId,name:myLobby.name,suspectId:myLobby.suspectId,ready:false,host:true,connected:true}];
+    trysteroRoom=mod.joinRoom({appId:TRYSTERO_APP_ID},'mm-'+roomCode.toLowerCase(),{
+      onJoinError:details=>{
+        console.warn('Trystero peer join error',details);
+        setLobbyStatus('A player could not establish a direct connection. They can retry joining.','err');
+      }
+    });
+    wireTrysteroRoom(true);
+    renderLobby();setConnectionPills(true);
+    setLobbyStatus('Room ready. Share the code.','ok');
+  }catch(err){
+    console.error('Trystero failed',err);setConnectionPills(false);
+    setLobbyStatus('Could not start online mode. Check the internet connection and reload.','err');
+  }
+};
+
+joinOnline=async function(code,name){
+  destroyPeer();mode='online-client';roomCode=String(code||'').trim().toUpperCase();
+  myLobby={name:name||defaultName(),suspectId:'scarlett',ready:false};setJoinStatus('Finding room…');
+  try{
+    const mod=await ensureTrystero();
+    if(mode!=='online-client')return;
+    myPeerId=mod.selfId;peer={open:true,destroy:resetTrystero};
+    trysteroRoom=mod.joinRoom({appId:TRYSTERO_APP_ID},'mm-'+roomCode.toLowerCase(),{
+      onJoinError:details=>{
+        console.warn('Trystero join error',details);setConnectionPills(false);
+        setJoinStatus('Could not make a direct connection to that room. Try again.','err');
+      }
+    });
+    wireTrysteroRoom(false);
+    setJoinStatus('Room found — connecting to host…');
+    setTimeout(()=>{
+      if(mode==='online-client'&&!trysteroHostId)setJoinStatus('Still looking for the host. Check the room code.','err');
+    },12000);
+  }catch(err){
+    console.error('Trystero failed',err);setJoinStatus('Could not load online multiplayer. Reload and try again.','err');
+  }
+};
+
+broadcastLobby=function(){
+  renderLobby();
+  if(mode!=='online-host'||!trysteroAction)return;
+  const msg={type:'LOBBY_STATE',players:lobbyPlayers};
+  trysteroAction.send(msg).catch?.(()=>{});
+};
+
+broadcastGame=function(){
+  if(!hostGame)return;
+  clientGame=sanitizedGameFor(myPeerId);renderGame();
+  if(mode!=='online-host'||!trysteroAction)return;
+  Object.keys(clientConns).forEach(id=>trysteroAction.send({type:'GAME_STATE',game:sanitizedGameFor(id)},{target:id}).catch?.(()=>{}));
+};
+
+sendTo=function(id,msg){
+  if(id===myPeerId){handleClientNet(msg);return;}
+  if(trysteroAction)trysteroAction.send(msg,{target:id}).catch?.(()=>{});
+};
+
+sendGameAction=function(action,payload={}){
+  if(mode==='online-client'){
+    if(hostConn?.open)hostConn.send({type:'ACTION',action,payload});else toast('Not connected to host.');
+  }else if(mode==='online-host')processHostAction(myPeerId,action,payload);
+  else if(mode==='local')processLocalAction(action,payload);
+};
+
+// Connection pills in Trystero represent room/host reachability, not PeerJS socket state.
+const _trysteroRenderLobby=renderLobby;
+renderLobby=function(){
+  _trysteroRenderLobby();
+  if(mode==='online-host')setConnectionPills(!!trysteroRoom);
+  else if(mode==='online-client')setConnectionPills(!!hostConn?.open);
+};
 
 /* =====================================================================
    SECTION: INIT
