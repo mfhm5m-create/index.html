@@ -4,12 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="Mansion Mystery — a full online peer-to-peer and pass-and-play detective board game.">
-<title>Mansion Mystery — A Detective Board Game</title>
+<meta name="description" content="Mansion Mystery: The Blackwood Case — a collector's-edition online and pass-and-play detective board game.">
+<title>Mansion Mystery — The Blackwood Case: Director's Cut</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23120b08' stroke='%23c9a24b' stroke-width='4'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='%23c9a24b'%3E%3F%3C/text%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;900&family=Cinzel+Decorative:wght@700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Special+Elite&display=swap" rel="stylesheet">
 <style>
 /* =====================================================================
    MANSION MYSTERY — DESIGN SYSTEM
@@ -46,10 +43,10 @@
   --info-2:#2f5a7a;
   --info-3:#5fa0c9;
   --paper-shadow:0 10px 30px rgba(0,0,0,.55);
-  --font-display:'Cinzel', Georgia, serif;
-  --font-display-deco:'Cinzel Decorative','Cinzel', Georgia, serif;
-  --font-body:'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-  --font-mono:'Special Elite', 'Courier New', monospace;
+  --font-display:'Palatino Linotype','Book Antiqua',Georgia,serif;
+  --font-display-deco:Copperplate,'Copperplate Gothic Light','Palatino Linotype',Georgia,serif;
+  --font-body:Georgia,'Times New Roman',serif;
+  --font-mono:'Courier New',Courier,monospace;
   --radius-sm:6px;
   --radius-md:12px;
   --radius-lg:20px;
@@ -552,9 +549,6 @@ table.notebook-table tbody tr.grp-start td, table.notebook-table tbody tr.grp-st
 
 .victory-modal{text-align:center;}
 .victory-modal .seal-lg{width:110px;height:110px;margin:0 auto 14px;}
-.confetti-layer{position:fixed;inset:0;pointer-events:none;z-index:99;overflow:hidden;}
-.confetto{position:absolute;top:-20px;width:8px;height:14px;opacity:.9;animation:confettiFall linear forwards;}
-@keyframes confettiFall{to{transform:translateY(110vh) rotate(540deg);opacity:0;}}
 
 .eliminated-modal .stamp{
   font-family:var(--font-display-deco);color:var(--danger-3);font-size:1.6rem;
@@ -640,11 +634,289 @@ table.notebook-table tbody th{position:sticky;left:0;z-index:3;background:rgba(2
   .tabs{overflow-x:auto;}.tab-btn{min-width:82px}.notebook-modal{padding:16px}.notebook-scroll{max-height:68vh}
 }
 
+/* =====================================================================
+   ULTIMATE EDITION — premium product layer
+   ===================================================================== */
+:root{
+  --shadow-deep:0 28px 70px rgba(0,0,0,.62);
+  --line-brass:rgba(225,190,103,.42);
+  --glass:rgba(20,13,10,.74);
+  --ease-out:cubic-bezier(.2,.82,.24,1);
+}
+body{
+  background:#090604;
+  background-image:
+    radial-gradient(circle at 50% -20%,rgba(191,139,53,.2),transparent 44%),
+    linear-gradient(130deg,#0b0705,#21130e 45%,#080504);
+}
+#bgAtmosphere::before{
+  content:"";position:absolute;inset:0;opacity:.16;
+  background:
+    linear-gradient(90deg,transparent 49.7%,rgba(225,190,103,.18) 50%,transparent 50.3%),
+    repeating-linear-gradient(0deg,transparent 0 35px,rgba(255,255,255,.018) 36px),
+    radial-gradient(circle at 50% 0,rgba(255,225,151,.28),transparent 23%);
+  mask-image:linear-gradient(#000,transparent 72%);
+}
+#bgAtmosphere::after{box-shadow:inset 0 0 180px #000;}
+.screen{padding-top:calc(20px + var(--safe-t));}
+.brand{position:relative;margin:18px 0 12px;}
+.brand::before,.brand::after{
+  content:"";position:absolute;top:48px;width:min(20vw,180px);height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold-2));opacity:.55;
+}
+.brand::before{right:calc(100% + 20px)}.brand::after{left:calc(100% + 20px);transform:scaleX(-1)}
+.brand .seal{position:relative;width:108px;height:108px;background:radial-gradient(circle at 36% 26%,#f7e1a1,#c29a45 45%,#6e471c 78%,#2b170c);}
+.brand .seal::after{content:"BLACKWOOD";position:absolute;bottom:14px;font:600 7px/1 var(--font-display);letter-spacing:.18em;color:#231208;}
+.brand h1{font-size:clamp(2.25rem,7vw,4.15rem);letter-spacing:.025em;filter:drop-shadow(0 9px 20px rgba(0,0,0,.6));}
+.brand .tag{color:#d7c49a;letter-spacing:.22em;}
+.menu-card{max-width:470px;padding:10px;background:linear-gradient(150deg,rgba(74,44,23,.94),rgba(20,12,8,.98));border-radius:28px;box-shadow:0 30px 80px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.04);}
+.menu-card::before{content:"PRIVATE INVESTIGATION · BLACKWOOD MANOR";display:block;text-align:center;padding:15px 12px 10px;color:var(--gold-3);font:600 .66rem/1 var(--font-mono);letter-spacing:.17em;}
+.menu-card .btn{justify-content:flex-start;border-radius:17px;min-height:58px;padding:13px 18px;text-transform:none;letter-spacing:.035em;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 5px 14px rgba(0,0,0,.28);}
+.menu-card .btn::before{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;border:1px solid rgba(20,10,6,.32);background:rgba(255,255,255,.12);font-family:Georgia,serif;font-size:1rem;}
+#btnLocalPlay::before{content:"♟"}#btnHostGame::before{content:"◎"}#btnJoinGame::before{content:"↗"}#btnHowToPlay::before{content:"i"}
+.menu-card .btn.ghost{color:var(--parchment-2);border-color:rgba(212,175,55,.35);}
+.menu-footer{max-width:480px;}
+
+.wood-panel{border-color:rgba(205,156,61,.62);box-shadow:var(--shadow-deep),inset 0 1px rgba(255,255,255,.055),inset 0 0 50px rgba(0,0,0,.52);}
+.parchment-panel{background-color:#e9dbb7;background-image:radial-gradient(circle at 18% 12%,rgba(137,96,32,.16),transparent 32%),radial-gradient(circle at 86% 82%,rgba(118,74,27,.12),transparent 36%),repeating-linear-gradient(3deg,rgba(75,49,20,.025) 0 1px,transparent 1px 4px),linear-gradient(145deg,#f5edd7,#d8c394);}
+.btn{isolation:isolate;overflow:hidden;}
+.btn::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.22),transparent 70%);transform:translateX(-130%);transition:transform .55s ease;}
+.btn:hover::after{transform:translateX(130%)}
+.btn:disabled::after{display:none}.btn:disabled{opacity:.52;}
+
+.room-code-display{position:relative;overflow:hidden;}
+.room-code-display::after{content:"CONFIDENTIAL";position:absolute;right:-18px;top:10px;transform:rotate(14deg);border:2px solid rgba(173,61,56,.6);color:rgba(222,103,93,.75);padding:4px 18px;font:700 .65rem var(--font-mono);letter-spacing:.1em;}
+.player-row{position:relative;overflow:hidden;animation:seatArrive .36s var(--ease-out) both;}
+.player-row::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--seat-color,var(--gold-2));}
+@keyframes seatArrive{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+.local-seat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.suspect-grid:has(.local-seat-grid){display:block}.local-seat-grid{width:100%;}
+.local-seat{display:grid;grid-template-columns:50px minmax(0,1fr);gap:10px;align-items:center;padding:11px;border:1px solid rgba(43,29,16,.2);border-radius:13px;background:rgba(255,255,255,.25);}
+.local-seat .seat-avatar{grid-row:1/3}.local-seat input,.local-seat select{width:100%;min-height:38px;border:1px solid rgba(75,48,20,.3);border-radius:8px;background:rgba(255,255,255,.4);color:#27180d;padding:6px 8px;font:600 .85rem var(--font-body);}
+
+#screen-game{background:radial-gradient(circle at 45% 32%,rgba(112,72,28,.12),transparent 48%);}
+.top-hud{position:relative;z-index:30;background:linear-gradient(180deg,rgba(36,22,14,.96),rgba(17,10,7,.94));border:1px solid rgba(212,175,55,.42);border-radius:15px;box-shadow:0 10px 28px rgba(0,0,0,.35);}
+.turn-banner{min-height:42px;background:linear-gradient(180deg,rgba(7,5,4,.5),rgba(58,34,20,.38));}
+.turn-banner.you-turn::after{content:"INVESTIGATE";font:700 .56rem var(--font-mono);letter-spacing:.13em;color:var(--gold-3);opacity:.8;}
+.case-context{display:flex;align-items:center;gap:9px;flex-wrap:wrap;min-height:26px;padding:0 10px 8px;color:var(--parchment-1);font:.72rem var(--font-mono);letter-spacing:.035em;}
+.phase-chip{padding:4px 8px;border-radius:999px;background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.25);color:var(--gold-3);text-transform:uppercase;letter-spacing:.1em;font-size:.6rem;}
+.case-context .context-spacer{flex:1}.action-hint{color:#e8dbbd;}
+
+.board-wrap{padding:8px;min-height:0;align-items:stretch;}
+.board-viewport{position:relative;width:100%;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;border-radius:22px;touch-action:pan-x pan-y;cursor:grab;}
+.board-viewport.dragging{cursor:grabbing;user-select:none;}
+.board-frame{--board-zoom:1;width:calc(100% * var(--board-zoom));min-width:calc(620px * var(--board-zoom));max-width:none;margin:auto;padding:18px;border-radius:24px;border:1px solid #c9a653;background:repeating-linear-gradient(91deg,rgba(255,255,255,.025) 0 1px,rgba(0,0,0,.12) 1px 4px),linear-gradient(145deg,#704421,#1b0e08 55%,#4c2a16);box-shadow:0 26px 55px rgba(0,0,0,.6),inset 0 0 0 4px #261309,inset 0 0 0 6px rgba(212,175,55,.55),inset 0 0 65px #000;}
+.board-frame::after{content:"BLACKWOOD MANOR · EST. 1889";position:absolute;left:50%;bottom:4px;transform:translateX(-50%);font:600 7px var(--font-display);letter-spacing:.18em;color:#d9b766;white-space:nowrap;opacity:.8;}
+.board-toolbar{position:absolute;z-index:15;right:18px;top:18px;display:flex;gap:5px;padding:5px;border:1px solid rgba(212,175,55,.3);border-radius:999px;background:rgba(10,6,5,.82);backdrop-filter:blur(8px);box-shadow:0 5px 18px rgba(0,0,0,.4);}
+.board-tool{width:35px;height:35px;border-radius:50%;border:1px solid rgba(212,175,55,.26);background:#2a190f;color:#f0d485;cursor:pointer;font:700 1rem var(--font-display);}
+.board-tool:hover{background:#49301c}.board-tool:focus-visible{outline-offset:1px;}
+#boardSvg{background:#110c08;border:1px solid rgba(212,175,55,.28);box-shadow:inset 0 0 80px rgba(0,0,0,.72);}
+.mansion-floor{fill:#17100b;stroke:#8e6a2d;stroke-width:1.5}.room-rect{stroke:#c59a43;stroke-width:2.2;filter:drop-shadow(0 5px 5px rgba(0,0,0,.42));}
+.room-rect.reachable{stroke:#ffe09a;stroke-width:4;animation:roomReach 1.25s ease-in-out infinite;}
+@keyframes roomReach{50%{filter:drop-shadow(0 0 12px rgba(255,214,107,.9));}}
+.room-floor-detail,.furniture{pointer-events:none}.furniture{filter:drop-shadow(0 2px 2px rgba(0,0,0,.48));}
+.room-label{font-size:15px;letter-spacing:.1em;paint-order:stroke;stroke:rgba(10,6,4,.78);stroke-width:3px;stroke-linejoin:round;}
+.room-subtitle{font:600 7px var(--font-mono);letter-spacing:.18em;fill:rgba(245,224,170,.62);text-anchor:middle;pointer-events:none;}
+.corridor-cell{stroke:rgba(218,180,94,.16);stroke-width:.8;rx:3;}
+.corridor-cell.reachable{fill:#8b6b29 !important;stroke:#ffe298;stroke-width:1.7;animation:hallReach 1.15s ease-in-out infinite;}
+@keyframes hallReach{50%{fill:#bd9442 !important;filter:drop-shadow(0 0 6px rgba(255,218,122,.9));}}
+.door-leaf{fill:#5c351c;stroke:#d2a348;stroke-width:1.2;filter:drop-shadow(0 2px 2px #000)}
+.door-hinge{fill:#f0cf72}.passage-line{stroke:#d7b24f;stroke-width:1.6;stroke-dasharray:3 6;opacity:.38;}
+.passage-hatch{fill:#120b07;stroke:#e3bd5d;stroke-width:1.6}.passage-icon.usable .passage-hatch{filter:drop-shadow(0 0 8px #e6bd53)}
+.token-suspect,.token-weapon{transform-box:view-box;filter:drop-shadow(0 5px 4px rgba(0,0,0,.78));}
+.token-suspect .pawn-rim{stroke:rgba(255,255,255,.54);stroke-width:1.2}.token-suspect .pawn-base{stroke:#1a0c08;stroke-width:2.2}
+.token-weapon .weapon-plinth{fill:url(#weaponPlinth);stroke:#e3bc59;stroke-width:1.5}
+.board-frame.dice-impact{animation:boardImpact .48s var(--ease-out)}
+@keyframes boardImpact{0%,100%{transform:none}22%{transform:translateY(2px) rotate(.08deg)}52%{transform:translateY(-1px) rotate(-.05deg)}}
+
+.action-bar{position:relative;align-items:center;border-radius:17px;background:linear-gradient(150deg,rgba(71,42,22,.98),rgba(24,13,9,.99));}
+.action-bar::before{content:"AVAILABLE ACTIONS";font:600 .58rem var(--font-mono);letter-spacing:.13em;color:var(--gold-3);opacity:.72;margin-right:4px;}
+.action-bar .btn{border-radius:11px;padding:.72em 1.05em;min-height:44px;}
+.dice-tray{position:relative;padding:5px 8px;border-radius:13px;background:rgba(5,3,2,.35);border:1px solid rgba(212,175,55,.2);}
+.dice-tray::after{position:absolute;left:50%;top:100%;transform:translate(-50%,2px);font-size:.48rem;}
+.die{width:48px;height:48px;border-radius:9px;background:linear-gradient(145deg,#fff8e7,#d2bd91 65%,#9d8355);box-shadow:0 7px 12px rgba(0,0,0,.55),inset 1px 1px 1px #fff,inset -2px -2px 4px rgba(62,40,18,.32);}
+.die i{background:#2b1a10;box-shadow:inset 0 1px 1px rgba(255,255,255,.25);}
+.die.rolling{animation:diceTumble .11s linear infinite;}
+@keyframes diceTumble{0%{transform:translate(-2px,-1px) rotate(0)}35%{transform:translate(2px,-6px) rotate(120deg)}70%{transform:translate(5px,1px) rotate(245deg)}100%{transform:translate(-2px,-1px) rotate(360deg)}}
+.side-pane{border-radius:17px;box-shadow:0 20px 50px rgba(0,0,0,.44),inset 0 0 35px rgba(0,0,0,.34);}
+.tabs{position:relative;border-bottom:1px solid rgba(212,175,55,.2);background:rgba(8,5,4,.28);border-radius:15px 15px 0 0;}
+.tab-btn{position:relative;min-height:40px;}
+.tab-btn.active::after{content:"";position:absolute;left:20%;right:20%;bottom:-6px;height:2px;background:var(--gold-3);box-shadow:0 0 8px var(--gold-3);}
+.hand-card{position:relative;width:100px;height:142px;border:2px solid #a98236;background:linear-gradient(145deg,#fbf4df,#d2be8e);box-shadow:0 10px 20px rgba(0,0,0,.42),inset 0 0 0 4px rgba(88,56,20,.09);}
+.hand-card::after{content:"";position:absolute;inset:4px;border:1px solid color-mix(in srgb,var(--accent,#7a5a24),transparent 45%);border-radius:6px;pointer-events:none;}
+.hand-card .cat{position:relative;z-index:1;padding:2px 7px;border-radius:99px;background:rgba(49,29,14,.08);}
+.hand-card .card-art{position:relative;z-index:1;width:54px;height:54px;}
+.hand-card .cname{position:relative;z-index:1;font-size:.76rem;}
+.card-index{position:absolute;top:8px;left:8px;font:700 .55rem var(--font-display);color:#6d4b20;}
+.roster-row{border-color:rgba(212,175,55,.2);}.roster-row.current{background:linear-gradient(90deg,rgba(212,175,55,.16),rgba(0,0,0,.22));}
+
+.modal-overlay{background:radial-gradient(circle at 50% 35%,rgba(76,45,22,.3),rgba(4,2,2,.86));backdrop-filter:blur(7px);}
+.modal{border-width:1px;box-shadow:0 35px 90px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.18);}
+.modal h3{font-family:var(--font-display-deco);letter-spacing:.04em;color:#4d241a;}
+.modal h3::after{content:"";display:block;width:100px;height:1px;margin:10px auto;background:linear-gradient(90deg,transparent,#8f6d2a,transparent);}
+.pick-chip{position:relative;min-height:72px;transition:transform .16s ease,background .16s ease,border-color .16s ease;}
+.pick-chip:hover{transform:translateY(-2px);background:rgba(255,255,255,.62)}
+.pick-chip.selected::after{content:"SELECTED";position:absolute;right:4px;top:4px;font:700 6px var(--font-mono);letter-spacing:.08em;color:#6c1c25;}
+.suggestion-summary{background:linear-gradient(160deg,#2a180f,#120b08);color:#eadab6;box-shadow:inset 0 0 20px rgba(0,0,0,.5);}
+.suggestion-stage{display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr;align-items:center;gap:5px;margin:4px 0 15px;}
+.suggestion-card{min-height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px solid rgba(73,43,19,.24);border-radius:11px;background:rgba(255,255,255,.28);text-align:center;font:600 .76rem var(--font-display);}
+.suggestion-card .stage-label{font:.56rem var(--font-mono);letter-spacing:.1em;text-transform:uppercase;opacity:.55}.stage-arrow{font-size:1.2rem;text-align:center;color:#8f6b27;}
+.accusation-envelope{position:relative;width:min(310px,88%);height:118px;margin:2px auto 18px;border:1px solid #a27e36;border-radius:8px;background:linear-gradient(150deg,#dfcc9f,#b99a61);box-shadow:0 15px 25px rgba(55,27,10,.24);overflow:hidden;}
+.accusation-envelope::before{content:"";position:absolute;inset:-76px 20px auto;height:140px;transform:rotate(45deg);border:1px solid rgba(89,55,20,.24);background:linear-gradient(135deg,#d5bd88,#eeddb6);}
+.accusation-envelope::after{content:"CONFIDENTIAL · CASE FILE";position:absolute;inset:auto 0 17px;text-align:center;font:700 .69rem var(--font-mono);letter-spacing:.14em;color:#5e2b20;}
+.modal#modal-accusation.open .accusation-envelope{animation:envelopeEnter .55s var(--ease-out) both;}
+@keyframes envelopeEnter{from{opacity:0;transform:translateY(-22px) rotate(-4deg)}to{opacity:1;transform:none}}
+.modal#modal-private-reveal .hand-card{animation:privateFlip .72s var(--ease-out) both;}
+@keyframes privateFlip{0%{opacity:0;transform:perspective(700px) rotateY(92deg) translateY(18px)}65%{transform:perspective(700px) rotateY(-7deg)}100%{opacity:1;transform:none}}
+
+.notebook-modal{max-width:1040px;}
+.notebook-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px;}
+.notebook-search{flex:1;min-width:180px;border:1px solid rgba(66,40,18,.28);background:rgba(255,255,255,.35);border-radius:8px;padding:9px 11px;color:#2b1d10;font:600 .86rem var(--font-body);}
+.notebook-evidence{display:flex;flex-direction:column;gap:5px;max-height:104px;overflow:auto;margin:10px 0;padding:8px;border:1px solid rgba(66,40,18,.16);border-radius:9px;background:rgba(255,255,255,.18);font:.76rem var(--font-mono);}
+.evidence-line{display:flex;gap:8px;align-items:flex-start}.evidence-line::before{content:"•";color:#8f6b27;}
+.personal-notes{width:100%;min-height:76px;resize:vertical;border:1px solid rgba(66,40,18,.28);border-radius:9px;background:repeating-linear-gradient(#f8efd8 0 25px,#c9b98f 26px);padding:8px 10px;color:#2b1d10;font:1rem/26px var(--font-body);}
+.notebook-table tbody tr.filtered{display:none}.notebook-table tbody tr:hover{background:rgba(139,99,31,.08)}
+.notebook-table tbody th .card-type-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:var(--type-color,#8f6b27)}
+.nb-cell{transition:background .12s ease,transform .12s ease}.nb-cell:not(.auto):active{transform:scale(.9)}
+
+.presentation-layer{position:fixed;inset:0;z-index:160;display:grid;place-items:center;pointer-events:none;visibility:hidden;opacity:0;background:radial-gradient(circle at 50% 46%,rgba(55,31,15,.38),rgba(5,3,2,.76));backdrop-filter:blur(3px);transition:opacity .2s ease,visibility .2s;}
+.presentation-layer.show{visibility:visible;opacity:1;}
+.presentation-card{width:min(560px,calc(100vw - 32px));padding:28px;border:1px solid var(--gold-2);border-radius:19px;background:linear-gradient(155deg,rgba(72,42,21,.98),rgba(14,8,6,.99));box-shadow:0 35px 100px #000;text-align:center;transform:translateY(15px) scale(.96);transition:transform .35s var(--ease-out);}
+.presentation-layer.show .presentation-card{transform:none}.presentation-kicker{font:700 .64rem var(--font-mono);letter-spacing:.18em;color:var(--gold-3);text-transform:uppercase}.presentation-title{margin:8px 0;color:var(--gold-4);font:700 clamp(1.6rem,6vw,3rem) var(--font-display-deco);}.presentation-sub{color:var(--parchment-1);font-style:italic;}
+.suggestion-cinema-row,.verdict-card-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:18px;}
+.cinema-dossier{width:112px;min-height:126px;padding:10px 7px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:1px solid #9c7834;border-radius:9px;background:linear-gradient(145deg,#f4ead0,#c9b27f);color:#2a1a0e;box-shadow:0 10px 22px rgba(0,0,0,.35);font:700 .72rem var(--font-display);opacity:0;transform:translateY(20px) rotate(-2deg);animation:dossierIn .42s var(--ease-out) forwards;}
+.cinema-dossier:nth-child(2){animation-delay:.15s;transform:translateY(20px)}.cinema-dossier:nth-child(3){animation-delay:.3s;transform:translateY(20px) rotate(2deg)}
+@keyframes dossierIn{to{opacity:1;transform:none}}
+.turn-flash{position:fixed;left:50%;top:18%;z-index:90;pointer-events:none;transform:translate(-50%,-15px);opacity:0;padding:12px 24px;border:1px solid rgba(212,175,55,.65);border-radius:999px;background:rgba(15,9,6,.9);box-shadow:0 12px 35px rgba(0,0,0,.55),0 0 30px rgba(212,175,55,.2);font:700 .78rem var(--font-display);letter-spacing:.12em;color:var(--gold-4);text-transform:uppercase;}
+.turn-flash.show{animation:turnFlash 1.7s var(--ease-out) both}@keyframes turnFlash{0%{opacity:0;transform:translate(-50%,-12px)}18%,72%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,8px)}}
+.settings-grid{display:grid;gap:14px}.settings-row{display:grid;grid-template-columns:120px 1fr auto;gap:10px;align-items:center}.settings-row label{font:700 .72rem var(--font-mono);letter-spacing:.08em;text-transform:uppercase}.settings-row input[type=range]{accent-color:#8e6728;width:100%;}
+.privacy-curtain{position:fixed;inset:0;z-index:155;display:none;place-items:center;padding:20px;background:radial-gradient(circle at 50% 35%,#3d2415,#0b0705 70%);}.privacy-curtain.show{display:grid}.privacy-card{width:min(480px,100%);text-align:center;padding:30px;border:1px solid var(--gold-2);border-radius:20px;background:linear-gradient(155deg,#4c2d18,#160d09);box-shadow:var(--shadow-deep)}
+
+@media(max-width:980px){
+  .game-layout{display:flex;flex-direction:column}.side-pane{min-height:390px}.board-viewport{max-height:74vh}.board-frame{width:calc(min(100%,800px) * var(--board-zoom));}
+}
+@media(min-width:981px){
+  #screen-game{height:100dvh;overflow:hidden}.game-layout{height:calc(100dvh - 108px);min-height:0}.board-pane{height:100%;min-height:0}.board-wrap{flex:1;min-height:0}.board-viewport{height:100%;display:flex;align-items:flex-start}.board-frame{width:min(100%,calc(100dvh - 205px));min-width:470px}.action-bar{flex:0 0 auto;margin-top:6px;padding:8px}.side-pane{height:100%;overflow:hidden}
+}
+@media(max-width:700px){
+  body{font-size:16px}.screen{padding-left:10px;padding-right:10px}#screen-game{padding-left:0;padding-right:0;padding-bottom:calc(82px + var(--safe-b));animation:none !important;transform:none !important;}
+  .top-hud{position:sticky;top:0;border-radius:0;margin:0;gap:6px;padding:7px 9px}.brand-mini .hide-sm{display:none}.top-hud .brand-mini svg{width:25px;height:25px}.turn-banner{min-width:150px;padding:6px 10px}.turn-banner.you-turn::after{display:none}
+  .case-context{padding:6px 10px;background:rgba(17,10,7,.92);position:sticky;top:55px;z-index:25;border-bottom:1px solid rgba(212,175,55,.2)}
+  .board-wrap{padding:5px}.board-viewport{max-height:61vh;border-radius:12px}.board-frame{min-width:calc(610px * var(--board-zoom));padding:13px;border-radius:16px}.board-toolbar{position:fixed;right:9px;top:auto;bottom:calc(96px + var(--safe-b));z-index:55;flex-direction:column;border-radius:20px}.board-tool{width:40px;height:40px}
+  .action-bar{position:fixed;left:0;right:0;bottom:0;z-index:50;margin:0;padding:8px 10px calc(8px + var(--safe-b));border-radius:0;flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;box-shadow:0 -12px 30px rgba(0,0,0,.65)}.action-bar::before{display:none}.action-bar .btn{flex:0 0 auto;min-height:48px}.dice-tray{flex:0 0 auto}.die{width:42px;height:42px}.floating-controls{right:9px;bottom:calc(152px + var(--safe-b))}.fab{width:46px;height:46px}
+  .side-pane{margin:4px 6px;min-height:410px}.tab-panels{min-height:340px}.hand-card{width:92px;height:132px}
+  .modal-overlay{align-items:flex-end;padding:0}.modal{max-height:91dvh;border-radius:20px 20px 0 0;padding:19px}.modal.wide{max-width:none}.picker-grid,.picker-grid.rooms{grid-template-columns:repeat(3,minmax(0,1fr))}.pick-chip{min-height:67px;padding:7px 3px}.suggestion-stage{grid-template-columns:1fr 15px 1fr 15px 1fr}.stage-arrow{font-size:.85rem}.notebook-modal{height:92dvh}.notebook-scroll{max-height:none;flex:1}.local-seat-grid{grid-template-columns:1fr}
+  .presentation-card{padding:22px 12px}.suggestion-cinema-row,.verdict-card-row{gap:5px}.cinema-dossier{width:30%;min-height:112px;font-size:.65rem}
+  .settings-row{grid-template-columns:90px 1fr}.settings-row output{grid-column:2;text-align:right}
+}
+@media(max-height:500px) and (max-width:980px){
+  #screen-game{padding-bottom:78px;animation:none !important;transform:none !important}.top-hud{position:sticky;top:0;z-index:30;padding:5px 9px}.case-context{padding:4px 9px}.board-viewport{max-height:calc(100dvh - 108px)}.action-bar{position:fixed;left:0;right:0;bottom:0;z-index:50;margin:0;padding:7px 10px calc(7px + var(--safe-b));border-radius:0;flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;box-shadow:0 -12px 30px rgba(0,0,0,.65)}.action-bar::before{display:none}.action-bar .btn{flex:0 0 auto;min-height:46px}.floating-controls{right:8px;bottom:76px;flex-direction:row}.floating-controls #btnOpenNotebook{display:none}.fab{width:42px;height:42px}
+}
+@media(max-width:390px){
+  .picker-grid,.picker-grid.rooms{grid-template-columns:repeat(2,minmax(0,1fr))}.room-code-display .code{font-size:1.55rem}.tabs{gap:2px}.tab-btn{min-width:74px;font-size:.62rem}.floating-controls{display:flex;flex-direction:row;right:58px;bottom:calc(87px + var(--safe-b))}.floating-controls #btnOpenNotebook{display:none}.brand .seal{width:88px;height:88px}.brand h1{font-size:2rem}
+}
+@media(prefers-reduced-motion:reduce){.presentation-layer,.presentation-card{transition:none}.corridor-cell.reachable,.room-rect.reachable{animation:none}.turn-flash.show{animation-duration:.01ms}}
+html.user-reduced-motion *,html.user-reduced-motion *::before,html.user-reduced-motion *::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important;}
+
+/* =====================================================================
+   BLACKWOOD DIRECTOR'S CUT — title overture
+   ===================================================================== */
+#screen-menu{overflow:hidden;isolation:isolate;justify-content:center;}
+.manor-vista{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:radial-gradient(ellipse at 50% 76%,rgba(143,94,40,.22),transparent 42%);}
+.manor-vista::before{content:"";position:absolute;left:50%;bottom:-12%;width:min(1180px,125vw);height:72%;transform:translateX(-50%);background:linear-gradient(180deg,transparent,rgba(1,1,1,.54));filter:blur(22px);}
+.manor-silhouette{position:absolute;left:50%;bottom:0;width:min(1100px,120vw);height:auto;transform:translateX(-50%);opacity:.78;filter:drop-shadow(0 -8px 30px rgba(164,107,44,.09));}
+.manor-window{fill:#d7a84e;filter:url(#windowGlow);animation:windowBreath 7s ease-in-out infinite;}
+.manor-window:nth-of-type(2n){animation-delay:-3.4s}.manor-window:nth-of-type(3n){animation-delay:-5.2s}
+@keyframes windowBreath{0%,100%{opacity:.38}50%{opacity:.72}}
+.menu-fog{position:absolute;left:-10%;bottom:2%;width:120%;height:30%;opacity:.32;background:radial-gradient(ellipse at 35% 60%,rgba(218,200,161,.2),transparent 38%),radial-gradient(ellipse at 72% 35%,rgba(218,200,161,.12),transparent 35%);filter:blur(20px);animation:fogDrift 18s ease-in-out infinite alternate;}
+@keyframes fogDrift{to{transform:translate3d(5%,1%,0) scale(1.04)}}
+#screen-menu .brand{display:grid;justify-items:center;margin-top:min(3vh,24px);text-align:center;}
+#screen-menu .brand .seal{width:84px;height:84px;margin-bottom:4px;box-shadow:0 14px 34px rgba(0,0,0,.58),inset 0 0 0 2px rgba(255,246,205,.22);}
+#screen-menu .brand .seal::after{content:"BLACKWOOD";bottom:11px;font-size:6px;}
+#screen-menu .brand h1{margin:2px 0 0;line-height:.85;text-transform:uppercase;font-size:clamp(2.45rem,7.2vw,5.3rem);letter-spacing:.055em;text-shadow:0 2px 0 #28150c,0 8px 26px #000;}
+#screen-menu .brand h1 .title-small{display:block;margin-bottom:.25em;color:#d9bb72;font:600 clamp(.58rem,1.5vw,.82rem)/1 var(--font-mono);letter-spacing:.38em;text-shadow:none;}
+#screen-menu .brand h1 .title-cut{display:block;margin-top:.34em;color:#caa45a;font:600 clamp(.54rem,1.3vw,.74rem)/1 var(--font-mono);letter-spacing:.31em;text-shadow:none;}
+#screen-menu .brand .tag{margin-top:12px;color:#d8c8a3;font:italic 500 clamp(.72rem,1.8vw,.9rem) var(--font-body);letter-spacing:.14em;}
+#screen-menu .menu-card{backdrop-filter:blur(12px);background:linear-gradient(150deg,rgba(70,42,23,.91),rgba(17,10,7,.96));}
+.menu-case-number{display:flex;align-items:center;justify-content:center;gap:10px;margin:-2px 0 10px;color:#bba26a;font:700 .55rem var(--font-mono);letter-spacing:.18em;text-transform:uppercase;}
+.menu-case-number::before,.menu-case-number::after{content:"";width:44px;height:1px;background:linear-gradient(90deg,transparent,#9f803e)}.menu-case-number::after{transform:scaleX(-1)}
+.title-overture{position:fixed;inset:0;z-index:400;display:grid;place-items:center;background:#070403;color:#d9bc72;pointer-events:none;animation:overtureDismiss 1.75s cubic-bezier(.75,0,.2,1) both;}
+.title-overture::before{content:"";width:94px;height:94px;border:1px solid rgba(214,176,86,.62);transform:rotate(45deg);box-shadow:inset 0 0 0 8px #070403,inset 0 0 0 9px rgba(214,176,86,.24);}
+.title-overture span{position:absolute;font:700 .64rem var(--font-mono);letter-spacing:.28em;text-indent:.28em;text-transform:uppercase;}
+@keyframes overtureDismiss{0%,42%{opacity:1}70%,100%{opacity:0;visibility:hidden}}
+@media(max-height:700px){#screen-menu .brand .seal{width:65px;height:65px}#screen-menu .brand h1{font-size:clamp(2.1rem,8vw,3.25rem)}#screen-menu .menu-card .btn{min-height:48px}.menu-footer{margin-top:8px}}
+@media(max-height:820px){#screen-menu{padding-top:8px;padding-bottom:8px}#screen-menu .brand{margin:2px 0 7px}#screen-menu .brand .seal{width:62px;height:62px;margin-bottom:0}#screen-menu .brand .seal::after{bottom:8px}#screen-menu .brand h1{font-size:clamp(2rem,6vw,3.4rem)}#screen-menu .brand h1 .title-small{margin-bottom:.18em}#screen-menu .brand h1 .title-cut{margin-top:.24em}#screen-menu .brand .tag{margin-top:7px}#screen-menu .menu-card{padding:7px}#screen-menu .menu-card::before{padding:8px 8px 5px}#screen-menu .menu-card .btn{min-height:46px;padding:8px 14px}.menu-case-number{margin:-1px 0 6px}.menu-footer{margin-top:6px;gap:6px;font-size:.65rem;line-height:1.15}.menu-footer .btn{min-height:34px}}
+@media(prefers-reduced-motion:reduce){.title-overture{display:none}.manor-window,.menu-fog{animation:none}}
+
+/* Collector's-edition material language */
+body::before{content:"";position:fixed;inset:0;z-index:500;pointer-events:none;opacity:.055;mix-blend-mode:screen;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.62'/%3E%3C/svg%3E");}
+.card-panel,.modal,.side-pane,.top-hud,.action-bar,.menu-card{position:relative;}
+.card-panel::after,.parchment-panel::after{content:"";position:absolute;inset:5px;pointer-events:none;border:1px solid rgba(67,43,20,.12);border-radius:inherit;}
+.wood-panel{background-image:radial-gradient(circle at 24% 10%,rgba(242,201,109,.1),transparent 31%),repeating-linear-gradient(96deg,rgba(255,255,255,.016) 0 1px,rgba(0,0,0,.08) 1px 5px),linear-gradient(150deg,#55311b,#160c08 68%,#3a2013);}
+.btn{border-width:1px;box-shadow:inset 0 1px rgba(255,255,255,.16),inset 0 -2px rgba(0,0,0,.18),0 5px 13px rgba(0,0,0,.2);}
+.btn:active:not(:disabled){transform:translateY(1px);box-shadow:inset 0 2px 5px rgba(0,0,0,.24)}
+
+/* The guest registry lobby */
+#screen-lobby{background:radial-gradient(circle at 50% 10%,rgba(184,126,49,.1),transparent 34%);}
+.lobby-letterhead{display:flex;width:min(760px,100%);align-items:center;justify-content:center;gap:17px;margin:-1px auto 10px;color:#d9c495;text-align:center;text-transform:uppercase;}
+.lobby-letterhead div{display:grid;gap:3px}.lobby-letterhead b{font:700 .74rem var(--font-display);letter-spacing:.18em}.lobby-letterhead small{font:600 .53rem var(--font-mono);letter-spacing:.12em;opacity:.64}.letterhead-rule{height:1px;flex:1;background:linear-gradient(90deg,transparent,rgba(211,169,77,.5));}.letterhead-rule:last-child{transform:scaleX(-1)}
+#screen-lobby .card-panel{max-width:760px;padding:24px;background-color:#e7d7b3;background-image:repeating-linear-gradient(0deg,rgba(77,52,25,.03) 0 1px,transparent 1px 28px),radial-gradient(circle at 82% 17%,rgba(130,77,36,.11),transparent 29%),linear-gradient(145deg,#efe4c8,#d2bc8e);}
+#screen-lobby .card-panel::before{content:"GUEST REGISTRY";position:absolute;right:23px;top:14px;color:rgba(88,54,27,.34);font:700 .58rem var(--font-mono);letter-spacing:.16em;}
+.suspect-grid{gap:9px}.suspect-pick{min-height:104px;border:1px solid rgba(80,49,22,.28);border-radius:7px;background:linear-gradient(155deg,rgba(255,255,255,.46),rgba(157,126,77,.12));box-shadow:0 3px 8px rgba(70,43,19,.12);}
+.suspect-pick .name{font-family:var(--font-display);font-weight:700}.suspect-pick .identity{display:block;min-height:2em;margin-top:3px;color:#6e5431;font:600 .53rem/1.2 var(--font-mono);letter-spacing:.055em;text-transform:uppercase;}
+.suspect-pick.selected{outline:2px solid #8c682d;outline-offset:2px;box-shadow:0 7px 16px rgba(70,43,19,.19),inset 0 0 0 2px rgba(255,255,255,.34)}
+.suspect-pick.taken{filter:saturate(.55);opacity:.48}.player-list{counter-reset:guest}.player-row{counter-increment:guest;display:grid;grid-template-columns:38px minmax(0,1fr) auto auto auto;min-height:53px;border-radius:3px;border-bottom:1px solid rgba(82,54,26,.22);background:rgba(255,255,255,.16);}
+.player-row::after{content:counter(guest,decimal-leading-zero);position:absolute;right:9px;bottom:3px;color:rgba(91,60,28,.28);font:700 .5rem var(--font-mono)}.player-row .pname{display:flex;flex-direction:column;font-family:var(--font-display);font-weight:700}.player-row .pname .identity{font:500 .55rem var(--font-mono);letter-spacing:.05em;color:#725d3d;text-transform:uppercase}.badge{border-radius:2px;letter-spacing:.08em}.badge.ready{animation:readySign .35s var(--ease-out)}@keyframes readySign{from{transform:scale(.75) rotate(-3deg);opacity:0}}
+.local-seat{border-radius:5px;background:linear-gradient(150deg,rgba(255,255,255,.38),rgba(138,103,57,.09));box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}.local-seat::after{content:attr(data-title);grid-column:2;color:#725b3a;font:600 .52rem var(--font-mono);letter-spacing:.06em;text-transform:uppercase;}
+
+/* Architectural board and readable focus hierarchy */
+.board-frame{padding:25px;border-radius:17px;background:repeating-linear-gradient(89deg,rgba(255,255,255,.025) 0 1px,rgba(0,0,0,.09) 1px 5px),linear-gradient(132deg,#724722,#180d08 56%,#553018);box-shadow:0 28px 58px rgba(0,0,0,.7),inset 0 0 0 3px #160b06,inset 0 0 0 5px #b88d3c,inset 0 0 0 9px #321b0e,inset 0 0 0 10px rgba(224,190,103,.44),inset 0 0 72px #000;}
+.board-frame::before{content:"";position:absolute;inset:11px;pointer-events:none;border:1px solid rgba(238,207,129,.32);clip-path:polygon(0 0,43% 0,45% 4px,55% 4px,57% 0,100% 0,100% 100%,57% 100%,55% calc(100% - 4px),45% calc(100% - 4px),43% 100%,0 100%);}
+#boardSvg{border-radius:3px;background:#0d0907;box-shadow:inset 0 0 100px rgba(0,0,0,.74),0 0 0 1px rgba(232,199,112,.35)}
+.room-wall{fill:none;stroke:#342116;stroke-width:10;stroke-linejoin:round;filter:drop-shadow(0 4px 2px rgba(0,0,0,.56));pointer-events:none}.room-baseboard{fill:none;stroke:#ddbd70;stroke-width:1;opacity:.62;pointer-events:none}.room-rect{stroke:#d0a75a;stroke-width:1.7;}
+.room-rect.current-location{stroke:#fff0b9;stroke-width:3;filter:drop-shadow(0 0 9px rgba(242,201,104,.62));}.room-rect.passage-source{stroke:#f2ca66;stroke-width:4}.room-rect.passage-destination{stroke:#92c5a6;stroke-width:4;filter:drop-shadow(0 0 11px rgba(126,205,157,.52))}
+.corridor-cell{stroke:rgba(238,209,142,.18);stroke-width:.7}.corridor-cell:nth-of-type(3n){filter:brightness(.97)}
+.door-threshold{fill:#cfab61;opacity:.82;filter:drop-shadow(0 2px 1px #000)}.door-arc{fill:none;stroke:#cba65d;stroke-width:.8;opacity:.55;pointer-events:none}
+.wall-sconce{fill:#e4be5d;filter:drop-shadow(0 0 5px rgba(255,199,76,.66));animation:sconceBreath 5.8s ease-in-out infinite}.fire-ember{animation:emberPulse 3.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}@keyframes sconceBreath{50%{opacity:.58}}@keyframes emberPulse{50%{opacity:.52;transform:scale(.82)}}
+.clock-pendulum{transform-box:fill-box;transform-origin:top center;animation:pendulum 2s ease-in-out infinite alternate}@keyframes pendulum{to{transform:rotate(9deg)}}.glass-glint{animation:glassGlint 8s ease-in-out infinite}@keyframes glassGlint{0%,25%{opacity:0;transform:translateX(-30px)}46%,55%{opacity:.28}75%,100%{opacity:0;transform:translateX(45px)}}
+.passage-line{opacity:.07;stroke-dasharray:2 10}.passage-icon{cursor:pointer}.passage-icon::after{content:""}.passage-icon .passage-label{fill:#efd48d;font:700 6px var(--font-mono);letter-spacing:.12em;text-anchor:middle;paint-order:stroke;stroke:#120b07;stroke-width:2}.passage-icon.usable{filter:drop-shadow(0 0 9px rgba(230,191,86,.76));animation:hatchInvite 1.5s ease-in-out infinite}@keyframes hatchInvite{50%{transform:translateY(-2px)}}
+.token-suspect,.token-weapon{transition:filter .18s ease}.token-suspect.in-motion,.token-weapon.in-motion{filter:drop-shadow(0 13px 7px rgba(0,0,0,.68)) brightness(1.08)}.token-suspect.in-motion .token-shadow,.token-weapon.in-motion .token-shadow{animation:tokenShadow .3s ease-in-out infinite alternate}@keyframes tokenShadow{to{opacity:.44;transform:scale(.76)}}.pawn-collar{fill:none;stroke:rgba(255,244,207,.38);stroke-width:1}.token-glint{fill:#fff;opacity:.34}
+.board-frame.route-focus .corridor-cell:not(.reachable),.board-frame.route-focus .room-rect:not(.reachable){opacity:.68}.board-frame.route-focus .reachable{opacity:1}
+#screen-game.board-focus .side-pane{display:none}#screen-game.board-focus .game-layout{grid-template-columns:1fr}#screen-game.board-focus .board-viewport{height:calc(100dvh - 205px);max-height:none}#screen-game.board-focus .board-frame{width:min(100%,calc(100dvh - 215px))}
+
+/* Turn choreography, hero die, and journal */
+.turn-banner.you-turn{box-shadow:inset 0 0 20px rgba(222,183,83,.12)}.turn-banner.you-turn #turnBannerText{text-shadow:0 0 12px rgba(236,200,112,.45)}
+.dice-tray{perspective:500px;box-shadow:inset 0 0 18px rgba(0,0,0,.48)}.die{transform-style:preserve-3d}.die.rolling{animation:diceDirector .13s linear infinite}@keyframes diceDirector{0%{transform:translate3d(-3px,-2px,0) rotateX(0) rotateY(0) rotateZ(0)}35%{transform:translate3d(3px,-10px,20px) rotateX(130deg) rotateY(70deg) rotateZ(55deg)}70%{transform:translate3d(7px,1px,5px) rotateX(260deg) rotateY(170deg) rotateZ(150deg)}100%{transform:translate3d(-3px,-2px,0) rotateX(360deg) rotateY(270deg) rotateZ(360deg)}}
+.die.settle{animation:dieSettleDirector .46s var(--ease-out)}@keyframes dieSettleDirector{0%{transform:translateY(-8px) scale(1.1)}58%{transform:translateY(2px) scale(.97)}100%{transform:none}}
+.log-list{counter-reset:entry;padding-left:0}.log-entry{counter-increment:entry;position:relative;margin:0 0 7px;padding:9px 8px 9px 43px;border:0;border-bottom:1px solid rgba(221,183,90,.13);background:transparent;font:500 .72rem/1.35 var(--font-body)}.log-entry::before{content:counter(entry,decimal-leading-zero);position:absolute;left:8px;top:9px;color:#a98a4a;font:700 .56rem var(--font-mono);letter-spacing:.05em}.log-entry::after{content:"FIELD NOTE";display:block;margin-top:3px;color:rgba(226,204,154,.46);font:600 .45rem var(--font-mono);letter-spacing:.12em}.log-entry.log-suggest::after{content:"THEORY TESTED"}.log-entry.log-accuse::after{content:"FORMAL ACCUSATION"}.log-entry.log-win::after{content:"CASE CLOSED"}
+
+/* Suggestion and disprove as a period case process */
+#modal-suggestion::before{content:"FORM B-17 · THEORY EXAMINATION";position:absolute;left:22px;top:17px;color:rgba(92,57,26,.38);font:700 .5rem var(--font-mono);letter-spacing:.12em}.suggestion-stage{padding:13px;border:1px solid rgba(84,51,22,.16);background:repeating-linear-gradient(0deg,rgba(80,56,30,.025) 0 1px,transparent 1px 21px)}.suggestion-card{border-radius:2px;box-shadow:2px 3px 0 rgba(77,49,24,.11)}
+.disprove-procession{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:14px 0}.procession-person{display:flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid rgba(79,49,23,.22);border-radius:3px;background:rgba(255,255,255,.19);font:600 .63rem var(--font-mono)}.procession-person.current{border-color:#8f6728;box-shadow:0 0 0 2px rgba(143,103,40,.12)}.procession-person.passed{opacity:.48;text-decoration:line-through}.procession-dot{width:7px;height:7px;border-radius:50%;background:var(--person-color,#8f6728)}
+.presentation-card{border-radius:7px;background:radial-gradient(circle at 50% 10%,rgba(217,173,78,.12),transparent 34%),linear-gradient(154deg,rgba(65,37,20,.99),rgba(11,7,5,.995));}.presentation-card::after{content:"";position:absolute;inset:7px;border:1px solid rgba(222,187,104,.17);pointer-events:none}.cinema-dossier{border-radius:3px;background:repeating-linear-gradient(2deg,rgba(79,53,25,.025) 0 1px,transparent 1px 4px),linear-gradient(145deg,#f1e5c5,#c4aa76)}
+.private-reveal-caption{font:600 .55rem var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:#745b36}.modal#modal-private-reveal.open .hand-card{box-shadow:0 20px 35px rgba(42,21,9,.42),0 0 0 8px rgba(145,104,41,.08)}
+
+/* Notebook as the player's evidence desk */
+.notebook-modal{background-image:linear-gradient(90deg,transparent 46px,rgba(157,65,56,.18) 47px,transparent 48px),repeating-linear-gradient(0deg,transparent 0 25px,rgba(73,92,109,.1) 26px),radial-gradient(circle at 86% 8%,rgba(111,73,30,.13),transparent 30%),linear-gradient(145deg,#f2e8cf,#d4c096);}
+.theory-strip{position:relative;margin:0 0 13px;padding:12px 14px;border:1px solid rgba(72,47,24,.28);background:linear-gradient(160deg,rgba(255,251,232,.74),rgba(211,188,137,.52));box-shadow:2px 4px 0 rgba(77,49,23,.1);transform:rotate(-.18deg)}.theory-heading{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}.theory-heading span:first-child{display:grid}.theory-heading b{font:700 .82rem var(--font-display);letter-spacing:.05em}.theory-heading small{color:#725b39;font:600 .5rem var(--font-mono);letter-spacing:.09em;text-transform:uppercase}.theory-pin{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f4d68a,#8d672c 68%,#2b190e);box-shadow:0 3px 3px rgba(0,0,0,.25)}.theory-fields{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:8px;align-items:end}.theory-fields label{display:grid;gap:3px}.theory-fields label>span{font:700 .52rem var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:#705735}.theory-fields select{min-width:0;width:100%;height:36px;border:0;border-bottom:1px solid #765d37;background:transparent;color:#2b1d10;font:700 .74rem var(--font-display)}.theory-join{padding-bottom:10px;color:#785e38;font:italic .72rem var(--font-body)}.theory-actions{display:flex;align-items:center;gap:7px;margin-top:10px}.theory-saved{margin-left:auto;color:#6f5a3b;font:600 .54rem var(--font-mono);letter-spacing:.08em;text-transform:uppercase}.theory-strip.pinned{box-shadow:2px 4px 0 rgba(77,49,23,.1),0 0 0 2px rgba(126,89,35,.16)}.theory-strip.pinned .theory-saved{color:#6a2830}.evidence-board-head{display:flex;align-items:center;justify-content:space-between;margin-top:9px}.evidence-board{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-height:150px;padding:11px;background-color:#bc9d69;background-image:radial-gradient(circle,rgba(61,38,20,.16) 1px,transparent 1px);background-size:9px 9px}.evidence-board::before{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 18px rgba(58,33,17,.26)}.evidence-line{position:relative;z-index:1;padding:8px 8px 8px 15px;background:#eee1bd;box-shadow:1px 2px 3px rgba(52,30,15,.19);transform:rotate(var(--note-tilt,-.35deg));font:600 .67rem/1.35 var(--font-body)}.evidence-line:nth-child(2n){--note-tilt:.45deg}.evidence-line::before{position:absolute;left:6px;top:8px}.evidence-board.condensed{display:flex;max-height:50px;overflow:hidden}.evidence-board.condensed .evidence-line:not(:first-child){display:none}
+
+/* Period case closure — intentionally no party confetti */
+.victory-modal{max-width:670px;background:#d7c9a5;color:#241b12;overflow:visible}.case-closure{position:relative;padding:12px 18px 18px;border:2px solid #3d3225;background:repeating-linear-gradient(0deg,rgba(61,48,31,.035) 0 1px,transparent 1px 4px);box-shadow:2px 3px 0 rgba(0,0,0,.16)}.case-closure header{display:flex;align-items:end;justify-content:space-between;border-bottom:1px solid #3d3225;padding-bottom:5px;text-transform:uppercase}.case-closure header span{font:900 clamp(1.2rem,5vw,2rem) var(--font-display-deco);letter-spacing:.02em}.case-closure header small{font:600 .5rem var(--font-mono);letter-spacing:.08em}.case-closure h3{margin:10px 0 5px!important;font-size:clamp(2rem,7vw,3.4rem)!important;line-height:.9;text-transform:uppercase}.case-closure h3::after{width:100%;background:#3d3225}.closure-layout{display:grid;grid-template-columns:105px 1fr;gap:15px;align-items:start;text-align:left}.closure-portrait{display:grid;gap:3px}.closure-portrait span{text-align:center;font:600 .48rem var(--font-mono);letter-spacing:.1em;text-transform:uppercase}.closure-layout p{margin:0;font:600 1rem/1.45 var(--font-body);text-align:left!important}.case-solved-stamp{position:absolute;right:22px;bottom:13px;transform:rotate(-7deg);border:4px double rgba(117,32,35,.78);padding:5px 11px;color:rgba(117,32,35,.82);font:900 1rem var(--font-mono);letter-spacing:.13em;text-transform:uppercase;mix-blend-mode:multiply}
+
+/* Settings and device-specific interaction */
+.settings-grid{padding:5px}.settings-row{padding-bottom:8px;border-bottom:1px solid rgba(74,47,22,.13)}
+html.user-standard-motion .title-overture{animation-duration:1.05s}html.user-standard-motion .cinema-dossier{animation-duration:.25s}html.user-standard-motion .presentation-card{transition-duration:.2s}
+html.user-reduced-motion .title-overture{display:none}html.user-reduced-motion .manor-window,html.user-reduced-motion .menu-fog,html.user-reduced-motion .wall-sconce,html.user-reduced-motion .fire-ember,html.user-reduced-motion .clock-pendulum,html.user-reduced-motion .glass-glint{animation:none!important}
+@media(max-width:700px){.lobby-letterhead{padding:0 8px}.lobby-letterhead small{display:none}#screen-lobby .card-panel{padding:19px 15px}.suspect-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.suspect-pick{min-height:92px}.player-row{grid-template-columns:36px minmax(0,1fr) auto auto}.player-row .badge.host{display:none}.board-frame{padding:15px}#screen-game .action-bar{position:fixed;left:0;right:0;bottom:0;z-index:50}#screen-game.board-focus .top-hud{margin:4px 6px}#screen-game.board-focus .case-context{display:none}#screen-game.board-focus .board-viewport{height:calc(100dvh - 132px)}#screen-game.board-focus .board-frame{width:max(650px,calc(100dvh - 145px))}.theory-fields{grid-template-columns:1fr 1fr 1fr}.theory-join{display:none}.theory-actions{flex-wrap:wrap}.theory-saved{width:100%;margin-left:0}.evidence-board{grid-template-columns:1fr}.closure-layout{grid-template-columns:76px 1fr}.case-solved-stamp{position:static;display:inline-block;margin-top:12px}.case-closure header small{display:none}}
+@media(max-width:430px){#screen-menu .menu-footer>span{display:none}.suspect-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.lobby-letterhead .letterhead-rule{display:none}.theory-fields{grid-template-columns:1fr}.theory-fields label>span{margin-top:3px}.theory-actions .btn{flex:1 1 100%;width:100%}.closure-layout{display:block}.closure-portrait{float:left;width:72px;margin:0 10px 5px 0}.case-closure{padding:10px}.case-closure header span{font-size:1.1rem}}
+@media(max-height:540px) and (orientation:landscape){#screen-lobby{justify-content:flex-start}.lobby-letterhead{display:none}#screen-lobby .card-panel{max-width:920px;display:grid;grid-template-columns:1fr 1fr;gap:7px 16px}.picker-group:has(#lobbySuspectGrid){grid-row:span 4}.suspect-grid{grid-template-columns:repeat(3,1fr)}.suspect-pick{min-height:80px}.room-code-display{margin-bottom:5px}#screen-game .action-bar{position:fixed;left:0;right:0;bottom:0;z-index:50}}
+
 </style>
 </head>
 <body>
 <div id="bgAtmosphere"></div>
 <div id="bgVignetteFlicker"></div>
+<div class="title-overture" aria-hidden="true"><span>Blackwood Manor</span></div>
 
 <div id="app">
 
@@ -652,6 +924,17 @@ table.notebook-table tbody th{position:sticky;left:0;z-index:3;background:rgba(2
      SCREEN: MAIN MENU
      ========================================================= -->
 <section id="screen-menu" class="screen active">
+  <div class="manor-vista" aria-hidden="true">
+    <svg class="manor-silhouette" viewBox="0 0 1100 560" preserveAspectRatio="xMidYMax meet">
+      <defs><filter id="windowGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><linearGradient id="manorStone" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#1e1713"/><stop offset="1" stop-color="#080605"/></linearGradient></defs>
+      <path d="M0 520h1100V350l-92-28-24-88-44-10-20-82-20 82-43 10-16 62-86-26-24-112-31-12-21-96-20 96-31 12-17 92-111-35-18-82-23-9-19-79-18 79-24 9-18 82-108 35-17-92-31-12-20-96-21 96-31 12-23 112-86 26-16-62-43-10-20-82-20 82-44 10-24 88-92 28Z" fill="url(#manorStone)" stroke="#6d4d29" stroke-width="2"/>
+      <path d="M436 520V294h228v226M482 520V352h136v168M512 520V394h76v126" fill="#090706" stroke="#5d4326" stroke-width="3"/>
+      <path d="M453 292h194l-97-94Z" fill="#0d0a08" stroke="#6d4d29" stroke-width="3"/><path d="M525 198v-55h50v55" fill="#0a0706" stroke="#6d4d29" stroke-width="3"/>
+      <g><rect class="manor-window" x="108" y="364" width="25" height="48" rx="12"/><rect class="manor-window" x="181" y="328" width="24" height="51" rx="12"/><rect class="manor-window" x="274" y="309" width="25" height="52" rx="12"/><rect class="manor-window" x="359" y="356" width="24" height="50" rx="12"/><rect class="manor-window" x="467" y="322" width="24" height="55" rx="12"/><rect class="manor-window" x="523" y="249" width="25" height="50" rx="12"/><rect class="manor-window" x="552" y="249" width="25" height="50" rx="12"/><rect class="manor-window" x="609" y="322" width="24" height="55" rx="12"/><rect class="manor-window" x="717" y="356" width="24" height="50" rx="12"/><rect class="manor-window" x="801" y="309" width="25" height="52" rx="12"/><rect class="manor-window" x="895" y="328" width="24" height="51" rx="12"/><rect class="manor-window" x="967" y="364" width="25" height="48" rx="12"/></g>
+      <path d="M44 520q48-94 113 0M885 520q58-112 171 0" fill="#050403"/><path d="M0 522h1100" stroke="#a27939" opacity=".28"/>
+    </svg>
+    <div class="menu-fog"></div>
+  </div>
   <div class="brand">
     <div class="seal">
       <svg viewBox="0 0 100 100" aria-hidden="true">
@@ -660,19 +943,20 @@ table.notebook-table tbody th{position:sticky;left:0;z-index:3;background:rgba(2
         <circle cx="50" cy="78" r="4" fill="var(--ink)"/>
       </svg>
     </div>
-    <h1>Mansion Mystery</h1>
-    <div class="tag">A Detective Board Game — Est. 1926</div>
+    <h1><span class="title-small">The Blackwood Case</span>Mansion Mystery<span class="title-cut">Director’s Cut</span></h1>
+    <div class="tag">An evening of suspicion at Blackwood Manor · Est. 1926</div>
   </div>
 
   <nav class="menu-card wood-panel">
-    <button class="btn" id="btnLocalPlay" type="button">🕯️ Local Pass &amp; Play</button>
-    <button class="btn" id="btnHostGame" type="button">🌐 Host Online Game</button>
-    <button class="btn secondary" id="btnJoinGame" type="button">🔑 Join Online Game</button>
-    <button class="btn ghost" id="btnHowToPlay" type="button">📖 How to Play</button>
+    <div class="menu-case-number">Case File 27-B</div>
+    <button class="btn" id="btnLocalPlay" type="button">Local Pass &amp; Play</button>
+    <button class="btn" id="btnHostGame" type="button">Host Online Game</button>
+    <button class="btn secondary" id="btnJoinGame" type="button">Join Online Game</button>
+    <button class="btn ghost" id="btnHowToPlay" type="button">How to Play</button>
   </nav>
 
   <div class="menu-footer">
-    <button class="btn ghost small" id="btnSoundToggleMenu" type="button">🔊 Sound: On</button>
+    <button class="btn ghost small" id="btnSoundToggleMenu" type="button">Sound: On</button>
     <span>Self-hosted peer-to-peer detective mystery. No account, no server, no trace — except the killer's.</span>
   </div>
 </section>
@@ -708,6 +992,12 @@ table.notebook-table tbody th{position:sticky;left:0;z-index:3;background:rgba(2
     <button class="btn ghost small" id="btnLobbyLeave" type="button">← Leave</button>
     <h2 id="lobbyTitle">Case Lobby</h2>
     <span id="lobbyConnPill" class="conn-pill hidden"><span class="dot"></span><span id="lobbyConnText">Online</span></span>
+  </div>
+
+  <div class="lobby-letterhead" aria-hidden="true">
+    <span class="letterhead-rule"></span>
+    <div><b>Blackwood Manor</b><small>Private guest registry · Friday, 8:47 p.m.</small></div>
+    <span class="letterhead-rule"></span>
   </div>
 
   <div id="lobbyRoomCodeWrap" class="room-code-display wood-panel hidden">
@@ -759,17 +1049,32 @@ table.notebook-table tbody th{position:sticky;left:0;z-index:3;background:rgba(2
       <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="var(--ink)" stroke="var(--gold-3)" stroke-width="4"/><text x="50" y="66" font-size="52" text-anchor="middle" fill="var(--gold-3)" font-family="Georgia,serif">?</text></svg>
       <span class="hide-sm">Mansion Mystery</span>
     </div>
-    <div class="turn-banner" id="turnBanner"><span class="tk-dot" id="turnDot"></span><span id="turnBannerText">Loading…</span></div>
+    <div class="turn-banner" id="turnBanner" aria-live="polite"><span class="tk-dot" id="turnDot"></span><span id="turnBannerText">Loading…</span></div>
     <span id="gameConnPill" class="conn-pill hidden"><span class="dot"></span><span id="gameConnText">Online</span></span>
     <button class="btn ghost small" id="btnLeaveGame" type="button">Leave</button>
+  </div>
+
+  <div class="case-context" id="caseContext" aria-live="polite">
+    <span class="phase-chip" id="phaseChip">Preparing</span>
+    <span id="locationText">Location unknown</span>
+    <span class="context-spacer"></span>
+    <span class="action-hint" id="actionHint">The investigation is being prepared…</span>
   </div>
 
   <div class="game-layout">
     <div class="board-pane">
       <div class="board-wrap">
-        <div class="board-frame gold-frame">
-          <span class="pin tl"></span><span class="pin tr"></span><span class="pin bl"></span><span class="pin br"></span>
-          <svg id="boardSvg" viewBox="0 0 800 800" role="img" aria-label="Mansion board"></svg>
+        <div class="board-viewport" id="boardViewport" aria-label="Scrollable mansion board">
+          <div class="board-toolbar" aria-label="Board zoom controls">
+            <button class="board-tool" id="btnZoomOut" type="button" title="Zoom out" aria-label="Zoom board out">−</button>
+            <button class="board-tool" id="btnZoomReset" type="button" title="Fit board" aria-label="Reset board zoom">⌂</button>
+            <button class="board-tool" id="btnZoomIn" type="button" title="Zoom in" aria-label="Zoom board in">+</button>
+            <button class="board-tool" id="btnBoardFocus" type="button" title="Focus board" aria-label="Toggle board focus" aria-pressed="false">▣</button>
+          </div>
+          <div class="board-frame gold-frame" id="boardFrame">
+            <span class="pin tl"></span><span class="pin tr"></span><span class="pin bl"></span><span class="pin br"></span>
+            <svg id="boardSvg" viewBox="0 0 800 800" role="img" aria-label="Interactive floor plan of Blackwood Manor"></svg>
+          </div>
         </div>
       </div>
 
@@ -778,10 +1083,10 @@ table.notebook-table tbody th{position:sticky;left:0;z-index:3;background:rgba(2
           <div class="die" id="die1"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
           <div class="die classic-second-die" id="die2" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
         </div>
-        <button class="btn" id="btnRollDice" type="button">🎲 Roll Die</button>
-        <button class="btn secondary hidden" id="btnTakePassage" type="button">🕳️ Secret Passage</button>
-        <button class="btn secondary" id="btnSuggest" type="button" disabled>🔍 Suggest</button>
-        <button class="btn danger" id="btnAccuse" type="button">⚖️ Accuse</button>
+        <button class="btn" id="btnRollDice" type="button">Roll Die</button>
+        <button class="btn secondary hidden" id="btnTakePassage" type="button">Secret Passage</button>
+        <button class="btn secondary" id="btnSuggest" type="button" disabled>Make Suggestion</button>
+        <button class="btn danger" id="btnAccuse" type="button">Accuse</button>
         <button class="btn ghost" id="btnEndTurn" type="button" disabled>End Turn →</button>
       </div>
     </div>
@@ -824,6 +1129,9 @@ table.notebook-table tbody th{position:sticky;left:0;z-index:3;background:rgba(2
   <button class="fab" id="btnSoundToggleGame" title="Toggle sound" type="button">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="soundIconGame"><polygon points="3 9 8 9 13 4 13 20 8 15 3 15"/><path d="M16 8a5 5 0 0 1 0 8"/><path d="M19 5a9 9 0 0 1 0 14"/></svg>
   </button>
+  <button class="fab" id="btnSettings" title="Game settings" type="button" aria-label="Open game settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.12.38.34.72.65.98.3.26.68.4 1.08.42H21v4h-.09A1.7 1.7 0 0 0 19.4 15z"/></svg>
+  </button>
 </div>
 
 <!-- =========================================================
@@ -835,6 +1143,13 @@ table.notebook-table tbody th{position:sticky;left:0;z-index:3;background:rgba(2
     <button class="close-x" data-close type="button">✕</button>
     <h3>Make a Suggestion</h3>
     <p class="modal-sub">You are accusing, hypothetically, within this room only.</p>
+    <div class="suggestion-stage" aria-hidden="true">
+      <div class="suggestion-card"><span class="stage-label">Suspect</span><span id="sugStageSuspect">Choose</span></div>
+      <span class="stage-arrow">＋</span>
+      <div class="suggestion-card"><span class="stage-label">Weapon</span><span id="sugStageWeapon">Choose</span></div>
+      <span class="stage-arrow">＠</span>
+      <div class="suggestion-card"><span class="stage-label">Room</span><span id="sugStageRoom">—</span></div>
+    </div>
     <div class="suggestion-summary">I suggest it was <b id="sugRoomFixed">—</b> — with <b id="sugSuspectFixed">a suspect</b> and <b id="sugWeaponFixed">a weapon</b>.</div>
     <div class="picker-group">
       <span class="glabel">Suspect</span>
@@ -851,6 +1166,7 @@ table.notebook-table tbody th{position:sticky;left:0;z-index:3;background:rgba(2
     <button class="close-x" data-close type="button">✕</button>
     <h3>Formal Accusation</h3>
     <p class="modal-sub">⚠ One chance only. A wrong accusation ends your investigation.</p>
+    <div class="accusation-envelope" aria-hidden="true"></div>
     <div class="picker-group">
       <span class="glabel">Suspect</span>
       <div class="picker-grid" id="accSuspectGrid"></div>
@@ -870,6 +1186,7 @@ table.notebook-table tbody th{position:sticky;left:0;z-index:3;background:rgba(2
     <h3>Suggestion Presented</h3>
     <p class="suggestion-summary" id="waitSummaryText">—</p>
     <p class="modal-sub" id="waitAskingText">Asking the other investigators…</p>
+    <div class="disprove-procession" id="disproveProcession" aria-label="Disprove order"></div>
     <div class="waiting-dots"><span></span><span></span><span></span></div>
   </div>
 
@@ -906,19 +1223,42 @@ table.notebook-table tbody th{position:sticky;left:0;z-index:3;background:rgba(2
     <button class="close-x" data-close type="button">✕</button>
     <h3>Detective Notebook</h3>
     <p class="modal-sub">Classic deduction sheet: players who could not disprove are marked automatically; privately revealed cards are recorded only for you.</p>
+    <section class="theory-strip" aria-labelledby="theoryStripTitle">
+      <div class="theory-heading"><span><b id="theoryStripTitle">Pinned Theory</b><small>Private to this device and this investigator</small></span><span class="theory-pin" aria-hidden="true"></span></div>
+      <div class="theory-fields">
+        <label><span>Suspect</span><select id="theorySuspect" aria-label="Theory suspect"></select></label>
+        <span class="theory-join">with</span>
+        <label><span>Weapon</span><select id="theoryWeapon" aria-label="Theory weapon"></select></label>
+        <span class="theory-join">in</span>
+        <label><span>Room</span><select id="theoryRoom" aria-label="Theory room"></select></label>
+      </div>
+      <div class="theory-actions"><button class="btn small secondary" id="btnPinTheory" type="button">Pin theory</button><button class="btn small" id="btnAccuseTheory" type="button">Prepare Accusation</button><span id="theorySaved" class="theory-saved" aria-live="polite">Not pinned</span></div>
+    </section>
     <div id="notebookInsights" class="notebook-insights"></div>
+    <div class="notebook-tools">
+      <input class="notebook-search" id="notebookSearch" type="search" placeholder="Filter cards…" aria-label="Filter notebook cards">
+      <button class="btn small secondary" id="btnNotebookUnresolved" type="button" aria-pressed="false">Unresolved only</button>
+    </div>
     <div class="notebook-scroll">
       <table class="notebook-table" id="notebookTable"></table>
     </div>
+    <div class="evidence-board-head"><span class="glabel">Evidence board</span><button class="btn ghost small" id="btnEvidenceBoard" type="button" aria-expanded="true">Condense</button></div>
+    <div class="notebook-evidence evidence-board" id="notebookEvidence" aria-label="Evidence history"></div>
+    <label class="glabel" for="notebookNotes">Private notes</label>
+    <textarea class="personal-notes" id="notebookNotes" placeholder="Write your theory here. These notes stay on this device."></textarea>
     <div class="nb-legend">
       <span>✔ = confirmed</span><span style="color:var(--danger-2)">✕ = cannot be here</span><span style="color:var(--info-2)">? = your suspicion</span><span>★ = logically forced into the case file</span>
     </div>
   </div>
 
   <div class="modal victory-modal parchment-panel" id="modal-victory">
-    <svg class="seal-lg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="var(--gold-3)" stroke="var(--gold-1)" stroke-width="3"/><path d="M35 52l10 10 20-24" fill="none" stroke="var(--ink)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <h3 id="victoryTitle">Case Solved!</h3>
-    <p id="victoryText" style="text-align:center;font-size:1.1rem"></p>
+    <article class="case-closure" aria-live="assertive">
+      <header><span>Blackwood Gazette</span><small>Late Edition · Price One Penny</small></header>
+      <div class="closure-rule"></div>
+      <h3 id="victoryTitle">Case Solved!</h3>
+      <div class="closure-layout"><div class="closure-portrait"><svg viewBox="0 0 100 118" aria-hidden="true"><rect x="5" y="5" width="90" height="108" fill="#cdbf99" stroke="#493b28"/><path d="M18 97q9-32 32-32t32 32" fill="#4a4135"/><circle cx="50" cy="43" r="22" fill="#8a7c61"/><path d="M28 39q6-28 44 0" fill="#3b342c"/><path d="M12 14l76 88M88 14 12 102" stroke="#68443a" opacity=".17"/></svg><span>Official finding</span></div><p id="victoryText"></p></div>
+      <div class="case-solved-stamp">Case Solved</div>
+    </article>
     <div class="btn-row" style="justify-content:center;margin-top:14px">
       <button class="btn" id="btnPlayAgain" type="button">Play Again</button>
       <button class="btn ghost" id="btnBackToMenuVictory" type="button">Main Menu</button>
@@ -983,12 +1323,34 @@ table.notebook-table tbody th{position:sticky;left:0;z-index:3;background:rgba(2
     </div>
   </div>
 
+  <div class="modal parchment-panel" id="modal-settings">
+    <button class="close-x" data-close type="button" aria-label="Close settings">✕</button>
+    <h3>Table Settings</h3>
+    <div class="settings-grid">
+      <div class="settings-row"><label for="volumeRange">Master</label><input id="volumeRange" type="range" min="0" max="100" value="72"><output id="volumeOutput" for="volumeRange">72%</output></div>
+      <div class="settings-row"><label for="sfxRange">Table sounds</label><input id="sfxRange" type="range" min="0" max="100" value="82"><output id="sfxOutput" for="sfxRange">82%</output></div>
+      <div class="settings-row"><label for="ambienceRange">Mansion ambience</label><input id="ambienceRange" type="range" min="0" max="100" value="22"><output id="ambienceOutput" for="ambienceRange">22%</output></div>
+      <div class="settings-row"><label for="motionToggle">Animations</label><button class="btn small secondary" id="motionToggle" type="button" aria-pressed="false">Full motion</button><span></span></div>
+      <div class="settings-row"><label for="hintsToggle">Context hints</label><button class="btn small secondary" id="hintsToggle" type="button" aria-pressed="true">On</button><span></span></div>
+    </div>
+  </div>
+
 </div><!-- /modalOverlay -->
 
+<div class="presentation-layer" id="presentationLayer" aria-live="assertive">
+  <div class="presentation-card" id="presentationCard"></div>
+</div>
+<div class="turn-flash" id="turnFlash">Your turn · the room is waiting</div>
+<div class="privacy-curtain" id="privacyCurtain">
+  <div class="privacy-card">
+    <div class="eyebrow">Private evidence handoff</div>
+    <h2 id="privacyTitle">Pass the device</h2>
+    <p id="privacyText">Only the named investigator should look at the screen.</p>
+    <button class="btn block" id="btnPrivacyReady" type="button">I’m ready</button>
+  </div>
+</div>
+
 <div class="toast-container" id="toastContainer"></div>
-<div class="confetti-layer hidden" id="confettiLayer"></div>
-
-
 <script>
 'use strict';
 /* =====================================================================
@@ -1200,7 +1562,7 @@ function sfx(name){
   playTone(f,name==='bad'?.18:.07,name==='bad'?'sawtooth':'sine');
 }
 function updateSoundButtons(){
-  const label=soundEnabled?'🔊 Sound: On':'🔇 Sound: Off';
+  const label=soundEnabled?'Sound: On':'Sound: Off';
   const m=document.getElementById('btnSoundToggleMenu'); if(m)m.textContent=label;
 }
 
@@ -1214,7 +1576,7 @@ function suspectIcon(id,size=42){
   return `<svg viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="${s.dark}" stroke="${s.color}" stroke-width="3"/><circle cx="32" cy="24" r="9" fill="${s.color}"/><path d="M16 51c3-12 10-18 16-18s13 6 16 18" fill="${s.color}"/><text x="32" y="61" text-anchor="middle" font-size="9" fill="#fff">${escapeHtml(s.initial)}</text></svg>`;
 }
 function weaponIcon(id,size=34){
-  const map={candlestick:'🕯️',knife:'🔪',leadpipe:'🔩',revolver:'🔫',rope:'🪢',wrench:'🔧'};
+  const map={candlestick:'†',knife:'◆',leadpipe:'▰',revolver:'●',rope:'∞',wrench:'⌁'};
   return `<svg viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="#21170f" stroke="#a8822f" stroke-width="2"/><text x="32" y="42" text-anchor="middle" font-size="30">${map[id]||'?'}</text></svg>`;
 }
 function cardHtml(cardId){
@@ -1250,7 +1612,7 @@ function buildBoard(){
     boardDom.rooms[room.id]=rect;
   });
   WEAPONS.forEach(w=>{
-    const g=svgEl('g',{class:'token-weapon'},svg); svgEl('circle',{r:12,fill:'#120b09',stroke:'#d4af37','stroke-width':2},g); const t=svgEl('text',{y:5,'text-anchor':'middle','font-size':14},g);t.textContent={candlestick:'🕯',knife:'🔪',leadpipe:'🔩',revolver:'●',rope:'∞',wrench:'🔧'}[w.id]||'?';boardDom.weapons[w.id]=g;
+    const g=svgEl('g',{class:'token-weapon'},svg); svgEl('circle',{r:12,fill:'#120b09',stroke:'#d4af37','stroke-width':2},g); const t=svgEl('text',{y:5,'text-anchor':'middle','font-size':14},g);t.textContent={candlestick:'†',knife:'◆',leadpipe:'▰',revolver:'●',rope:'∞',wrench:'⌁'}[w.id]||'?';boardDom.weapons[w.id]=g;
   });
   SUSPECTS.forEach(s=>{
     const g=svgEl('g',{class:'token-suspect'},svg); svgEl('circle',{r:15,fill:s.color,stroke:s.dark,'stroke-width':3},g); const t=svgEl('text',{y:4,'text-anchor':'middle',fill:'#100','font-size':10,'font-weight':'700'},g);t.textContent=s.initial;boardDom.suspects[s.id]=g;
@@ -1545,7 +1907,7 @@ function localVisiblePlayerId(){return localTurnViewingId||currentPlayer(hostGam
 function $(id){return document.getElementById(id);}
 function cleanName(v){return String(v||'Player').trim().slice(0,18)||'Player';}
 function defaultName(){return cleanName($('joinNameInput')?.value||$('lobbyNameInput')?.value||'Detective');}
-function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));window.scrollTo({top:0,left:0,behavior:'instant'});}
 function showLobby(){showScreen('screen-lobby');renderLobby();}
 function showGame(){showScreen('screen-game');$('floatingControls').classList.remove('hidden');setConnectionPills(mode!=='local');if(!$('boardSvg').childElementCount)buildBoard();renderGame();}
 function setConnectionPills(ok){['lobbyConnPill','gameConnPill'].forEach(id=>{const e=$(id);if(!e)return;e.classList.toggle('hidden',mode==='local');e.classList.toggle('bad',!ok);});}
@@ -1612,7 +1974,7 @@ function showGameOver(g){
 }
 const notebookMarks={};
 function renderNotebook(){const g=getVisibleGame(),me=myPlayer();if(!g||!me)return;const own=new Set(g.hands?.[visiblePlayerId()]||[]);let html='<thead><tr><th>Card</th><th>You</th></tr></thead><tbody>';ALL_CARDS.forEach((c,i)=>{const mark=own.has(c.id)?'check':(notebookMarks[c.id]||'');html+=`<tr class="${i===6||i===12?'grp-start':''}"><th>${escapeHtml(c.name)}</th><td class="nb-cell ${own.has(c.id)?'own':''}" data-card="${c.id}" data-mark="${mark}">${mark==='check'?'✔':mark==='x'?'✕':mark==='q'?'?':''}</td></tr>`;});html+='</tbody>';$('notebookTable').innerHTML=html;$('notebookTable').querySelectorAll('.nb-cell:not(.own)').forEach(td=>td.onclick=()=>{const seq=['','check','x','q'];notebookMarks[td.dataset.card]=seq[(seq.indexOf(notebookMarks[td.dataset.card]||'')+1)%seq.length];renderNotebook();});}
-function leaveToMenu(){destroyPeer();hostGame=null;clientGame=null;lobbyPlayers=[];mode='menu';$('floatingControls').classList.add('hidden');closeModal();showScreen('screen-menu');}
+function leaveToMenu(){destroyPeer();hostGame=null;clientGame=null;lobbyPlayers=[];mode='menu';$('floatingControls').classList.add('hidden');$('screen-game')?.classList.remove('board-focus');closeModal();showScreen('screen-menu');}
 function wireUI(){
   $('btnLocalPlay').onclick=()=>startLocalLobby();$('btnHostGame').onclick=()=>hostOnline();$('btnJoinGame').onclick=()=>showScreen('screen-join');
   document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>showScreen(b.dataset.nav));
@@ -1641,6 +2003,12 @@ function wireUI(){
 
 /* ---------- Physical board-game Web Audio SFX ---------- */
 let audioUnlocked=false;
+let soundVolume=.72,audioMaster=null;
+function audioOutput(ctx){
+  if(!audioMaster||audioMaster.context!==ctx){audioMaster=ctx.createGain();audioMaster.connect(ctx.destination);}
+  audioMaster.gain.setTargetAtTime(soundEnabled?soundVolume:0,ctx.currentTime,.01);
+  return audioMaster;
+}
 async function ensureAudio(){
   if(!soundEnabled)return null;
   try{
@@ -1662,13 +2030,13 @@ function noiseHit(ctx,start,{dur=.07,gain=.08,filter='bandpass',freq=1200,q=.8,d
   const end=start+dur;
   g.gain.setValueAtTime(Math.max(.0001,gain),start);
   if(decay) g.gain.exponentialRampToValueAtTime(.0001,end); else g.gain.setValueAtTime(gain,end);
-  src.connect(f);f.connect(g);g.connect(ctx.destination);src.start(start);src.stop(end+.01);
+  src.connect(f);f.connect(g);g.connect(audioOutput(ctx));src.start(start);src.stop(end+.01);
 }
 function impact(ctx,start,{freq=160,gain=.11,dur=.07,type='sine',drop=.55}={}){
   const o=ctx.createOscillator(),g=ctx.createGain();
   o.type=type;o.frequency.setValueAtTime(freq,start);o.frequency.exponentialRampToValueAtTime(Math.max(25,freq*drop),start+dur);
   g.gain.setValueAtTime(gain,start);g.gain.exponentialRampToValueAtTime(.0001,start+dur);
-  o.connect(g);g.connect(ctx.destination);o.start(start);o.stop(start+dur+.01);
+  o.connect(g);g.connect(audioOutput(ctx));o.start(start);o.stop(start+dur+.01);
 }
 function woodTap(ctx,start,strength=1){
   impact(ctx,start,{freq:150,gain:.085*strength,dur:.055,type:'sine',drop:.48});
@@ -1682,7 +2050,7 @@ function paperSlide(ctx,start,dur=.18,gain=.035){
   const src=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();
   src.buffer=makeNoiseBuffer(ctx,dur);f.type='highpass';f.frequency.value=1400;f.Q.value=.4;
   g.gain.setValueAtTime(.0001,start);g.gain.linearRampToValueAtTime(gain,start+.025);g.gain.exponentialRampToValueAtTime(.0001,start+dur);
-  src.connect(f);f.connect(g);g.connect(ctx.destination);src.start(start);src.stop(start+dur+.01);
+  src.connect(f);f.connect(g);g.connect(audioOutput(ctx));src.start(start);src.stop(start+dur+.01);
 }
 function diceImpact(ctx,start,strength=1){
   // Layered die-on-board collision: hard plastic click + cardboard/wood body + tiny scrape.
@@ -1744,31 +2112,26 @@ function envelopeThump(ctx,start,heavy=false){
   impact(ctx,start,{freq:heavy?78:105,gain:heavy?.13:.09,dur:heavy?.16:.11,type:'sine',drop:.45});
   noiseHit(ctx,start,{dur:.055,gain:heavy?.045:.035,filter:'lowpass',freq:850,q:.6});
 }
-// REAL recorded dice audio (CC0): Wuzzy / OpenGameArt — wooden die rolled on a wooden table.
-// Four separate field recordings are rotated so repeated rolls do not sound identical.
-const REAL_DICE_URLS=[
-  'https://opengameart.org/sites/default/files/Holzw%C3%BCrfel_auf_Holztisch_1.flac',
-  'https://opengameart.org/sites/default/files/Holzw%C3%BCrfel_auf_Holztisch_2.flac',
-  'https://opengameart.org/sites/default/files/Holzw%C3%BCrfel_auf_Holztisch_3.flac',
-  'https://opengameart.org/sites/default/files/Holzw%C3%BCrfel_auf_Holztisch_4.flac'
-];
+// The Director's Cut is completely self-contained. Physical dice audio is
+// synthesized from irregular board impacts below, with no remote sound files.
+const REAL_DICE_URLS=[];
 const realDicePool=REAL_DICE_URLS.map(url=>{
   const a=new Audio();
   a.preload='auto';
   a.src=url;
-  a.volume=.92;
+  a.volume=.92*soundVolume;
   return a;
 });
 let lastRealDice=-1;
 function playRealDice(){
-  if(!soundEnabled)return false;
+  if(!soundEnabled||!realDicePool.length)return false;
   let idx=Math.floor(Math.random()*realDicePool.length);
   if(realDicePool.length>1 && idx===lastRealDice) idx=(idx+1)%realDicePool.length;
   lastRealDice=idx;
   const base=realDicePool[idx];
   // Clone lets rapid/repeated clicks overlap correctly without cutting the prior throw.
   const a=base.cloneNode(true);
-  a.volume=.92;
+  a.volume=.92*soundVolume;
   const p=a.play();
   if(p&&typeof p.catch==='function')p.catch(()=>{});
   return true;
@@ -1776,28 +2139,42 @@ function playRealDice(){
 
 async function sfx(name){
   if(!soundEnabled)return;
-  // Dice uses an actual microphone recording, not synthesized Web Audio.
-  if(name==='roll'){
-    playRealDice();
-    return;
-  }
+  if(name==='roll'&&playRealDice())return;
   const ctx=await ensureAudio();if(!ctx)return;
   const t=ctx.currentTime+.008;
-  if(name==='click') plasticTap(ctx,t,.36);
+  if(name==='roll')diceRattle(ctx,t);
+  else if(name==='click') plasticTap(ctx,t,.36);
   else if(name==='move') pawnMove(ctx,t);
   else if(name==='door'){woodTap(ctx,t,.55);noiseHit(ctx,t+.025,{dur:.12,gain:.026,filter:'bandpass',freq:420,q:1});}
   else if(name==='passage') secretPassage(ctx,t);
   else if(name==='suggest'){cardDeal(ctx,t);envelopeThump(ctx,t+.28,false);}
   else if(name==='reveal') cardReveal(ctx,t);
+  else if(name==='pencil'){noiseHit(ctx,t,{dur:.11,gain:.018,filter:'highpass',freq:1700,q:.7});paperSlide(ctx,t+.02,.09,.012);}
   else if(name==='accuse'){envelopeThump(ctx,t,true);paperSlide(ctx,t+.12,.2,.04);woodTap(ctx,t+.31,.4);}
   else if(name==='good'||name==='win'){cardReveal(ctx,t);woodTap(ctx,t+.2,.55);plasticTap(ctx,t+.27,.5);}
   else if(name==='bad'){envelopeThump(ctx,t,true);woodTap(ctx,t+.12,.7);}
 }
 function updateSoundButtons(){
-  const label=soundEnabled?'🔊 Sound: On':'🔇 Sound: Off';
+  const label=soundEnabled?'Sound: On':'Sound: Off';
   const m=$('btnSoundToggleMenu');if(m)m.textContent=label;
   const g=$('btnSoundToggleGame');if(g){g.title=soundEnabled?'Sound on — click to mute':'Sound off — click to enable';g.style.opacity=soundEnabled?'1':'.55';}
 }
+
+/* A deliberately quiet, fully procedural mansion room tone. It never carries
+   gameplay information and uses its own ambience control. */
+let ambienceGain=null,ambienceStarted=false,ambienceSources=[];
+async function startAmbience(){
+  if(!soundEnabled||ambienceStarted)return;const ctx=await ensureAudio();if(!ctx)return;
+  ambienceStarted=true;ambienceGain=ctx.createGain();ambienceGain.connect(ctx.destination);
+  const air=ctx.createBufferSource(),airFilter=ctx.createBiquadFilter(),airLevel=ctx.createGain(),buffer=ctx.createBuffer(1,ctx.sampleRate*4,ctx.sampleRate),d=buffer.getChannelData(0);let brown=0;
+  for(let i=0;i<d.length;i++){brown=(brown+(Math.random()*2-1)*.035)*.985;d[i]=brown;}
+  air.buffer=buffer;air.loop=true;airFilter.type='lowpass';airFilter.frequency.value=310;airLevel.gain.value=.065;air.connect(airFilter);airFilter.connect(airLevel);airLevel.connect(ambienceGain);air.start();
+  const house=ctx.createOscillator(),houseFilter=ctx.createBiquadFilter(),houseLevel=ctx.createGain();house.type='sine';house.frequency.value=47;houseFilter.type='lowpass';houseFilter.frequency.value=95;houseLevel.gain.value=.012;house.connect(houseFilter);houseFilter.connect(houseLevel);houseLevel.connect(ambienceGain);house.start();
+  const draft=ctx.createOscillator(),draftLevel=ctx.createGain();draft.type='sine';draft.frequency.value=.072;draftLevel.gain.value=.012;draft.connect(draftLevel.gain);draftLevel.connect(ambienceGain);draft.start();
+  ambienceSources=[air,house,draft];updateAudioMix();
+}
+const _directorShowGame=showGame;
+showGame=function(){_directorShowGame();startAmbience();};
 document.addEventListener('pointerdown',()=>{if(soundEnabled)ensureAudio();},{once:true,capture:true});
 
 /* ---------- More faithful classic mansion topology ---------- */
@@ -2020,7 +2397,7 @@ function buildBoard(){
       const pg=svgEl('g',{class:'passage-icon'},svg);svgEl('circle',{cx:center.x+q.w*.18,cy:center.y+q.h*.18,r:12,fill:'#120b09',stroke:'#d4af37','stroke-width':1.5},pg);const t=svgEl('text',{x:center.x+q.w*.18,y:center.y+q.h*.18+4,'text-anchor':'middle',fill:'#f0d485','font-size':'13'},pg);t.textContent='↯';boardDom.passages[room.id]=pg;
     }boardDom.rooms[room.id]=rect;
   });
-  WEAPONS.forEach(w=>{const g=svgEl('g',{class:'token-weapon'},svg);svgEl('circle',{r:12,fill:'#120b09',stroke:'#d4af37','stroke-width':2},g);const t=svgEl('text',{y:5,'text-anchor':'middle','font-size':14},g);t.textContent={candlestick:'🕯',knife:'🔪',leadpipe:'▰',revolver:'●',rope:'∞',wrench:'🔧'}[w.id]||'?';boardDom.weapons[w.id]=g;});
+  WEAPONS.forEach(w=>{const g=svgEl('g',{class:'token-weapon'},svg);svgEl('circle',{r:12,fill:'#120b09',stroke:'#d4af37','stroke-width':2},g);const t=svgEl('text',{y:5,'text-anchor':'middle','font-size':14},g);t.textContent={candlestick:'†',knife:'◆',leadpipe:'▰',revolver:'●',rope:'∞',wrench:'⌁'}[w.id]||'?';boardDom.weapons[w.id]=g;});
   SUSPECTS.forEach(s=>{const g=svgEl('g',{class:'token-suspect'},svg);svgEl('circle',{r:15,fill:s.color,stroke:s.dark,'stroke-width':3,filter:'url(#softGlow)'},g);const t=svgEl('text',{y:4,'text-anchor':'middle',fill:'#100','font-size':10,'font-weight':'700'},g);t.textContent=s.initial;boardDom.suspects[s.id]=g;});
 }
 
@@ -2256,9 +2633,522 @@ renderLobby=function(){
 };
 
 /* =====================================================================
+   ULTIMATE EDITION — rules corrections, privacy-safe UX and presentation
+   The active Trystero transport above is intentionally left intact.
+   ===================================================================== */
+
+/* ---------- 1986 rules corrections ---------- */
+function classicRoutes(startPos,maxSteps,occupiedHallwaySet){
+  const targets=new Map(),routes=new Map();
+  function addTarget(pos,path){
+    const key=posKey(pos);
+    if(!targets.has(key)){targets.set(key,JSON.parse(JSON.stringify(pos)));routes.set(key,path.map(x=>JSON.parse(JSON.stringify(x))));}
+  }
+  function walk(pos,depth,visited,path){
+    if(pos.type==='hall'){
+      // A doorway is an opening, not a square. Reaching its corridor square is
+      // enough to enter; unused pips are discarded when the room is entered.
+      doorRoomsAt(pos.col,pos.row).forEach(roomId=>addTarget({type:'room',roomId},path.concat({type:'room',roomId})));
+      if(depth===maxSteps){if(depth>0)addTarget(pos,path);return;}
+      for(const n of hallwayNeighbors(pos.col,pos.row)){
+        const np={type:'hall',col:n.col,row:n.row},nk=posKey(np);
+        if(visited.has(nk)||occupiedHallwaySet.has(cellKey(np.col,np.row)))continue;
+        const next=new Set(visited);next.add(nk);walk(np,depth+1,next,path.concat(np));
+      }
+      return;
+    }
+    // Leaving a room uses the first corridor square as one pip.
+    if(depth===0){
+      for(const d of ROOM_BY_ID[pos.roomId].doors){
+        const np={type:'hall',col:d.col,row:d.row},nk=posKey(np);
+        if(occupiedHallwaySet.has(cellKey(d.col,d.row)))continue;
+        const next=new Set(visited);next.add(nk);walk(np,1,next,[np]);
+      }
+    }
+  }
+  walk(startPos,0,new Set([posKey(startPos)]),[]);
+  return {targets,routes};
+}
+computeClassicReachable=function(startPos,maxSteps,occupiedHallwaySet){return [...classicRoutes(startPos,maxSteps,occupiedHallwaySet).targets.values()];};
+function classicPathTo(startPos,maxSteps,occupiedHallwaySet,target){return classicRoutes(startPos,maxSteps,occupiedHallwaySet).routes.get(posKey(target))||[];}
+occupiedHallways=function(game,exceptId){
+  const occupied=new Set(),moving=game.players.find(p=>p.id===exceptId)?.suspectId;
+  Object.entries(game.suspectPositions||{}).forEach(([suspectId,pos])=>{
+    if(suspectId!==moving&&pos?.type==='hall')occupied.add(cellKey(pos.col,pos.row));
+  });
+  return occupied;
+};
+function recordPresentationEvent(game,kind,data={}){
+  game.eventSeq=(game.eventSeq||0)+1;
+  game.lastEvent={seq:game.eventSeq,kind,at:Date.now(),...data};
+}
+const _ultimateNewAuthoritativeGame=newAuthoritativeGame;
+newAuthoritativeGame=function(players){
+  const g=_ultimateNewAuthoritativeGame(players);
+  g.caseId=`case-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`;
+  g.eventSeq=0;g.lastEvent=null;
+  return g;
+};
+const _ultimateEngineAction=engineAction;
+engineAction=function(game,actorId,action,payload={}){
+  if(action==='ACCUSE'&&(game?.pendingSuggestion||game?.phase==='suggestion'))return {ok:false,error:'Resolve the current Suggestion before accusing'};
+  const actor=game?.players?.find(p=>p.id===actorId);
+  const from=actor?.position?JSON.parse(JSON.stringify(actor.position)):null;
+  const occupied=game&&actor?occupiedHallways(game,actorId):new Set();
+  const path=action==='MOVE'&&from?classicPathTo(from,game.roll?.total||game.roll?.d1||0,occupied,payload.pos):[];
+  const suspectBefore=action==='SUGGEST'&&payload.suspect?JSON.parse(JSON.stringify(game.suspectPositions?.[payload.suspect]||null)):null;
+  const weaponBefore=action==='SUGGEST'&&payload.weapon?JSON.parse(JSON.stringify(game.weaponPositions?.[payload.weapon]||null)):null;
+  const res=_ultimateEngineAction(game,actorId,action,payload);
+  if(!res.ok)return res;
+  if(action==='ROLL')recordPresentationEvent(game,'roll',{actorId,value:game.roll?.d1||game.roll?.total||1});
+  else if(action==='MOVE')recordPresentationEvent(game,'move',{actorId,suspectId:actor?.suspectId,from,to:payload.pos,path});
+  else if(action==='PASSAGE')recordPresentationEvent(game,'passage',{actorId,suspectId:actor?.suspectId,from,to:actor?.position});
+  else if(action==='SUGGEST')recordPresentationEvent(game,'suggestion',{actorId,suspectId:payload.suspect,weaponId:payload.weapon,roomId:actor?.position?.roomId,suspectFrom:suspectBefore,weaponFrom:weaponBefore});
+  else if(action==='DISPROVE')recordPresentationEvent(game,'disprove',{actorId,suggesterId:res.reveal?.to});
+  else if(action==='ACCUSE'){
+    // An eliminated pawn may never remain on a doorway square.
+    if(res.eliminated&&actor?.position?.type==='hall'){
+      const doors=doorRoomsAt(actor.position.col,actor.position.row);
+      if(doors.length){actor.position={type:'room',roomId:doors[0]};actor.roomEntry=(actor.roomEntry||0)+1;game.suspectPositions[actor.suspectId]={...actor.position};}
+    }
+    recordPresentationEvent(game,'accusation',{actorId,suspectId:payload.suspect,weaponId:payload.weapon,roomId:payload.room,correct:!!res.win,eliminated:!!res.eliminated,noSolution:!!res.noSolution});
+  }else if(action==='END_TURN')recordPresentationEvent(game,'turn',{actorId:currentPlayer(game)?.id});
+  return res;
+};
+
+/* ---------- Case-scoped private notebook ---------- */
+function notebookScope(viewerId){const g=getVisibleGame()||hostGame;return `${g?.caseId||'unscoped'}|${viewerId}`;}
+nbState=function(viewerId){
+  if(!viewerId)return null;
+  const key=notebookScope(viewerId);
+  if(notebookByViewer[key])return notebookByViewer[key];
+  let saved=null;
+  try{saved=JSON.parse(localStorage.getItem('mm-notebook-'+key)||'null');}catch(_){}
+  const fresh={manual:{},knownOwner:{},autoNo:{},processedPublic:{},evidence:[],notes:'',theory:{suspect:'',weapon:'',room:'',pinned:false},evidenceExpanded:true};
+  return notebookByViewer[key]=saved&&typeof saved==='object'?{...fresh,...saved,theory:{...fresh.theory,...(saved.theory||{})}}:fresh;
+};
+function persistNotebook(viewerId){
+  const st=nbState(viewerId);if(!st)return;
+  try{localStorage.setItem('mm-notebook-'+notebookScope(viewerId),JSON.stringify(st));}catch(_){}
+}
+const _ultimateNbKnown=nbKnown;
+nbKnown=function(viewerId,cardId,ownerId){
+  const st=nbState(viewerId),was=st?.knownOwner?.[cardId];_ultimateNbKnown(viewerId,cardId,ownerId);
+  if(st&&!was){const g=getVisibleGame()||hostGame,owner=g?.players?.find(p=>p.id===ownerId);st.evidence=st.evidence||[];st.evidence.unshift({t:Date.now(),text:`${ownerId===viewerId?'Your hand':owner?.name||'An investigator'} confirms ${CARD_BY_ID[cardId]?.name||cardId}.`});persistNotebook(viewerId);}
+};
+const _ultimateNbApplyAuto=nbApplyAuto;
+nbApplyAuto=function(g,viewerId){
+  const st=nbState(viewerId),before=Object.keys(st?.processedPublic||{}).length;_ultimateNbApplyAuto(g,viewerId);
+  if(st&&Object.keys(st.processedPublic||{}).length!==before){
+    st.evidence=st.evidence||[];
+    (g.publicDeductions||[]).filter(ev=>st.processedPublic[ev.seq]&&!st['evidence-'+ev.seq]).forEach(ev=>{
+      st['evidence-'+ev.seq]=true;const p=g.players.find(x=>x.id===ev.playerId),names=ev.cards.map(id=>CARD_BY_ID[id]?.name).join(', ');
+      st.evidence.unshift({t:Date.now(),text:`${p?.name||'An investigator'} could not disprove: ${names}.`});
+    });persistNotebook(viewerId);
+  }
+};
+
+/* ---------- Pass-and-play privacy curtain ---------- */
+let privacyReadyAction=null;
+function requestPrivacyHandoff(playerId,title,text,callback){
+  localTurnViewingId=playerId;privacyReadyAction=callback;$('privacyTitle').textContent=title;$('privacyText').textContent=text;$('privacyCurtain').classList.add('show');
+}
+function finishPrivacyHandoff(){$('privacyCurtain').classList.remove('show');const fn=privacyReadyAction;privacyReadyAction=null;if(fn)fn();}
+resolveSuggestionLocal=function(){
+  const step=nextSuggestionCheck(hostGame);renderGame();
+  if(step.request){
+    const player=hostGame.players.find(p=>p.id===step.request.to);
+    requestPrivacyHandoff(step.request.to,`Pass to ${player?.name||'the next investigator'}`,'You may be able to disprove the Suggestion. Keep your cards private.',()=>showDisprovePrompt(step.request,true));
+  }else if(step.none){localTurnViewingId=currentPlayer(hostGame)?.id;showNoDisprove();}
+};
+promptLocalTurn=function(){
+  if(hostGame?.gameOver)return;const player=currentPlayer(hostGame);requestPrivacyHandoff(player?.id,`Pass to ${player?.name||'the next investigator'}`,'Only the named investigator should continue. Their hand and notebook are private.',()=>renderGame());
+};
+let pendingLocalTurnHandoff=false;
+const _ultimateProcessLocalAction=processLocalAction;
+processLocalAction=function(action,payload){
+  if(action!=='ACCUSE')return _ultimateProcessLocalAction(action,payload);
+  const savedPrompt=promptLocalTurn;let requested=false;promptLocalTurn=()=>{requested=true;};
+  try{_ultimateProcessLocalAction(action,payload);}finally{promptLocalTurn=savedPrompt;}
+  if(requested)pendingLocalTurnHandoff=true;
+};
+const _ultimateShowDisprovePrompt=showDisprovePrompt;
+showDisprovePrompt=function(data,isLocal=false){
+  if(!isLocal)return _ultimateShowDisprovePrompt(data,false);
+  const g=hostGame,sugg=g?.players?.find(p=>p.id===data.suggesterId);
+  $('disproveAskedBy').textContent=`${sugg?.name||'Another investigator'} made a Suggestion.`;
+  $('disproveCardChoices').innerHTML=(data.matches||[]).map(id=>`<button class="pick-chip" type="button" data-card="${id}">${cardHtml(id)}</button>`).join('');
+  $('disproveCardChoices').querySelectorAll('[data-card]').forEach(b=>b.onclick=()=>{
+    const cardId=b.dataset.card,res=engineAction(hostGame,localTurnViewingId,'DISPROVE',{cardId});if(!res.ok)return toast(res.error);
+    closeModal();renderGame();
+    if(res.reveal){
+      const receiver=hostGame.players.find(p=>p.id===res.reveal.to);
+      requestPrivacyHandoff(res.reveal.to,`Pass to ${receiver?.name||'the suggester'}`,'A private card is ready to be revealed. Only the suggester may continue.',()=>showPrivateReveal({cardId:res.reveal.cardId,fromId:res.reveal.from,toId:res.reveal.to}));
+    }
+  });
+  openModal('modal-disprove-prompt');
+};
+
+/* ---------- Bespoke vector identity ---------- */
+function suspectPortraitDetails(id){
+  const details={
+    scarlett:'<path d="M18 24c5-8 23-9 29 0-5-3-10-4-15-4s-10 1-14 4Z" fill="#3d1118"/><path d="M43 17c8-8 9-2 3 6" fill="none" stroke="#e7bb61" stroke-width="2"/>',
+    mustard:'<path d="M18 21h29l-5-7H24Z" fill="#574015"/><path d="M23 22h19" stroke="#e8c66d" stroke-width="2"/><path d="M26 34q6 5 12 0" fill="none" stroke="#4b2a13" stroke-width="2"/>',
+    white:'<path d="M20 21q12-13 24 0l-5 2-7-5-7 5Z" fill="#faf4df" stroke="#908674"/><path d="M25 38l7 5 7-5" fill="none" stroke="#faf4df" stroke-width="3"/>',
+    green:'<circle cx="27" cy="29" r="4" fill="none" stroke="#d5ba69" stroke-width="1.5"/><circle cx="37" cy="29" r="4" fill="none" stroke="#d5ba69" stroke-width="1.5"/><path d="M31 29h2M27 40l5 4 5-4" stroke="#e9e0c5" stroke-width="2" fill="none"/>',
+    peacock:'<path d="M22 19q10-12 20 0l-4 5H26Z" fill="#183c67"/><circle cx="32" cy="15" r="3" fill="#3fa9a1"/><circle cx="27" cy="43" r="1.5" fill="#d9bf69"/><circle cx="32" cy="45" r="1.5" fill="#d9bf69"/><circle cx="37" cy="43" r="1.5" fill="#d9bf69"/>',
+    plum:'<circle cx="27" cy="29" r="4" fill="none" stroke="#211322" stroke-width="1.4"/><circle cx="37" cy="29" r="4" fill="none" stroke="#211322" stroke-width="1.4"/><path d="M31 29h2M25 41l7 4 7-4" fill="#351442" stroke="#d6a85d"/> '
+  };return details[id]||'';
+}
+suspectIcon=function(id,size=42){
+  const s=SUSPECT_BY_ID[id]||SUSPECTS[0];
+  return `<svg class="card-art suspect-art" viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="${s.dark}" stroke="#d5b05a" stroke-width="1.5"/><circle cx="32" cy="30" r="22" fill="${s.color}" opacity=".18"/><circle cx="32" cy="29" r="10" fill="#d8b78f"/><path d="M16 54c2-13 9-19 16-19s14 6 16 19" fill="${s.color}" stroke="${s.dark}" stroke-width="1.5"/>${suspectPortraitDetails(s.id)}<circle cx="32" cy="32" r="27" fill="none" stroke="rgba(255,255,255,.25)"/></svg>`;
+};
+function weaponGlyphCore(id,metal='#e5d5aa',dark='#6f5327'){
+  const glyphs={
+    candlestick:`<path d="M28 12h8l-1 8h-6Zm4 8v23M24 44h16l5 8H19Z" fill="${metal}" stroke="${dark}" stroke-width="2"/><path d="M26 25h12M24 30h16" stroke="${dark}" stroke-width="2"/>`,
+    knife:`<path d="M13 45 40 16c7-7 12-5 10 2L27 44Z" fill="${metal}" stroke="${dark}" stroke-width="2"/><path d="m13 45 14-1-5 9-13 3Z" fill="#5b2c1b" stroke="${dark}" stroke-width="2"/><circle cx="18" cy="49" r="1.5" fill="${metal}"/>`,
+    leadpipe:`<path d="M18 47V25q0-7 7-7h23" fill="none" stroke="#b9b9af" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 47V25q0-7 7-7h23" fill="none" stroke="#ece8d9" stroke-width="2" opacity=".65"/>`,
+    revolver:`<path d="M12 27h27l9 7-4 6H31l-3 13H17l5-15H12Z" fill="${metal}" stroke="${dark}" stroke-width="2"/><circle cx="31" cy="32" r="7" fill="#7b6846" stroke="${dark}" stroke-width="2"/><path d="M40 27h11v5H40" fill="#b9aa84" stroke="${dark}" stroke-width="2"/>`,
+    rope:`<path d="M31 14c-13 0-17 14-7 21s23-1 18-11-20-4-17 8 17 11 20 2-5-11-14-5-12 8 15 14 24 5" fill="none" stroke="#c9a46a" stroke-width="5" stroke-linecap="round"/><path d="M44 45l6 7M47 42l7 6" stroke="#8c6b3e" stroke-width="3"/>`,
+    wrench:`<path d="M47 11c-7-2-13 3-12 10L17 39c-6-1-10 4-8 10l7-7 6 6-7 7c7 3 13-3 11-9l18-18c7 1 12-6 9-12l-7 7-6-6Z" fill="${metal}" stroke="${dark}" stroke-width="2"/>`
+  };return glyphs[id]||'';
+}
+weaponIcon=function(id,size=34){
+  return `<svg class="card-art weapon-art" viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#251a10" stroke="#b8913b" stroke-width="2"/><circle cx="32" cy="32" r="24" fill="#8a6b2c" opacity=".13"/>${weaponGlyphCore(id)}<circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,.17)"/></svg>`;
+};
+function roomIcon(roomId,size=40){
+  const r=ROOM_BY_ID[roomId];return `<svg class="card-art room-art" viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true"><rect x="8" y="9" width="48" height="46" rx="5" fill="#d8c79c" stroke="#745423" stroke-width="2"/><path d="M15 47h34M18 39h28M18 21h28M22 21v18M42 21v18" fill="none" stroke="#745423" stroke-width="2"/><circle cx="32" cy="31" r="4" fill="#8f2433"/><text x="32" y="61" text-anchor="middle" font-size="7" font-family="Georgia,serif" fill="#4b3219">${escapeHtml(r?.name||'Room')}</text></svg>`;}
+cardHtml=function(cardId){
+  const c=CARD_BY_ID[cardId];if(!c)return '';
+  const icon=c.type==='suspect'?suspectIcon(c.id,48):c.type==='weapon'?weaponIcon(c.id,48):roomIcon(c.id,48);
+  const index=(c.type==='suspect'?'S':c.type==='weapon'?'W':'R')+'-'+String(ALL_CARDS.filter(x=>x.type===c.type).findIndex(x=>x.id===c.id)+1).padStart(2,'0');
+  return `<div class="hand-card ${c.type}-card" data-card-id="${c.id}"><span class="card-index">${index}</span><span class="cat">${escapeHtml(c.type)}</span>${icon}<span class="cname">${escapeHtml(c.name)}</span></div>`;
+};
+
+/* ---------- Illustrated mansion board ---------- */
+function drawRoomFurniture(g,room,q){
+  const x=q.x,y=q.y,w=q.w,h=q.h,cx=x+w/2,cy=y+h/2;
+  const rect=(a,b,c,d,attrs={})=>svgEl('rect',{x:a,y:b,width:c,height:d,rx:attrs.rx??2,class:'furniture',...attrs},g);
+  const line=(a,b,c,d,attrs={})=>svgEl('line',{x1:a,y1:b,x2:c,y2:d,class:'furniture',...attrs},g);
+  const circle=(a,b,r,attrs={})=>svgEl('circle',{cx:a,cy:b,r,class:'furniture',...attrs},g);
+  if(room.id==='kitchen'){
+    rect(x+16,y+16,w-32,18,{fill:'#5f4129',stroke:'#d0a85a'});for(let i=0;i<5;i++)line(x+26+i*(w-52)/4,y+17,x+26+i*(w-52)/4,y+33,{stroke:'#2b1a11'});
+    rect(cx-34,cy-20,68,45,{fill:'#8a6338',stroke:'#d9b46b',rx:4});circle(cx-16,cy+1,7,{fill:'#342118',stroke:'#b99452'});circle(cx+17,cy+1,7,{fill:'#342118',stroke:'#b99452'});
+    rect(x+w-47,y+42,24,36,{fill:'#403027',stroke:'#cfab64'});circle(x+w-35,y+53,7,{fill:'#17110d',stroke:'#b98f43'});
+  }else if(room.id==='ballroom'){
+    circle(cx,cy-15,21,{fill:'none',stroke:'#d1aa53','stroke-width':2});for(let i=0;i<8;i++){const a=i*Math.PI/4;line(cx+Math.cos(a)*8,cy-15+Math.sin(a)*8,cx+Math.cos(a)*21,cy-15+Math.sin(a)*21,{stroke:'#d1aa53'});}circle(cx,cy-15,5,{fill:'#e2c369'});
+    rect(x+18,y+46,38,22,{fill:'#281714',stroke:'#d2af63',rx:6});line(x+21,y+69,x+18,y+79,{stroke:'#d2af63','stroke-width':2});line(x+52,y+69,x+57,y+79,{stroke:'#d2af63','stroke-width':2});
+  }else if(room.id==='conservatory'){
+    for(let i=1;i<5;i++)line(x+i*w/5,y+10,x+i*w/5,y+h-12,{stroke:'rgba(195,232,188,.26)'});for(let j=1;j<4;j++)line(x+10,y+j*h/4,x+w-10,y+j*h/4,{stroke:'rgba(195,232,188,.22)'});
+    [[.2,.58],[.39,.38],[.63,.58],[.8,.36]].forEach(([px,py],i)=>{rect(x+w*px-7,y+h*py+8,14,9,{fill:'#6b4122',stroke:'#ba8e4f'});circle(x+w*px,y+h*py,12-i%2*3,{fill:'#2c6a42',stroke:'#77a965'});line(x+w*px,y+h*py+9,x+w*px,y+h*py+18,{stroke:'#7aa56c'});});
+  }else if(room.id==='diningroom'){
+    rect(cx-22,y+37,44,h-72,{fill:'#6f3c1e',stroke:'#d0a153',rx:10});for(let i=0;i<5;i++){circle(cx,y+51+i*(h-99)/4,3,{fill:'#e8d094'});}for(let i=0;i<4;i++){rect(cx-37,y+43+i*(h-91)/3,10,14,{fill:'#4a2919',stroke:'#b98c45'});rect(cx+27,y+43+i*(h-91)/3,10,14,{fill:'#4a2919',stroke:'#b98c45'});}
+  }else if(room.id==='billiardroom'){
+    rect(cx-48,cy-25,96,42,{fill:'#164d38',stroke:'#d1aa55','stroke-width':4,rx:5});[[0,0],[-18,-8],[17,8],[30,-10]].forEach(([dx,dy],i)=>circle(cx+dx,cy-4+dy,3,{fill:['#efe5c6','#c73932','#e9bd3d','#355fa0'][i],stroke:'#1b110b'}));line(x+19,y+h-18,x+w-20,y+15,{stroke:'#d8bd83','stroke-width':2});
+  }else if(room.id==='library'){
+    rect(x+10,y+10,w-20,16,{fill:'#4c2817',stroke:'#b98e4b'});for(let i=0;i<14;i++)rect(x+15+i*(w-30)/14,y+13,5,10,{fill:['#792b2f','#314c4b','#7d6227','#4c315f'][i%4]});rect(cx-30,cy+4,60,24,{fill:'#6e3c1d',stroke:'#c69a50',rx:4});circle(cx+18,cy+1,7,{fill:'#e0bc5b',opacity:.7});
+  }else if(room.id==='lounge'){
+    rect(x+19,y+35,50,24,{fill:'#6e2630',stroke:'#d1a25a',rx:8});rect(x+24,y+41,40,12,{fill:'#9b3845',stroke:'#d1a25a',rx:5});rect(cx-27,cy+21,54,27,{fill:'#4d2d1c',stroke:'#b98d47',rx:13});rect(x+w-53,y+18,34,13,{fill:'#211511',stroke:'#d1a25a'});for(let i=0;i<4;i++)rect(x+w-48+i*8,y+22,5,5,{fill:'#e18a39'});
+  }else if(room.id==='hall'){
+    for(let i=0;i<7;i++)line(x+24,y+22+i*9,x+w-24,y+22+i*9,{stroke:'#baa26f','stroke-width':3});line(x+24,y+18,x+24,y+85,{stroke:'#d1ac5a','stroke-width':2});line(x+w-24,y+18,x+w-24,y+85,{stroke:'#d1ac5a','stroke-width':2});rect(cx-31,y+h-58,62,22,{fill:'#47301f',stroke:'#c3974b'});circle(cx+20,y+h-49,5,{fill:'#d6b35d'});
+  }else if(room.id==='study'){
+    rect(cx-45,cy-25,90,50,{fill:'#60351e',stroke:'#d1a358',rx:4});rect(cx-31,cy-17,25,17,{fill:'#ddd0a9',stroke:'#7b5c2c'});line(cx-28,cy-12,cx-10,cy-12,{stroke:'#5c4223'});circle(cx+27,cy-10,7,{fill:'#e2bd59',opacity:.8});line(cx+27,cy-3,cx+27,cy+12,{stroke:'#d2ad56','stroke-width':2});rect(x+18,y+18,36,16,{fill:'#281711',stroke:'#c49a51'});for(let i=0;i<4;i++)rect(x+23+i*7,y+23,4,7,{fill:'#d57e3f'});
+  }
+}
+buildBoard=function(){
+  const svg=$('boardSvg');if(!svg)return;svg.innerHTML='';Object.keys(boardDom).forEach(k=>boardDom[k]={});
+  const defs=svgEl('defs',{},svg);
+  const pattern=(id,w,h,bg,draw)=>{const p=svgEl('pattern',{id,width:w,height:h,patternUnits:'userSpaceOnUse'},defs);svgEl('rect',{width:w,height:h,fill:bg},p);draw(p);return p;};
+  pattern('hallMarble',22,22,'#28221c',p=>{svgEl('path',{d:'M0 19Q7 10 22 3M-4 8Q6 2 13 0',fill:'none',stroke:'#9a8764','stroke-width':1,opacity:.24},p);});
+  pattern('tileFloor',24,24,'#9b8d72',p=>{svgEl('rect',{width:12,height:12,fill:'#c9bda1'},p);svgEl('rect',{x:12,y:12,width:12,height:12,fill:'#c9bda1'},p);svgEl('path',{d:'M12 0v24M0 12h24',stroke:'#594b39',opacity:.38},p);});
+  pattern('parquetFloor',28,14,'#613b23',p=>{svgEl('path',{d:'M0 7h28M14 0v7M7 7v7M21 7v7',stroke:'#b07a45','stroke-width':1,opacity:.5},p);});
+  pattern('glassFloor',24,24,'#18382f',p=>{svgEl('path',{d:'M0 0h24v24H0ZM0 0l24 24M24 0 0 24',fill:'none',stroke:'#7aa895','stroke-width':.7,opacity:.25},p);});
+  pattern('carpetFloor',18,18,'#4e1721',p=>{svgEl('circle',{cx:9,cy:9,r:5,fill:'none',stroke:'#b18a43',opacity:.3},p);svgEl('circle',{cx:0,cy:0,r:4,fill:'none',stroke:'#b18a43',opacity:.18},p);});
+  pattern('slateFloor',28,20,'#273038',p=>{svgEl('path',{d:'M0 0h28v20H0ZM14 0v20',fill:'none',stroke:'#8a938e','stroke-width':.8,opacity:.23},p);});
+  const wp=svgEl('radialGradient',{id:'weaponPlinth',cx:'35%',cy:'27%'},defs);svgEl('stop',{offset:'0%',stopColor:'#f2d987'},wp);svgEl('stop',{offset:'55%',stopColor:'#96712d'},wp);svgEl('stop',{offset:'100%',stopColor:'#21140c'},wp);
+  SUSPECTS.forEach(s=>{const gr=svgEl('radialGradient',{id:'pawn-'+s.id,cx:'34%',cy:'27%'},defs);svgEl('stop',{offset:'0%',stopColor:'#fff',stopOpacity:.65},gr);svgEl('stop',{offset:'28%',stopColor:s.color},gr);svgEl('stop',{offset:'100%',stopColor:s.dark},gr);});
+  const glow=svgEl('filter',{id:'softGlowPremium',x:'-50%',y:'-50%',width:'200%',height:'200%'},defs);svgEl('feGaussianBlur',{stdDeviation:'3',result:'b'},glow);const merge=svgEl('feMerge',{},glow);svgEl('feMergeNode',{in:'b'},merge);svgEl('feMergeNode',{in:'SourceGraphic'},merge);
+  svgEl('rect',{x:8,y:8,width:784,height:784,rx:18,class:'mansion-floor'},svg);svgEl('rect',{x:18,y:18,width:764,height:764,rx:12,fill:'none',stroke:'#d1a64b','stroke-width':1,opacity:.45},svg);
+  svgEl('rect',{x:MARGIN+6*CELL+7,y:MARGIN+6*CELL+7,width:5*CELL-14,height:5*CELL-14,rx:15,fill:'#0d0907',stroke:'#8f6c2b','stroke-width':2},svg);
+  const env=svgEl('g',{class:'room-floor-detail',opacity:.8},svg);svgEl('rect',{x:364,y:365,width:72,height:48,rx:4,fill:'#baa16c',stroke:'#d7bb76'},env);svgEl('path',{d:'m365 366 35 26 35-26',fill:'#d9c08a',stroke:'#80602c'},env);const caseText=svgEl('text',{x:400,y:431,'text-anchor':'middle',fill:'#b9984c','font-family':'var(--font-mono)','font-size':9,'letter-spacing':2},svg);caseText.textContent='THE CASE FILE';
+  for(let r=0;r<GRID_SIZE;r++)for(let c=0;c<GRID_SIZE;c++)if(isHallwayCell(c,r)){
+    const p=cellCenterPx(c,r),rect=svgEl('rect',{x:p.x-CELL/2+2,y:p.y-CELL/2+2,width:CELL-4,height:CELL-4,rx:3,class:'corridor-cell',fill:'url(#hallMarble)'},svg);rect.dataset.key=cellKey(c,r);rect.setAttribute('aria-label',`Corridor ${c+1}, ${r+1}`);rect.addEventListener('click',()=>onBoardTarget({type:'hall',col:c,row:r}));boardDom.halls[cellKey(c,r)]=rect;
+  }
+  const floors={kitchen:'tileFloor',ballroom:'parquetFloor',conservatory:'glassFloor',diningroom:'parquetFloor',billiardroom:'slateFloor',library:'carpetFloor',lounge:'carpetFloor',hall:'hallMarble',study:'parquetFloor'};
+  const subtitles={kitchen:'TILE & COPPER',ballroom:'MUSIC & MIRRORS',conservatory:'GLASS & BOTANICALS',diningroom:'FORMAL TABLE',billiardroom:'FELT & OAK',library:'ARCHIVES',lounge:'FIRE & VELVET',hall:'GRAND STAIR',study:'PRIVATE PAPERS'};
+  ROOMS.forEach(room=>{
+    const q=roomRectPx(room.id),g=svgEl('g',{},svg),rect=svgEl('rect',{x:q.x+2,y:q.y+2,width:q.w-4,height:q.h-4,rx:11,class:'room-rect',fill:`url(#${floors[room.id]})`},g);rect.addEventListener('click',()=>onBoardTarget({type:'room',roomId:room.id}));const title=svgEl('title',{},rect);title.textContent=room.name;svgEl('rect',{x:q.x+9,y:q.y+9,width:q.w-18,height:q.h-18,rx:8,fill:'none',stroke:'#efcf7b','stroke-width':1,opacity:.25,class:'room-floor-detail'},g);drawRoomFurniture(g,room,q);
+    const small=q.h<130,label=svgEl('text',{x:q.x+q.w/2,y:q.y+q.h-(small?13:23),class:'room-label','font-size':small?11:15},g);label.textContent=room.name;const sub=svgEl('text',{x:q.x+q.w/2,y:q.y+q.h-(small?3:10),class:'room-subtitle','font-size':small?5:7},g);sub.textContent=subtitles[room.id];
+    room.doors.forEach(d=>{const p=cellCenterPx(d.col,d.row),vertical=d.col<room.block.c0||d.col>room.block.c1;svgEl('rect',{x:vertical?(d.col<room.block.c0?q.x-2:q.x+q.w-4):p.x-13,y:vertical?p.y-13:(d.row<room.block.r0?q.y-2:q.y+q.h-4),width:vertical?6:26,height:vertical?26:6,rx:2,class:'door-leaf'},svg);svgEl('circle',{cx:vertical?(d.col<room.block.c0?q.x+1:q.x+q.w-1):p.x+8,cy:vertical?p.y+7:(d.row<room.block.r0?q.y+1:q.y+q.h-1),r:2,class:'door-hinge'},svg);});
+    if(room.passageTo){
+      const center=roomCenterPx(room.id),target=roomCenterPx(room.passageTo);svgEl('path',{d:`M${center.x},${center.y} Q400,400 ${target.x},${target.y}`,class:'passage-line'},svg);const pg=svgEl('g',{class:'passage-icon',role:'button',tabindex:'0','aria-label':`Secret Passage to ${ROOM_BY_ID[room.passageTo].name}`},svg);const hx=q.x+q.w*.18,hy=q.y+q.h*.2;svgEl('circle',{cx:hx,cy:hy,r:13,class:'passage-hatch'},pg);svgEl('path',{d:`M${hx-6} ${hy-5}h12v10h-12zM${hx-4} ${hy-2}h8M${hx-4} ${hy+2}h8`,fill:'none',stroke:'#e4c46b','stroke-width':1.4},pg);const activate=()=>{const me=myPlayer(),gg=getVisibleGame();if(me?.position?.type==='room'&&me.position.roomId===room.id&&isMyTurn()&&gg?.phase==='roll')sendGameAction('PASSAGE');};pg.addEventListener('click',activate);pg.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate();}});boardDom.passages[room.id]=pg;
+    }
+    boardDom.rooms[room.id]=rect;
+  });
+  WEAPONS.forEach(w=>{const g=svgEl('g',{class:'token-weapon'},svg);svgEl('ellipse',{cx:0,cy:12,rx:14,ry:5,fill:'rgba(0,0,0,.48)'},g);svgEl('circle',{r:13,class:'weapon-plinth'},g);const art=svgEl('g',{transform:'translate(-8,-8) scale(.25)'},g);art.innerHTML=weaponGlyphCore(w.id,'#f2e0b0','#5d411e');const tt=svgEl('title',{},g);tt.textContent=WEAPON_BY_ID[w.id].name;boardDom.weapons[w.id]=g;});
+  SUSPECTS.forEach(s=>{const g=svgEl('g',{class:'token-suspect'},svg);svgEl('ellipse',{cx:0,cy:14,rx:16,ry:5,fill:'rgba(0,0,0,.52)'},g);svgEl('circle',{r:16,fill:`url(#pawn-${s.id})`,class:'pawn-base'},g);svgEl('circle',{r:13,fill:'none',class:'pawn-rim'},g);svgEl('path',{d:'M-7 7C-5 1-3-2 0-2s5 3 7 9Z',fill:s.dark,opacity:.65},g);svgEl('circle',{cy:-5,r:4,fill:'#f5ddb8',opacity:.9},g);const t=svgEl('text',{y:12,'text-anchor':'middle',fill:'#fff7dd','font-size':7,'font-family':'var(--font-display)','font-weight':'800','paint-order':'stroke',stroke:s.dark,'stroke-width':2},g);t.textContent=s.initial;const tt=svgEl('title',{},g);tt.textContent=s.name;boardDom.suspects[s.id]=g;});
+};
+
+/* ---------- Director's Cut architectural detailing ---------- */
+const _directorBuildBoard=buildBoard;
+buildBoard=function(){
+  _directorBuildBoard();const svg=$('boardSvg');if(!svg)return;
+  const architecture=svgEl('g',{class:'mansion-architecture','aria-hidden':'true'}),firstHall=svg.querySelector('.corridor-cell');
+  if(firstHall)svg.insertBefore(architecture,firstHall);else svg.appendChild(architecture);
+  ROOMS.forEach(room=>{
+    const q=roomRectPx(room.id);
+    svgEl('rect',{x:q.x-1,y:q.y-1,width:q.w+2,height:q.h+2,rx:12,class:'room-wall'},architecture);
+    svgEl('rect',{x:q.x+4,y:q.y+4,width:q.w-8,height:q.h-8,rx:9,class:'room-baseboard'},architecture);
+    room.doors.forEach(d=>{
+      const p=cellCenterPx(d.col,d.row),vertical=d.col<room.block.c0||d.col>room.block.c1;
+      svgEl('rect',{x:vertical?p.x-4:p.x-15,y:vertical?p.y-15:p.y-4,width:vertical?8:30,height:vertical?30:8,rx:1,class:'door-threshold'},architecture);
+      const sweep=vertical?`M${p.x} ${p.y-14}Q${p.x+(d.col<room.block.c0?18:-18)} ${p.y} ${p.x} ${p.y+14}`:`M${p.x-14} ${p.y}Q${p.x} ${p.y+(d.row<room.block.r0?18:-18)} ${p.x+14} ${p.y}`;
+      svgEl('path',{d:sweep,class:'door-arc'},architecture);
+    });
+  });
+  const decor=svgEl('g',{class:'director-room-life','aria-hidden':'true'}),firstToken=svg.querySelector('.token-weapon,.token-suspect');
+  if(firstToken)svg.insertBefore(decor,firstToken);else svg.appendChild(decor);
+  const qK=roomRectPx('kitchen'),qB=roomRectPx('ballroom'),qC=roomRectPx('conservatory'),qD=roomRectPx('diningroom'),qBi=roomRectPx('billiardroom'),qL=roomRectPx('library'),qLo=roomRectPx('lounge'),qH=roomRectPx('hall'),qS=roomRectPx('study');
+  // Kitchen: hanging copper pans and service clock.
+  [0,1,2].forEach(i=>{svgEl('line',{x1:qK.x+32+i*24,y1:qK.y+42,x2:qK.x+32+i*24,y2:qK.y+54,stroke:'#d5a55e','stroke-width':1.4},decor);svgEl('circle',{cx:qK.x+32+i*24,cy:qK.y+61,r:7,fill:'none',stroke:'#d5a55e','stroke-width':2},decor);});
+  svgEl('circle',{cx:qK.x+qK.w-27,cy:qK.y+qK.h-34,r:10,fill:'#eee0b8',stroke:'#6a4b2a'},decor);svgEl('path',{d:`M${qK.x+qK.w-27} ${qK.y+qK.h-34}v-6m0 6 5 3`,stroke:'#4c3521','stroke-width':1.3},decor);
+  // Ballroom: chandelier light pool and mirrored panels.
+  svgEl('ellipse',{cx:qB.x+qB.w/2,cy:qB.y+qB.h/2,rx:qB.w*.32,ry:qB.h*.25,fill:'#f2ca72',opacity:.055,class:'wall-sconce'},decor);[.18,.82].forEach(k=>svgEl('rect',{x:qB.x+qB.w*k-18,y:qB.y+28,width:36,height:62,rx:17,fill:'#bac8bd',opacity:.13,stroke:'#d9bc70'},decor));
+  // Conservatory: moving glass reflection, ivy and watering can.
+  svgEl('path',{d:`M${qC.x+16} ${qC.y+17}l52 0-30 ${qC.h-35}h-48Z`,fill:'#d9fff0',opacity:0,class:'glass-glint'},decor);svgEl('path',{d:`M${qC.x+qC.w-58} ${qC.y+qC.h-40}h25v13h-25z m25 4q15-9 18 2`,fill:'none',stroke:'#9eb5a0','stroke-width':3},decor);
+  // Dining room: silver service and wall sconces.
+  svgEl('ellipse',{cx:qD.x+qD.w/2,cy:qD.y+qD.h/2-8,rx:13,ry:5,fill:'#d7d1bc',stroke:'#5c5548'},decor);svgEl('path',{d:`M${qD.x+qD.w/2-10} ${qD.y+qD.h/2-12}q10-13 20 0`,fill:'#c9c1ab',stroke:'#5c5548'},decor);
+  // Billiard room: two brass table lamps and cue rack.
+  [.35,.65].forEach(k=>{svgEl('path',{d:`M${qBi.x+qBi.w*k-12} ${qBi.y+26}h24l-5 9h-14z`,fill:'#b69442',stroke:'#e2c16c'},decor);svgEl('circle',{cx:qBi.x+qBi.w*k,cy:qBi.y+24,r:3,class:'wall-sconce'},decor);});
+  // Library: rolling ladder and loose folios.
+  svgEl('line',{x1:qL.x+qL.w-37,y1:qL.y+22,x2:qL.x+qL.w-20,y2:qL.y+qL.h-21,stroke:'#c6a363','stroke-width':3},decor);for(let i=0;i<4;i++)svgEl('line',{x1:qL.x+qL.w-38+i*4,y1:qL.y+34+i*10,x2:qL.x+qL.w-25+i*4,y2:qL.y+34+i*10,stroke:'#d8ba77','stroke-width':1},decor);
+  // Lounge and Study: restrained living fire.
+  [[qLo,qLo.x+qLo.w-36,qLo.y+27],[qS,qS.x+36,qS.y+27]].forEach(([q,x,y],j)=>{svgEl('path',{d:`M${x-9} ${y+8}q9-25 18 0q-9-8-18 0`,fill:j?'#dd783b':'#e1843d',class:'fire-ember'},decor);svgEl('circle',{cx:x,cy:y-7,r:3,class:'wall-sconce'},decor);});
+  // Hall: a grandfather clock with a visible, very slow pendulum.
+  svgEl('rect',{x:qH.x+qH.w-40,y:qH.y+31,width:23,height:61,rx:3,fill:'#3b2417',stroke:'#c3974c'},decor);svgEl('circle',{cx:qH.x+qH.w-28.5,cy:qH.y+45,r:8,fill:'#d9c897',stroke:'#5a3c20'},decor);svgEl('line',{x1:qH.x+qH.w-28.5,y1:qH.y+57,x2:qH.x+qH.w-28.5,y2:qH.y+78,stroke:'#d3ad59','stroke-width':2,class:'clock-pendulum'},decor);svgEl('circle',{cx:qH.x+qH.w-28.5,cy:qH.y+80,r:4,fill:'#d3ad59',class:'clock-pendulum'},decor);
+  // Period wall lights at the main intersections.
+  [[290,248],[510,248],[290,552],[510,552]].forEach(([x,y],i)=>{svgEl('path',{d:`M${x-5} ${y}h10l-2 7h-6z`,fill:'#a47a35',stroke:'#e1bd68'},decor);svgEl('circle',{cx:x,cy:y-3,r:3,class:'wall-sconce',style:`animation-delay:${-i*1.2}s`},decor);});
+  Object.entries(boardDom.passages).forEach(([id,pg])=>{const q=roomRectPx(id),t=svgEl('text',{x:q.x+q.w*.18,y:q.y+q.h*.2+24,class:'passage-label'},pg);t.textContent='PASSAGE';});
+  Object.values(boardDom.weapons).forEach(g=>{g.querySelector('ellipse')?.classList.add('token-shadow');svgEl('circle',{cx:-4,cy:-5,r:3,class:'token-glint'},g);});
+  Object.values(boardDom.suspects).forEach(g=>{g.querySelector('ellipse')?.classList.add('token-shadow');svgEl('circle',{r:11,class:'pawn-collar'},g);svgEl('circle',{cx:-5,cy:-7,r:3,class:'token-glint'},g);});
+};
+
+/* ---------- Motion and cinematic feedback ---------- */
+const seenPresentationEvents=new Set(),animatedBoardEvents=new Set(),completedAccusations=new Set(),seenCaseIntros=new Set();
+let presentationTimer=null,lastTurnKey='',presentationBusy=false;
+function motionReduced(){return document.documentElement.classList.contains('user-reduced-motion')||matchMedia('(prefers-reduced-motion: reduce)').matches;}
+function showPresentation(html,duration=1000,after=null){
+  const layer=$('presentationLayer');clearTimeout(presentationTimer);$('presentationCard').innerHTML=html;layer.classList.add('show');presentationBusy=true;
+  const tuned=motionReduced()?80:ultimateSettings.motion==='standard'?Math.max(420,duration*.72):duration;
+  presentationTimer=setTimeout(()=>{layer.classList.remove('show');presentationBusy=false;if(after)setTimeout(after,motionReduced()?10:120);},tuned);
+}
+function dossierHtml(cardId,label){
+  const c=CARD_BY_ID[cardId],icon=c?.type==='suspect'?suspectIcon(cardId,50):c?.type==='weapon'?weaponIcon(cardId,50):roomIcon(cardId,50);
+  return `<div class="cinema-dossier"><span class="presentation-kicker">${escapeHtml(label)}</span>${icon}<span>${escapeHtml(c?.name||'Unknown')}</span></div>`;
+}
+function disproveProcessionHtml(g,actorId){const at=g.players.findIndex(p=>p.id===actorId),order=[];for(let i=1;i<g.players.length;i++)order.push(g.players[(at+i)%g.players.length]);return `<div class="disprove-procession">${order.map((p,i)=>`<span class="procession-person ${i===0?'current':''}" style="--person-color:${SUSPECT_BY_ID[p.suspectId]?.color||'#8f6728'}"><i class="procession-dot"></i>${escapeHtml(p.name)}</span>`).join('')}</div>`;}
+function eventKey(g,ev){return `${g.caseId||'case'}|${ev?.seq||0}`;}
+function animateDie(value){
+  const die=$('die1'),frame=$('boardFrame');if(!die)return;die.classList.add('rolling');frame?.classList.add('dice-impact');let ticks=0;
+  const iv=setInterval(()=>setDie(die,1+Math.floor(Math.random()*6)),72);
+  setTimeout(()=>{clearInterval(iv);setDie(die,value);die.classList.remove('rolling');die.classList.add('settle');setTimeout(()=>die.classList.remove('settle'),480);frame?.classList.remove('dice-impact');},motionReduced()?30:520);
+}
+function parseTranslate(value){const m=String(value||'').match(/translate\(\s*([\d.-]+)[ ,]+([\d.-]+)/);return m?{x:+m[1],y:+m[2]}:null;}
+function animateSvgToken(el,positions,duration=650){
+  if(!el||motionReduced()||positions.length<2)return;const final=parseTranslate(el.getAttribute('transform')),pts=positions.map(posCenterPx);if(final)pts[pts.length-1]=final;
+  el.classList.add('in-motion');sfx('move');
+  const anim=svgEl('animateTransform',{attributeName:'transform',type:'translate',values:pts.map(p=>`${p.x} ${p.y}`).join(';'),keyTimes:pts.map((_,i)=>(i/(pts.length-1)).toFixed(3)).join(';'),dur:`${duration}ms`,calcMode:'spline',keySplines:Array(Math.max(1,pts.length-1)).fill('.2 .8 .25 1').join(';'),fill:'freeze'},el);try{anim.beginElement();}catch(_){}setTimeout(()=>{anim.remove();el.classList.remove('in-motion');},duration+80);
+}
+const _ultimateRenderBoard=renderBoard;
+renderBoard=function(){
+  _ultimateRenderBoard();const g=getVisibleGame(),ev=g?.lastEvent;if(!g)return;
+  const me=myPlayer(),frame=$('boardFrame');frame?.classList.toggle('route-focus',isMyTurn()&&g.phase==='move');
+  Object.entries(boardDom.rooms).forEach(([id,el])=>{el.classList.toggle('current-location',me?.position?.type==='room'&&me.position.roomId===id);el.classList.remove('passage-source','passage-destination');});
+  Object.entries(boardDom.halls).forEach(([cell,el])=>{const reachable=el.classList.contains('reachable');el.setAttribute('tabindex',reachable?'0':'-1');el.setAttribute('role','button');el.onkeydown=reacheableKeyHandler(reachable,()=>{const [col,row]=cell.split(',').map(Number);onBoardTarget({type:'hall',col,row});});});
+  Object.entries(boardDom.rooms).forEach(([id,el])=>{const reachable=el.classList.contains('reachable');el.setAttribute('tabindex',reachable?'0':'-1');el.setAttribute('role','button');el.onkeydown=reacheableKeyHandler(reachable,()=>onBoardTarget({type:'room',roomId:id}));});
+  Object.entries(boardDom.passages).forEach(([id,el])=>{const usable=isMyTurn()&&g.phase==='roll'&&me?.position?.type==='room'&&me.position.roomId===id;el.classList.toggle('usable',usable);if(usable){boardDom.rooms[id]?.classList.add('passage-source');boardDom.rooms[ROOM_BY_ID[id]?.passageTo]?.classList.add('passage-destination');}});
+  if(!ev)return;const key=eventKey(g,ev);
+  if(animatedBoardEvents.has(key))return;animatedBoardEvents.add(key);
+  if(ev.kind==='move'&&ev.suspectId){const positions=[ev.from,...(ev.path||[])].filter(Boolean);animateSvgToken(boardDom.suspects[ev.suspectId],positions,Math.min(980,230+positions.length*85));}
+  else if(ev.kind==='passage'&&ev.suspectId){animateSvgToken(boardDom.suspects[ev.suspectId],[ev.from,ev.to].filter(Boolean),720);}
+  else if(ev.kind==='suggestion'){
+    if(ev.suspectFrom)animateSvgToken(boardDom.suspects[ev.suspectId],[ev.suspectFrom,{type:'room',roomId:ev.roomId}],620);
+    if(ev.weaponFrom)animateSvgToken(boardDom.weapons[ev.weaponId],[ev.weaponFrom,{type:'room',roomId:ev.roomId}],700);
+  }
+};
+function reacheableKeyHandler(enabled,fn){return enabled?e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fn();}}:null;}
+
+const _ultimateShowGameOver=showGameOver;
+showGameOver=function(g){
+  const ev=g?.lastEvent,key=eventKey(g,ev);
+  if(ev?.kind==='accusation'&&!completedAccusations.has(key))return;
+  _ultimateShowGameOver(g);
+};
+function handlePresentationEvent(g){
+  const ev=g?.lastEvent;if(!ev)return;const key=eventKey(g,ev);if(seenPresentationEvents.has(key))return;seenPresentationEvents.add(key);
+  if(Date.now()-(ev.at||0)>15000)return;
+  if(ev.kind==='roll'){animateDie(ev.value||1);return;}
+  if(ev.kind==='move'&&ev.to?.type==='room'){sfx('door');return;}
+  if(ev.kind==='suggestion'){
+    const actor=g.players.find(p=>p.id===ev.actorId),room=ROOM_BY_ID[ev.roomId];sfx('suggest');
+    showPresentation(`<div class="presentation-kicker">Blackwood Manor · Theory sheet B-17</div><div class="presentation-title">${escapeHtml(actor?.name||'An investigator')} proposes…</div><div class="suggestion-cinema-row">${dossierHtml(ev.suspectId,'Suspect')}${dossierHtml(ev.weaponId,'Weapon')}${dossierHtml(ev.roomId,'Room')}</div><p class="presentation-sub">The clerk records the theory. Evidence is checked clockwise from the accuser.</p>${disproveProcessionHtml(g,ev.actorId)}`,1200);
+    return;
+  }
+  if(ev.kind==='disprove'){
+    const witness=g.players.find(p=>p.id===ev.actorId);sfx('reveal');showPresentation(`<div class="presentation-kicker">Evidence produced</div><div class="presentation-title">The theory is challenged</div><p class="presentation-sub">${escapeHtml(witness?.name||'An investigator')} has shown one matching card privately to the suggester.</p>`,760);return;
+  }
+  if(ev.kind==='accusation'){
+    const actor=g.players.find(p=>p.id===ev.actorId),verdict=ev.correct?'THE CASE IS SOLVED':'THE EVIDENCE DOES NOT MATCH';sfx(ev.correct?'win':'accuse');
+    showPresentation(`<div class="presentation-kicker">The confidential envelope is opened</div><div class="presentation-title">${escapeHtml(actor?.name||'An investigator')} accuses</div><div class="verdict-card-row">${dossierHtml(ev.suspectId,'Suspect')}${dossierHtml(ev.weaponId,'Weapon')}${dossierHtml(ev.roomId,'Room')}</div><p class="presentation-sub">Comparing the accusation with the Case File…</p>`,1500,()=>{
+      showPresentation(`<div class="presentation-kicker">Official verdict</div><div class="presentation-title">${verdict}</div><p class="presentation-sub">${ev.correct?'Every card is a perfect match.':'At least one card is wrong. The investigation continues without the accuser.'}</p>`,1050,()=>{
+        completedAccusations.add(key);
+        if(g.gameOver){if(ev.correct)launchConfetti();_ultimateShowGameOver(g);}
+        else if(ev.actorId===visiblePlayerId()){sfx('bad');openModal('modal-eliminated');}
+        else toast(`${actor?.name||'An investigator'} made an incorrect Accusation.`);
+      });
+    });
+  }
+}
+function launchConfetti(){
+  document.body.classList.remove('case-closed');void document.body.offsetWidth;document.body.classList.add('case-closed');setTimeout(()=>document.body.classList.remove('case-closed'),1800);
+}
+
+/* ---------- Contextual game UI ---------- */
+const _ultimateRenderGame=renderGame;
+renderGame=function(){
+  _ultimateRenderGame();const g=getVisibleGame(),me=myPlayer();if(!g||!me)return;
+  const room=me.position?.type==='room'?ROOM_BY_ID[me.position.roomId]:null,phaseNames={roll:'Movement',move:'Choose route',action:'Room action',suggestion:'Testing theory',over:'Case closed'};
+  $('phaseChip').textContent=phaseNames[g.phase]||g.phase;$('locationText').textContent=room?`In the ${room.name}`:`Corridor · ${me.position?.col+1||'—'}, ${me.position?.row+1||'—'}`;
+  let hint='Observe the board and update your notebook.';
+  if(isMyTurn()&&!me.eliminated){
+    if(g.phase==='roll')hint=room?.passageTo?`Roll, make an available Suggestion, accuse, or take the passage to ${ROOM_BY_ID[room.passageTo].name}.`:'Roll to begin moving, or accuse if your case is ready.';
+    else if(g.phase==='move')hint=`Choose one of ${g.reachable?.length||0} highlighted destinations. Entering a room ends movement.`;
+    else if(g.phase==='action')hint=room&&canPlayerSuggest(g,me)?'Make a Suggestion, accuse, or end your turn.':'Accuse if ready, or end your turn.';
+    else if(g.phase==='suggestion')hint='The other investigators are checking their evidence in order.';
+  }else if(me.eliminated)hint='You are out of the chase, but must still disprove Suggestions when able.';
+  if(!ultimateSettings.hints)hint='';$('actionHint').textContent=hint;
+  const reasons={btnRollDice:g.phase!=='roll'?'You have already chosen how to move.':'Only the current investigator can roll.',btnSuggest:!room?'Enter a room before suggesting.':!canPlayerSuggest(g,me)?'Enter a different room before suggesting here again.':'Wait for your turn.',btnAccuse:g.pendingSuggestion?'Resolve the current Suggestion first.':'Only the current investigator may accuse.',btnEndTurn:g.phase==='move'?'Choose a highlighted destination first.':'Complete your current action first.'};
+  Object.entries(reasons).forEach(([id,reason])=>{const b=$(id);if(b)b.title=b.disabled?reason:b.textContent.trim();});
+  handlePresentationEvent(g);
+  if(!seenCaseIntros.has(g.caseId)){seenCaseIntros.add(g.caseId);showPresentation(`<div class="presentation-kicker">Case ${escapeHtml(String(g.caseId||'').split('-').slice(-1)[0].toUpperCase())}</div><div class="presentation-title">The Blackwood Investigation</div><p class="presentation-sub">Twenty-one clues. Three truths. One chance to accuse.</p>`,1200);}
+  const turnKey=`${g.caseId}|${currentPlayer(g)?.id}`;
+  if(lastTurnKey&&lastTurnKey!==turnKey&&isMyTurn()&&!g.gameOver){const f=$('turnFlash');f.classList.remove('show');void f.offsetWidth;f.textContent=`Your turn · ${room?'you are in the '+room.name:'the mansion is waiting'}`;f.classList.add('show');sfx('good');}
+  lastTurnKey=turnKey;
+};
+
+/* ---------- Notebook enhancement ---------- */
+let notebookUnresolvedOnly=false;
+const _ultimateRenderNotebook=renderNotebook;
+renderNotebook=function(){
+  _ultimateRenderNotebook();const g=getVisibleGame(),viewer=visiblePlayerId();if(!g||!viewer)return;const st=nbState(viewer);
+  $('notebookTable').querySelectorAll('tbody tr').forEach((tr,i)=>{const c=ALL_CARDS[i],th=tr.querySelector('th');if(!c||!th)return;tr.dataset.search=(c.name+' '+c.type).toLowerCase();th.innerHTML=`<span class="card-type-dot" style="--type-color:${c.type==='suspect'?'#8f2433':c.type==='weapon'?'#8c6c2e':'#315f78'}"></span>${escapeHtml(c.name)}`;});
+  $('notebookEvidence').innerHTML=(st.evidence||[]).slice(0,10).map(ev=>`<div class="evidence-line">${escapeHtml(ev.text)}</div>`).join('')||'<div class="evidence-line">Evidence will appear here as the case develops.</div>';
+  if(document.activeElement!==$('notebookNotes'))$('notebookNotes').value=st.notes||'';
+  renderTheoryStrip(st);
+  applyNotebookFilter();
+};
+function optionList(items,placeholder){return `<option value="">${escapeHtml(placeholder)}</option>`+items.map(x=>`<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('');}
+function renderTheoryStrip(st=nbState(visiblePlayerId())){
+  if(!st)return;const ids=[['theorySuspect',SUSPECTS,'Select suspect',st.theory?.suspect],['theoryWeapon',WEAPONS,'Select weapon',st.theory?.weapon],['theoryRoom',ROOMS,'Select room',st.theory?.room]];
+  ids.forEach(([id,items,placeholder,value])=>{const el=$(id);if(!el)return;if(!el.options.length)el.innerHTML=optionList(items,placeholder);el.value=items.some(x=>x.id===value)?value:'';});
+  const strip=$('theoryStripTitle')?.closest('.theory-strip');strip?.classList.toggle('pinned',!!st.theory?.pinned);$('theorySaved').textContent=st.theory?.pinned?'Pinned to this case':'Not pinned';$('notebookEvidence').classList.toggle('condensed',st.evidenceExpanded===false);$('btnEvidenceBoard').textContent=st.evidenceExpanded===false?'Expand':'Condense';$('btnEvidenceBoard').setAttribute('aria-expanded',st.evidenceExpanded!==false);
+}
+function saveTheoryStrip(pin){
+  const viewer=visiblePlayerId(),st=nbState(viewer);if(!st)return;st.theory={suspect:$('theorySuspect').value,weapon:$('theoryWeapon').value,room:$('theoryRoom').value,pinned:pin||!!st.theory?.pinned};persistNotebook(viewer);renderTheoryStrip(st);if(pin){sfx('pencil');toast('Private theory pinned.');}
+}
+function applyNotebookFilter(){
+  const q=($('notebookSearch')?.value||'').trim().toLowerCase();$('notebookTable')?.querySelectorAll('tbody tr').forEach(tr=>{const resolved=!!tr.querySelector('.known,.case-star');tr.classList.toggle('filtered',(!tr.dataset.search.includes(q))||(notebookUnresolvedOnly&&resolved));});
+}
+
+const _directorShowPrivateReveal=showPrivateReveal;
+showPrivateReveal=function(data){_directorShowPrivateReveal(data);const row=$('revealCardShown');if(row&&!row.querySelector('.private-reveal-caption'))row.insertAdjacentHTML('beforeend','<span class="private-reveal-caption">Recorded privately in your notebook</span>');};
+
+const _ultimateOpenSuggestion=openSuggestion;
+openSuggestion=function(){
+  _ultimateOpenSuggestion();const me=myPlayer(),room=me?.position?.type==='room'?ROOM_BY_ID[me.position.roomId]:null;$('sugStageRoom').textContent=room?.name||'—';$('sugStageSuspect').textContent='Choose';$('sugStageWeapon').textContent='Choose';
+  $('sugSuspectGrid').addEventListener('click',e=>{const b=e.target.closest('[data-id]');if(b)$('sugStageSuspect').textContent=SUSPECT_BY_ID[b.dataset.id]?.name||'Choose';});
+  $('sugWeaponGrid').addEventListener('click',e=>{const b=e.target.closest('[data-id]');if(b)$('sugStageWeapon').textContent=WEAPON_BY_ID[b.dataset.id]?.name||'Choose';});
+};
+
+const _directorOpenAccusation=openAccusation;
+openAccusation=function(){
+  _directorOpenAccusation();const st=nbState(visiblePlayerId()),theory=st?.theory||{};
+  [['accSuspectGrid',theory.suspect],['accWeaponGrid',theory.weapon],['accRoomGrid',theory.room]].forEach(([grid,id])=>{if(id)$(grid)?.querySelector(`[data-id="${id}"]`)?.click();});
+  if(theory.suspect||theory.weapon||theory.room)toast('Pinned theory prepared for review.');
+};
+
+/* ---------- Lobby polish and editable local seats ---------- */
+const CHARACTER_DOSSIERS={
+  scarlett:'The Society Insider',mustard:'The Decorated Colonel',white:'The Keeper of the House',green:'The Watchful Clergyman',peacock:'The Grand Dame',plum:'The Forensic Scholar'
+};
+const _ultimateRenderLobby=renderLobby;
+renderLobby=function(){
+  _ultimateRenderLobby();
+  $('lobbyPlayerList')?.querySelectorAll('.player-row').forEach((row,i)=>row.style.setProperty('--seat-color',SUSPECT_BY_ID[lobbyPlayers[i]?.suspectId]?.color||'#d4af37'));
+  $('lobbyPlayerList')?.querySelectorAll('.player-row').forEach((row,i)=>{const name=row.querySelector('.pname'),p=lobbyPlayers[i];if(name&&p&&!name.querySelector('.identity'))name.insertAdjacentHTML('beforeend',`<span class="identity">${escapeHtml(CHARACTER_DOSSIERS[p.suspectId]||'Guest of Blackwood Manor')}</span>`);});
+  $('lobbySuspectGrid')?.querySelectorAll('[data-suspect]').forEach(card=>{const n=card.querySelector('.name');if(n&&!card.querySelector('.identity'))n.insertAdjacentHTML('afterend',`<span class="identity">${escapeHtml(CHARACTER_DOSSIERS[card.dataset.suspect]||'Guest of Blackwood Manor')}</span>`);});
+  if(mode!=='local')return;
+  $('lobbySuspectGrid').innerHTML=`<div class="local-seat-grid">${lobbyPlayers.map((p,i)=>`<article class="local-seat" data-title="${escapeHtml(CHARACTER_DOSSIERS[p.suspectId]||'Guest of Blackwood Manor')}"><span class="seat-avatar">${suspectIcon(p.suspectId,48)}</span><input type="text" maxlength="18" value="${escapeHtml(p.name)}" data-local-name="${i}" aria-label="Player ${i+1} name"><select data-local-suspect="${i}" aria-label="Player ${i+1} character">${SUSPECTS.map(s=>`<option value="${s.id}" ${s.id===p.suspectId?'selected':''} ${lobbyPlayers.some((x,j)=>j!==i&&x.suspectId===s.id)?'disabled':''}>${escapeHtml(s.name)}</option>`).join('')}</select></article>`).join('')}</div>`;
+  $('lobbySuspectGrid').querySelectorAll('[data-local-name]').forEach(input=>{input.oninput=()=>{const i=+input.dataset.localName;lobbyPlayers[i].name=String(input.value||'').slice(0,18)||`Player ${i+1}`;};input.onchange=()=>{const i=+input.dataset.localName;lobbyPlayers[i].name=cleanName(input.value);renderLobby();};});
+  $('lobbySuspectGrid').querySelectorAll('[data-local-suspect]').forEach(select=>select.onchange=()=>{const i=+select.dataset.localSuspect;if(!lobbyPlayers.some((p,j)=>j!==i&&p.suspectId===select.value))lobbyPlayers[i].suspectId=select.value;renderLobby();});
+};
+
+/* ---------- Settings, zoom and accessibility ---------- */
+let ultimateSettings={volume:72,sfx:82,ambience:22,motion:'cinematic',hints:true},boardZoom=1,lastModalFocus=null;
+function loadUltimateSettings(){
+  try{ultimateSettings={...ultimateSettings,...JSON.parse(localStorage.getItem('mm-ultimate-settings')||'{}')};}catch(_){}
+  if(ultimateSettings.motion==='full')ultimateSettings.motion='cinematic';
+  soundEnabled=localStorage.getItem('mm-sound-enabled')!=='false';applyDirectorSettingsClasses();updateAudioMix();
+}
+function applyDirectorSettingsClasses(){document.documentElement.classList.toggle('user-reduced-motion',ultimateSettings.motion==='reduced');document.documentElement.classList.toggle('user-standard-motion',ultimateSettings.motion==='standard');}
+function updateAudioMix(){
+  const master=Math.max(0,Math.min(1,(+ultimateSettings.volume||0)/100)),fx=Math.max(0,Math.min(1,(+ultimateSettings.sfx||0)/100)),air=Math.max(0,Math.min(1,(+ultimateSettings.ambience||0)/100));soundVolume=master*fx;
+  if(audioMaster)audioMaster.gain.setTargetAtTime(soundEnabled?soundVolume:0,audioMaster.context.currentTime,.025);
+  if(ambienceGain)ambienceGain.gain.setTargetAtTime(soundEnabled?master*air:0,ambienceGain.context.currentTime,.18);
+  realDicePool.forEach(a=>a.volume=.92*soundVolume);
+}
+function saveUltimateSettings(){try{localStorage.setItem('mm-ultimate-settings',JSON.stringify(ultimateSettings));localStorage.setItem('mm-sound-enabled',String(soundEnabled));}catch(_){}applyDirectorSettingsClasses();updateAudioMix();}
+function syncSettingsUI(){
+  $('volumeRange').value=ultimateSettings.volume;$('volumeOutput').textContent=ultimateSettings.volume+'%';$('sfxRange').value=ultimateSettings.sfx;$('sfxOutput').textContent=ultimateSettings.sfx+'%';$('ambienceRange').value=ultimateSettings.ambience;$('ambienceOutput').textContent=ultimateSettings.ambience+'%';$('motionToggle').textContent=ultimateSettings.motion==='reduced'?'Reduced':ultimateSettings.motion==='standard'?'Standard':'Cinematic';$('motionToggle').setAttribute('aria-pressed',ultimateSettings.motion==='reduced');$('hintsToggle').textContent=ultimateSettings.hints?'On':'Off';$('hintsToggle').setAttribute('aria-pressed',ultimateSettings.hints);
+}
+function setBoardZoom(value){boardZoom=Math.max(.72,Math.min(1.45,value));$('boardFrame')?.style.setProperty('--board-zoom',boardZoom.toFixed(2));$('btnZoomReset').textContent=Math.round(boardZoom*100)+'%';}
+function toggleBoardFocus(force){const screen=$('screen-game'),next=typeof force==='boolean'?force:!screen.classList.contains('board-focus');screen.classList.toggle('board-focus',next);$('btnBoardFocus').setAttribute('aria-pressed',next);$('btnBoardFocus').title=next?'Show detective desk':'Focus board';}
+const _ultimateOpenModal=openModal,_ultimateCloseModal=closeModal;
+openModal=function(id){lastModalFocus=document.activeElement;_ultimateOpenModal(id);const modal=$(id);modal?.setAttribute('role','dialog');modal?.setAttribute('aria-modal','true');setTimeout(()=>modal?.querySelector('button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled)')?.focus(),30);};
+closeModal=function(){const wasEliminated=$('modal-eliminated')?.classList.contains('open');_ultimateCloseModal();if(lastModalFocus?.focus)lastModalFocus.focus();lastModalFocus=null;if(wasEliminated&&pendingLocalTurnHandoff){pendingLocalTurnHandoff=false;setTimeout(promptLocalTurn,40);}};
+function wireUltimateUI(){
+  syncSettingsUI();$('btnPrivacyReady').onclick=finishPrivacyHandoff;$('btnSettings').onclick=()=>{syncSettingsUI();openModal('modal-settings');};
+  $('volumeRange').oninput=e=>{ultimateSettings.volume=+e.target.value;$('volumeOutput').textContent=ultimateSettings.volume+'%';saveUltimateSettings();};
+  $('sfxRange').oninput=e=>{ultimateSettings.sfx=+e.target.value;$('sfxOutput').textContent=ultimateSettings.sfx+'%';saveUltimateSettings();};
+  $('ambienceRange').oninput=e=>{ultimateSettings.ambience=+e.target.value;$('ambienceOutput').textContent=ultimateSettings.ambience+'%';saveUltimateSettings();startAmbience();};
+  $('motionToggle').onclick=()=>{const tiers=['cinematic','standard','reduced'],i=tiers.indexOf(ultimateSettings.motion);ultimateSettings.motion=tiers[(i+1)%tiers.length];syncSettingsUI();saveUltimateSettings();};
+  $('hintsToggle').onclick=()=>{ultimateSettings.hints=!ultimateSettings.hints;syncSettingsUI();saveUltimateSettings();renderGame();};
+  ['btnSoundToggleMenu','btnSoundToggleGame'].forEach(id=>$(id)?.addEventListener('click',()=>setTimeout(()=>{saveUltimateSettings();if(soundEnabled)startAmbience();})));
+  setBoardZoom(1);$('btnZoomOut').onclick=()=>setBoardZoom(boardZoom-.12);$('btnZoomIn').onclick=()=>setBoardZoom(boardZoom+.12);$('btnZoomReset').onclick=()=>setBoardZoom(1);$('btnBoardFocus').onclick=()=>toggleBoardFocus();
+  $('notebookSearch').oninput=applyNotebookFilter;$('btnNotebookUnresolved').onclick=()=>{notebookUnresolvedOnly=!notebookUnresolvedOnly;$('btnNotebookUnresolved').setAttribute('aria-pressed',notebookUnresolvedOnly);$('btnNotebookUnresolved').textContent=notebookUnresolvedOnly?'Showing unresolved':'Unresolved only';applyNotebookFilter();};
+  $('notebookNotes').oninput=e=>{const viewer=visiblePlayerId(),st=nbState(viewer);if(st){st.notes=e.target.value;persistNotebook(viewer);}};
+  ['theorySuspect','theoryWeapon','theoryRoom'].forEach(id=>$(id).onchange=()=>{$('theorySaved').textContent='Unpinned changes';$('theoryStripTitle').closest('.theory-strip').classList.remove('pinned');});
+  $('btnPinTheory').onclick=()=>saveTheoryStrip(true);
+  $('btnAccuseTheory').onclick=()=>{saveTheoryStrip(false);closeModal();openAccusation();};
+  $('btnEvidenceBoard').onclick=()=>{const viewer=visiblePlayerId(),st=nbState(viewer);st.evidenceExpanded=!st.evidenceExpanded;persistNotebook(viewer);renderTheoryStrip(st);};
+  $('notebookTable').addEventListener('click',e=>{if(e.target.closest('.nb-cell:not(.auto)'))sfx('pencil');setTimeout(()=>persistNotebook(visiblePlayerId()));});
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&$('modalOverlay').classList.contains('open')){const modal=document.querySelector('.modal.open');if(modal?.querySelector('[data-close]'))closeModal();}
+    if(e.key==='n'&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&$('screen-game').classList.contains('active')&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName)){e.preventDefault();renderNotebook();openModal('modal-notebook');}
+    if(e.key==='f'&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&$('screen-game').classList.contains('active')&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName)){e.preventDefault();toggleBoardFocus();}
+  });
+  const viewport=$('boardViewport'),svg=$('boardSvg');let drag=null;
+  viewport.addEventListener('pointerdown',e=>{if(e.button!==0||!(e.target===svg||e.target===$('boardFrame')))return;drag={x:e.clientX,y:e.clientY,left:viewport.scrollLeft,top:viewport.scrollTop};viewport.classList.add('dragging');viewport.setPointerCapture(e.pointerId);});
+  viewport.addEventListener('pointermove',e=>{if(!drag)return;viewport.scrollLeft=drag.left-(e.clientX-drag.x);viewport.scrollTop=drag.top-(e.clientY-drag.y);});
+  viewport.addEventListener('pointerup',()=>{drag=null;viewport.classList.remove('dragging');});
+  document.querySelectorAll('.modal').forEach((m,i)=>{const h=m.querySelector('h3');if(h){if(!h.id)h.id='modal-title-'+i;m.setAttribute('aria-labelledby',h.id);}});
+}
+
+/* =====================================================================
    SECTION: INIT
    ===================================================================== */
-function init(){wireUI();updateSoundButtons();buildBoard();showScreen('screen-menu');console.info('Mansion Mystery — Classic 1986 Edition V2 loaded');}
+function init(){loadUltimateSettings();wireUI();wireUltimateUI();updateSoundButtons();buildBoard();showScreen('screen-menu');console.info("Mansion Mystery — The Blackwood Case: Director's Cut loaded");}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 
 </script>
